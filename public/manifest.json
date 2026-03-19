@@ -1,0 +1,58 @@
+{
+  "name": "RadCalcPro2 — Radiation Oncology Toolkit",
+  "short_name": "RadCalcPro2",
+  "description": "Clinical radiobiology calculators, OAR constraints, SBRT reference and viva preparation for radiation oncology postgraduates. Dr. Narendra Rathore · RNT Medical College Udaipur.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0f1e",
+  "theme_color": "#1e3a5f",
+  "lang": "en-IN",
+  "categories": ["medical", "education"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%231e3a5f'/%3E%3Ccircle cx='256' cy='256' r='28' fill='%2360a5fa'/%3E%3Cline x1='256' y1='228' x2='216' y2='162' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='256' y1='228' x2='296' y2='162' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='232' y1='268' x2='162' y2='308' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='280' y1='268' x2='350' y2='308' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='232' y1='248' x2='162' y2='208' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='280' y1='248' x2='350' y2='208' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='256' r='100' fill='none' stroke='%2360a5fa' stroke-width='14'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='0' fill='%231e3a5f'/%3E%3Ccircle cx='256' cy='256' r='28' fill='%2360a5fa'/%3E%3Cline x1='256' y1='228' x2='216' y2='162' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='256' y1='228' x2='296' y2='162' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='232' y1='268' x2='162' y2='308' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='280' y1='268' x2='350' y2='308' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='232' y1='248' x2='162' y2='208' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='280' y1='248' x2='350' y2='208' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='256' r='100' fill='none' stroke='%2360a5fa' stroke-width='14'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "BED / EQD2 Calculator",
+      "short_name": "BED/EQD2",
+      "description": "Open the BED and EQD2 linear-quadratic calculator",
+      "url": "/#/eqd2",
+      "icons": [{ "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='18' fill='%231e3a5f'/%3E%3Ctext x='50%25' y='60%25' text-anchor='middle' font-size='52' fill='%2360a5fa' font-family='monospace'%3EB%3C/text%3E%3C/svg%3E", "sizes": "96x96" }]
+    },
+    {
+      "name": "OAR Dose Limits",
+      "short_name": "OAR",
+      "description": "QUANTEC / HyTEC organ-at-risk constraints",
+      "url": "/#/oar-limits",
+      "icons": [{ "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='18' fill='%230f766e'/%3E%3Ctext x='50%25' y='60%25' text-anchor='middle' font-size='42' fill='%235eead4' font-family='monospace'%3EOAR%3C/text%3E%3C/svg%3E", "sizes": "96x96" }]
+    },
+    {
+      "name": "HDR Brachytherapy",
+      "short_name": "HDR",
+      "description": "GEC-ESTRO HDR brachytherapy composite dose",
+      "url": "/#/hdr-brachy",
+      "icons": [{ "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='18' fill='%239f1239'/%3E%3Ctext x='50%25' y='60%25' text-anchor='middle' font-size='40' fill='%23fda4af' font-family='monospace'%3EHDR%3C/text%3E%3C/svg%3E", "sizes": "96x96" }]
+    },
+    {
+      "name": "SBRT Constraints",
+      "short_name": "SBRT",
+      "description": "RTOG / TG-101 SBRT OAR constraints",
+      "url": "/#/sbrt",
+      "icons": [{ "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='18' fill='%234c1d95'/%3E%3Ctext x='50%25' y='60%25' text-anchor='middle' font-size='32' fill='%23c4b5fd' font-family='monospace'%3ESBRT%3C/text%3E%3C/svg%3E", "sizes": "96x96" }]
+    }
+  ],
+  "prefer_related_applications": false
+}

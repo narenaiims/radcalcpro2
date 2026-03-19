@@ -1,0 +1,696 @@
+/**
+ * ReirradiationCalcPage.tsx — PRO LEVEL
+ * Cumulative BED with time-dependent recovery for re-irradiation planning.
+ *
+ * Models implemented:
+ *   Nieder C et al. IJROBP 61(3):851–855, 2005       — Spinal cord
+ *   Nieder C et al. Radiother Oncol 2013             — Updated cord recovery
+ *   Sahgal A et al. IJROBP 82(1):107–116, 2012       — SBRT spine
+ *   Emami B et al. IJROBP 1991                       — TD5/5 reference
+ *   Dale RG. Br J Radiol 1985                        — BED additivity
+ */
+import React, { useState, useMemo } from 'react';
+import { BookOpen, ChevronRight, GraduationCap } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
+import { RadiobiologyData } from '../src/data/radiobiologyData';
+
+const STORAGE_KEY = 'radonco_reRT_state_v1';
+
+const QUICK_REF_DATA = [
+  {
+    category: "Spinal Cord (Nieder)",
+    items: [
+      { label: "Interval < 6m", value: "0% Recovery" },
+      { label: "Interval ≥ 6m", value: "25% Recovery" },
+      { label: "Cum BED₂ Limit", value: "135 Gy₂" },
+      { label: "Single Course", value: "< 98 Gy₂" },
+    ]
+  },
+  {
+    category: "Spinal Cord (Sahgal)",
+    items: [
+      { label: "SBRT Interval", value: "≥ 5 months" },
+      { label: "Thecal Sac Dmax", value: "≤ 25 Gy EQD2" },
+      { label: "α/β Ratio", value: "2 Gy" },
+    ]
+  },
+  {
+    category: "Other OARs (α/β=3)",
+    items: [
+      { label: "Brainstem", value: "100 Gy₂ (BED)" },
+      { label: "Optic App.", value: "90 Gy₂ (BED)" },
+      { label: "Brachial Plexus", value: "120 Gy₂ (BED)" },
+    ]
+  }
+];
+
+// ── OAR models ────────────────────────────────────────────────────────────
+interface OARModel {
+  id: string;
+  name: string;
+  ab: number;
+  bedLimit: number;        // Gy (BED, using OAR ab)
+  eqd2Limit: number;       // Gy (EQD2 α/β=OAR ab)
+  recoveryModel: 'nieder' | 'none' | 'sahgal';
+  recoveryThresholdMonths: number;
+  recoveryFraction: number;    // fraction recovered after threshold
+  maxRecovery: number;         // maximum possible recovery fraction
+  notes: string;
+  references: string[];
+}
+
+const OAR_MODELS: OARModel[] = [
+  {
+    id: 'cord_conventional',
+    name: 'Spinal Cord (conventional)',
+    ab: 2,
+    bedLimit: 135,
+    eqd2Limit: 50,
+    recoveryModel: 'nieder',
+    recoveryThresholdMonths: 6,
+    recoveryFraction: 0.25,
+    maxRecovery: 0.25,
+    notes: 'Nieder model: <6 months = 0% recovery; ≥6 months = 25% recovery (fixed). Cumulative BED₂ ≤135 Gy generally accepted. Some institutions use 130 Gy.',
+    references: ['Nieder et al. IJROBP 2005', 'Nieder et al. Radiother Oncol 2013'],
+  },
+  {
+    id: 'cord_sbrt',
+    name: 'Spinal Cord (SBRT re-RT)',
+    ab: 2,
+    bedLimit: 70,
+    eqd2Limit: 25,
+    recoveryModel: 'sahgal',
+    recoveryThresholdMonths: 5,
+    recoveryFraction: 0.20,
+    maxRecovery: 0.25,
+    notes: 'Sahgal 2012 (14 cases): SBRT re-irradiation. Thecal sac Dmax ≤ 25 Gy EQD2 (α/β=2) cumulative. Interval ≥5 months. High risk — physics peer review mandatory.',
+    references: ['Sahgal et al. IJROBP 2012', 'Thibault et al. IJROBP 2015'],
+  },
+  {
+    id: 'brainstem',
+    name: 'Brainstem',
+    ab: 2.1,
+    bedLimit: 100,
+    eqd2Limit: 54,
+    recoveryModel: 'none',
+    recoveryThresholdMonths: 999,
+    recoveryFraction: 0,
+    maxRecovery: 0,
+    notes: 'No validated recovery model. Cumulative BED₂ <100 Gy₂ typically used. Re-RT highly individualised — multidisciplinary decision required.',
+    references: ['QUANTEC 2010', 'Mayo et al. IJROBP 2010'],
+  },
+  {
+    id: 'optic',
+    name: 'Optic Apparatus',
+    ab: 1.6,
+    bedLimit: 90,
+    eqd2Limit: 54,
+    recoveryModel: 'none',
+    recoveryThresholdMonths: 999,
+    recoveryFraction: 0,
+    maxRecovery: 0,
+    notes: 'No recovery model. Cumulative Dmax ≤54 Gy (EQD2 α/β=1.6). Optic neuropathy risk rises sharply above 60 Gy. Highly serial structure.',
+    references: ['QUANTEC 2010', 'Parsons et al. IJROBP 1994'],
+  },
+  {
+    id: 'brachial_plexus',
+    name: 'Brachial Plexus',
+    ab: 3,
+    bedLimit: 120,
+    eqd2Limit: 60,
+    recoveryModel: 'none',
+    recoveryThresholdMonths: 12,
+    recoveryFraction: 0.10,
+    maxRecovery: 0.15,
+    notes: 'Conventional: Dmax ≤66 Gy. Re-RT cumulative EQD2 ≤60–70 Gy typically used. Limited data — use with caution.',
+    references: ['QUANTEC 2010', 'Johansson et al. Acta Oncol 2004'],
+  },
+  {
+    id: 'lung',
+    name: 'Lung (mean dose)',
+    ab: 3,
+    bedLimit: 100,
+    eqd2Limit: 40,
+    recoveryModel: 'none',
+    recoveryThresholdMonths: 12,
+    recoveryFraction: 0.15,
+    maxRecovery: 0.20,
+    notes: 'Mean lung dose cumulative ≤40 Gy EQD2. Some recovery likely after 12 months but data limited. V20 should remain ≤30–35%.',
+    references: ['QUANTEC 2010', 'Huang et al. Clin Lung Cancer 2019'],
+  },
+  {
+    id: 'custom',
+    name: 'Custom OAR',
+    ab: 3,
+    bedLimit: 120,
+    eqd2Limit: 50,
+    recoveryModel: 'none',
+    recoveryThresholdMonths: 6,
+    recoveryFraction: 0.25,
+    maxRecovery: 0.25,
+    notes: 'User-defined OAR. Enter α/β and cumulative BED limit manually.',
+    references: ['User defined'],
+  },
+];
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+const calcBED  = (total: number, dpf: number, ab: number) =>
+  ab > 0 && dpf > 0 ? total * (1 + dpf / ab) : 0;
+const calcEQD2 = (total: number, dpf: number, ab: number) =>
+  ab > 0 && dpf > 0 ? total * (dpf + ab) / (2 + ab) : 0;
+
+function getRecoveryFraction(model: OARModel, months: number): number {
+  if (model.recoveryModel === 'none') return 0;
+  if (months < model.recoveryThresholdMonths) return 0;
+  return model.recoveryFraction;
+}
+
+// ── Status helper ─────────────────────────────────────────────────────────
+function bedStatus(cumBED: number, limit: number): 'pass' | 'warn' | 'fail' {
+  if (cumBED <= limit * 0.90) return 'pass';
+  if (cumBED <= limit)        return 'warn';
+  return 'fail';
+}
+
+const STATUS_STYLES = {
+  pass: { bg: 'bg-green-50 border-green-300 text-green-800', badge: 'result-badge pass' },
+  warn: { bg: 'bg-amber-50 border-amber-300 text-amber-800', badge: 'result-badge warn' },
+  fail: { bg: 'bg-red-50 border-red-300 text-red-800',       badge: 'result-badge fail' },
+};
+
+// ── Component ─────────────────────────────────────────────────────────────
+const ReirradiationCalcPage: React.FC = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const SIDEBAR_DATA: KeyFactSection[] = QUICK_REF_DATA.map(sec => ({
+    title: sec.category || (sec as any).title || 'Reference',
+    emoji: "📌",
+    accent: "#00d4ff",
+    bg: "rgba(0, 212, 255, 0.1)",
+    border: "rgba(0, 212, 255, 0.3)",
+    rows: (sec.items || (sec as any).rows || []).map((item: any) => ({ k: item.label || item.k, v: item.value || item.v }))
+  }));
+
+  const [oarId,    setOarId]    = useState('cord_conventional');
+  const [d1Total,  setD1Total]  = useState('45');
+  const [d1Fx,     setD1Fx]     = useState('25');
+  const [months,   setMonths]   = useState('12');
+  const [d2Total,  setD2Total]  = useState('30');
+  const [d2Fx,     setD2Fx]     = useState('10');
+  const [customAb, setCustomAb] = useState('3');
+  const [customLim,setCustomLim]= useState('120');
+  const [tumourAb, setTumourAb] = useState('10');
+  const [tab,      setTab]      = useState<'calc'|'scenarios'|'guidance'>('calc');
+
+  const oar = OAR_MODELS.find(o => o.id === oarId) ?? OAR_MODELS[0];
+  const ab  = oarId === 'custom' ? (parseFloat(customAb) || 3) : oar.ab;
+  const bedLimit = oarId === 'custom' ? (parseFloat(customLim) || 120) : oar.bedLimit;
+  const tAb = parseFloat(tumourAb) || 10;
+
+  // Numeric values
+  const n1 = parseFloat(d1Total) || 0;
+  const f1 = parseFloat(d1Fx)   || 0;
+  const n2 = parseFloat(d2Total) || 0;
+  const f2 = parseFloat(d2Fx)   || 0;
+  const mo = parseFloat(months)  || 0;
+
+  const dpf1 = f1 > 0 ? n1 / f1 : 0;
+  const dpf2 = f2 > 0 ? n2 / f2 : 0;
+
+  const calc = useMemo(() => {
+    const bed1  = calcBED(n1, dpf1, ab);
+    const eqd1  = calcEQD2(n1, dpf1, ab);
+    const bed2  = calcBED(n2, dpf2, ab);
+    const eqd2v = calcEQD2(n2, dpf2, ab);
+
+    const recFrac    = getRecoveryFraction(oar, mo);
+    const effectBed1 = bed1 * (1 - recFrac);
+    const cumBED     = effectBed1 + bed2;
+    const cumEQD2    = effectBed1 / (1 + 2 / ab) + eqd2v;
+
+    const status = bedStatus(cumBED, bedLimit);
+    const headroom = Math.max(0, bedLimit - cumBED);
+
+    // Tumour BED (no recovery for tumour)
+    const tBed1 = calcBED(n1, dpf1, tAb);
+    const tBed2 = calcBED(n2, dpf2, tAb);
+    const tCumBED = tBed1 + tBed2;
+
+    // Maximum safe re-RT dose (solve: effectBed1 + bed2_max = bedLimit)
+    // bed2_max = (bedLimit - effectBed1)
+    // n2_max * (1 + dpf2/ab) = bedLimit - effectBed1
+    // Assume same dpf2: n2_max = (bedLimit - effectBed1) / (1 + dpf2/ab)
+    const maxSafeTotal = dpf2 > 0 && (1 + dpf2/ab) > 0
+      ? (bedLimit - effectBed1) / (1 + dpf2 / ab) : 0;
+
+    return {
+      bed1, eqd1, bed2, eqd2: eqd2v,
+      recFrac, effectBed1,
+      cumBED, cumEQD2,
+      status, headroom, maxSafeTotal,
+      tBed1, tBed2, tCumBED
+    };
+  }, [n1, f1, n2, f2, dpf1, dpf2, ab, oar, mo, bedLimit]);
+
+  // Sensitivity: re-RT dose vs cumBED status
+  const sensitivityRows = useMemo(() => {
+    if (dpf2 <= 0) return [];
+    const steps = [10, 15, 20, 25, 30, 35, 40, 45, 50];
+    const recFrac = getRecoveryFraction(oar, mo);
+    const effectBed1 = calcBED(n1, dpf1, ab) * (1 - recFrac);
+    return steps.map(dose => {
+      const b2  = calcBED(dose, dpf2, ab);
+      const cum = effectBed1 + b2;
+      return { dose, b2, cum, status: bedStatus(cum, bedLimit), isCur: Math.abs(dose - n2) < 0.1 };
+    });
+  }, [n1, dpf1, n2, dpf2, ab, oar, mo, bedLimit]);
+
+  return (
+    <div className="space-y-4 fade-in pb-2">
+
+      {/* ── Header ───────────────────────────────────────────────────── */}
+      <div>
+        <h1 className="text-base font-extrabold text-slate-900 tracking-tight">Re-irradiation Calculator</h1>
+        <p className="text-sm text-slate-500">Cumulative BED with time-dependent OAR recovery · Nieder / Sahgal models</p>
+      </div>
+
+      {/* ── OAR selector ─────────────────────────────────────────────── */}
+      <div>
+        <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-1.5">Select OAR Model</p>
+        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+          {OAR_MODELS.map(o => (
+            <button key={o.id} onClick={() => setOarId(o.id)}
+              className={`text-left px-2.5 py-2 rounded-lg border text-sm font-semibold transition leading-tight
+                ${oarId === o.id
+                  ? 'bg-[#1e3a5f] text-white border-[#1e3a5f]'
+                  : 'bg-white text-slate-700 border-slate-200 hover:border-blue-300'}`}
+            >
+              <span className="block">{o.name}</span>
+              <span className={`text-[11px] font-normal ${oarId === o.id ? 'text-blue-200' : 'text-slate-400'}`}>
+                α/β={o.ab} · BED limit {o.bedLimit} Gy
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* OAR note */}
+        <div className="mt-2 bg-amber-50 border border-amber-200 rounded px-3 py-2 text-xs text-amber-800 leading-relaxed">
+          {oar.notes}
+          <span className="block text-[11px] text-amber-600 mt-0.5 italic">
+            {oar.references.join(' · ')}
+          </span>
+        </div>
+      </div>
+
+      {/* ── Custom α/β & limit if custom OAR ─────────────────────────── */}
+      {oarId === 'custom' && (
+        <div className="bg-white rounded-lg border border-slate-200 px-3 py-3 flex gap-4 text-xs">
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 mb-1">α/β (Gy)</label>
+            <input type="number" step="0.5" value={customAb}
+              onChange={e => setCustomAb(e.target.value)} className="input-clinical num w-20" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 mb-1">BED limit (Gy)</label>
+            <input type="number" step="5" value={customLim}
+              onChange={e => setCustomLim(e.target.value)} className="input-clinical num w-24" />
+          </div>
+        </div>
+      )}
+
+      {/* ── Tabs ─────────────────────────────────────────────────────── */}
+      <div className="flex border-b border-slate-200">
+        {(['calc','scenarios','guidance'] as const).map(t => (
+          <button key={t} onClick={() => setTab(t)}
+            className={`px-3 py-2 text-sm font-bold uppercase tracking-wider border-b-2 transition
+              ${tab === t ? 'border-blue-700 text-blue-700' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+          >
+            {t === 'calc' ? 'Calculator' : t === 'scenarios' ? 'Sensitivity' : 'Clinical Guide'}
+          </button>
+        ))}
+      </div>
+
+      {/* ════ TAB: Calculator ════════════════════════════════════════ */}
+      {tab === 'calc' && (
+        <div className="space-y-3">
+
+          {/* Inputs */}
+          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Course 1 — Prior Irradiation</p>
+            </div>
+            <div className="px-3 py-3 grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1">Total Dose (Gy)</label>
+                <input type="number" step="0.5" value={d1Total}
+                  onChange={e => setD1Total(e.target.value)} className="input-clinical num" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1">No. of Fractions</label>
+                <input type="number" step="1" value={d1Fx}
+                  onChange={e => setD1Fx(e.target.value)} className="input-clinical num" />
+              </div>
+              <div className="col-span-2 text-xs text-slate-500 bg-slate-50 rounded px-2 py-1.5 num">
+                d/fx = {dpf1.toFixed(2)} Gy &nbsp;|&nbsp;
+                BED{ab} = {calc.bed1.toFixed(1)} Gy &nbsp;|&nbsp;
+                EQD2 = {calc.eqd1.toFixed(1)} Gy
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Time Interval</p>
+            </div>
+            <div className="px-3 py-3">
+              <label className="block text-xs font-semibold text-slate-500 mb-1">
+                Months elapsed since Course 1 completed
+              </label>
+              <div className="flex items-center gap-3">
+                <input type="number" step="1" value={months}
+                  onChange={e => setMonths(e.target.value)} className="input-clinical num w-24" />
+                <span className="text-xs text-slate-500">
+                  Recovery applied: <span className="font-bold num text-blue-700">
+                    {(calc.recFrac * 100).toFixed(0)}%
+                  </span>
+                  {' '}({oar.recoveryModel === 'none' ? 'No model' : oar.recoveryModel})
+                </span>
+              </div>
+              {oar.recoveryModel !== 'none' && (
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Threshold: {oar.recoveryThresholdMonths} months.
+                  Recovery = {(oar.recoveryFraction * 100).toFixed(0)}% after threshold.
+                  Effective BED1 = {calc.effectBed1.toFixed(1)} Gy
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Course 2 — Re-irradiation</p>
+            </div>
+            <div className="px-3 py-3 grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1">Total Dose (Gy)</label>
+                <input type="number" step="0.5" value={d2Total}
+                  onChange={e => setD2Total(e.target.value)} className="input-clinical num" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1">No. of Fractions</label>
+                <input type="number" step="1" value={d2Fx}
+                  onChange={e => setD2Fx(e.target.value)} className="input-clinical num" />
+              </div>
+              <div className="col-span-2 text-xs text-slate-500 bg-slate-50 rounded px-2 py-1.5 num">
+                d/fx = {dpf2.toFixed(2)} Gy &nbsp;|&nbsp;
+                BED{ab} = {calc.bed2.toFixed(1)} Gy &nbsp;|&nbsp;
+                EQD2 = {calc.eqd2.toFixed(1)} Gy
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Tumour α/β (for Tumour BED)</p>
+            </div>
+            <div className="px-3 py-3">
+              <label className="block text-xs font-semibold text-slate-500 mb-1">
+                Tumour α/β Ratio (Gy)
+              </label>
+              <input
+                type="number" step="0.5" value={tumourAb}
+                onChange={e => setTumourAb(e.target.value)}
+                className="input-clinical num w-20"
+              />
+            </div>
+          </div>
+
+          {/* Results */}
+          <div className={`rounded-lg border px-4 py-3 ${STATUS_STYLES[calc.status].bg}`}>
+            <p className="text-[11px] font-black uppercase tracking-widest opacity-70 mb-3">Cumulative Result</p>
+
+            <div className="grid grid-cols-3 gap-3 text-center border-b border-current/10 pb-3 mb-3">
+              <div>
+                <p className="text-[11px] uppercase tracking-wider opacity-60">BED1 effective</p>
+                <p className="text-lg font-black num">{calc.effectBed1.toFixed(1)}</p>
+                <p className="text-[11px] opacity-50">Gy{ab}</p>
+              </div>
+              <div>
+                <p className="text-[11px] uppercase tracking-wider opacity-60">BED2</p>
+                <p className="text-lg font-black num">{calc.bed2.toFixed(1)}</p>
+                <p className="text-[11px] opacity-50">Gy{ab}</p>
+              </div>
+              <div>
+                <p className="text-[11px] uppercase tracking-wider opacity-60">Cumulative BED</p>
+                <p className="text-2xl font-black num">{calc.cumBED.toFixed(1)}</p>
+                <p className="text-[11px] opacity-50">Gy{ab}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <span className={STATUS_STYLES[calc.status].badge}>
+                  {calc.status === 'pass' ? 'Within limit' : calc.status === 'warn' ? 'Near limit' : 'EXCEEDS LIMIT'}
+                </span>
+                <p className="text-[11px] mt-1 opacity-70">
+                  Limit: {bedLimit} Gy{ab} &nbsp;·&nbsp;
+                  {calc.status !== 'fail'
+                    ? `Headroom: ${calc.headroom.toFixed(1)} Gy`
+                    : `Exceeded by ${(calc.cumBED - bedLimit).toFixed(1)} Gy`}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-[11px] opacity-60 uppercase tracking-wider">Max safe re-RT</p>
+                <p className="text-base font-black num">{Math.max(0, calc.maxSafeTotal).toFixed(1)} Gy</p>
+                <p className="text-[11px] opacity-50">at {dpf2.toFixed(1)} Gy/fx</p>
+              </div>
+            </div>
+
+            {/* BED bar */}
+            <div className="mt-3 h-2 bg-black/10 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  calc.status === 'pass' ? 'bg-green-600' :
+                  calc.status === 'warn' ? 'bg-amber-500' : 'bg-red-600'}`}
+                style={{ width: `${Math.min(100, (calc.cumBED / bedLimit) * 100)}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[9px] opacity-50 mt-0.5">
+              <span>0</span>
+              <span>{bedLimit} Gy (limit)</span>
+            </div>
+          </div>
+
+          {/* Tumour BED Result */}
+          <div className="bg-slate-900 rounded-lg text-white px-4 py-3">
+            <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">Tumour BED Summary (α/β={tAb})</p>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-slate-500">Course 1 BED</p>
+                <p className="text-lg font-black num">{calc.tBed1.toFixed(1)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-slate-500">Course 2 BED</p>
+                <p className="text-lg font-black num">{calc.tBed2.toFixed(1)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-emerald-400">Cumulative BED</p>
+                <p className="text-2xl font-black num text-emerald-400">{calc.tCumBED.toFixed(1)}</p>
+              </div>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-2 italic text-center">
+              Note: Tumour BED assumes no recovery between courses.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ════ TAB: Sensitivity ══════════════════════════════════════ */}
+      {tab === 'scenarios' && (
+        <div className="space-y-3">
+          <p className="text-xs text-slate-500">
+            Re-RT dose sensitivity at {dpf2.toFixed(1)} Gy/fx ({f2} fx).
+            Recovery = {(calc.recFrac * 100).toFixed(0)}% applied to Course 1.
+          </p>
+          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div className="scroll-x">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-[11px] text-slate-400 uppercase border-b border-slate-100">
+                    <th className="px-3 py-2 text-left">Re-RT dose</th>
+                    <th className="px-3 py-2 text-right">d/fx</th>
+                    <th className="px-3 py-2 text-right">BED2</th>
+                    <th className="px-3 py-2 text-right">Cumulative BED</th>
+                    <th className="px-3 py-2 text-left">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {sensitivityRows.map(r => (
+                    <tr key={r.dose}
+                      className={r.isCur ? 'bg-blue-50 font-bold text-blue-800' : 'text-slate-700'}>
+                      <td className="px-3 py-2 num">{r.dose} Gy{r.isCur && ' ←'}</td>
+                      <td className="px-3 py-2 text-right num">{dpf2.toFixed(1)}</td>
+                      <td className="px-3 py-2 text-right num">{r.b2.toFixed(1)}</td>
+                      <td className="px-3 py-2 text-right num">{r.cum.toFixed(1)}</td>
+                      <td className="px-3 py-2">
+                        <span className={`result-badge ${r.status}`}>
+                          {r.status === 'pass' ? 'OK' : r.status === 'warn' ? 'Near' : 'FAIL'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Recovery model table */}
+          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Recovery vs Time Interval</p>
+            </div>
+            <div className="scroll-x">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-[11px] text-slate-400 uppercase border-b border-slate-100">
+                    <th className="px-3 py-2 text-left">Interval</th>
+                    <th className="px-3 py-2 text-right">Recovery</th>
+                    <th className="px-3 py-2 text-right">Effective BED1</th>
+                    <th className="px-3 py-2 text-right">Headroom</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {[3,6,12,18,24,36].map(m => {
+                    const rec  = getRecoveryFraction(oar, m);
+                    const eBed = calc.bed1 * (1 - rec);
+                    const room = Math.max(0, bedLimit - eBed - calc.bed2);
+                    const isCur = m === mo;
+                    return (
+                      <tr key={m} className={isCur ? 'bg-blue-50 font-bold text-blue-800' : 'text-slate-700'}>
+                        <td className="px-3 py-2">{m} months{isCur && ' ←'}</td>
+                        <td className="px-3 py-2 text-right num">{(rec * 100).toFixed(0)}%</td>
+                        <td className="px-3 py-2 text-right num">{eBed.toFixed(1)} Gy</td>
+                        <td className={`px-3 py-2 text-right num ${room > 10 ? 'text-green-700' : room > 0 ? 'text-amber-700' : 'text-red-700'}`}>
+                          {room > 0 ? `+${room.toFixed(1)} Gy` : `${room.toFixed(1)} Gy`}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════ TAB: Clinical Guidance ════════════════════════════════ */}
+      {tab === 'guidance' && (
+        <div className="space-y-3">
+
+          {/* Nieder criteria */}
+          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Nieder Criteria for Spinal Cord Re-RT (2005/2013)
+              </p>
+            </div>
+            <div className="divide-y divide-slate-50">
+              {[
+                { criterion: 'BED₂ of each course', value: '< 98 Gy₂ each', note: 'Neither course should individually approach TD5/5' },
+                { criterion: 'Cumulative BED₂', value: '≤ 135 Gy₂', note: 'Hard limit. Some use 130 Gy₂ conservatively.' },
+                { criterion: 'Minimum interval', value: '≥ 6 months', note: 'Allows partial (25%) recovery. Shorter intervals = 0% recovery credit.' },
+                { criterion: 'Partial cord irradiation', value: 'Preferred', note: 'Retreating same cord segment = higher risk. Lateral approach preferred.' },
+                { criterion: 'SBRT re-RT (Sahgal)', value: 'Thecal sac Dmax ≤ 25 Gy EQD2', note: 'In 3–5 fx. Physics peer review mandatory. Multidisciplinary case conference.' },
+              ].map((r, i) => (
+                <div key={i} className="px-3 py-2.5">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-[11px] font-bold text-slate-800">{r.criterion}</span>
+                    <span className="text-[11px] font-black num text-blue-800 flex-shrink-0">{r.value}</span>
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-0.5">{r.note}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* General principles */}
+          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">General Re-irradiation Principles</p>
+            </div>
+            <div className="divide-y divide-slate-50">
+              {[
+                { title: 'Contour prior RT volumes', body: 'Import prior RT plan or contour prior RT field on current CT. Calculate cumulative DVH for all critical OARs. Physics peer review is mandatory.' },
+                { title: 'Recovery is tissue-specific', body: 'Spinal cord: 25% recovery after 6 months (Nieder). Brain: unclear recovery. Liver, kidney, lung: some recovery over 12–24 months. No validated model for most organs.' },
+                { title: 'BED additivity assumptions', body: 'BED is strictly additive only if fractions are separated by ≥6h (sublethal damage repair). Between-course recovery modifies effective BED₁, not BED₂.' },
+                { title: 'Clinical decision factors', body: 'Performance status, prior toxicity, new tumour volume, overlap of PTV with prior fields, intent (curative vs palliative), and patient wishes all factor into re-RT candidacy.' },
+                { title: 'Documentation requirement', body: 'All re-irradiation cases require documented rationale, cumulative dose calculations, MDT discussion, and enhanced patient consent covering cumulative toxicity risks.' },
+              ].map((item, i) => (
+                <div key={i} className="px-3 py-2.5">
+                  <p className="text-[11px] font-bold text-slate-800 mb-0.5">{item.title}</p>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">{item.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* OAR recovery summary */}
+          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">OAR Recovery Summary</p>
+            </div>
+            <div className="scroll-x">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-[10px] text-slate-400 uppercase border-b border-slate-100">
+                    <th className="px-3 py-2 text-left">OAR</th>
+                    <th className="px-3 py-2 text-center">α/β</th>
+                    <th className="px-3 py-2 text-center">BED limit</th>
+                    <th className="px-3 py-2 text-center">Recovery</th>
+                    <th className="px-3 py-2 text-left">Model</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {OAR_MODELS.filter(o => o.id !== 'custom').map(o => (
+                    <tr key={o.id} className="text-slate-700 hover:bg-slate-50">
+                      <td className="px-3 py-2 font-medium">{o.name}</td>
+                      <td className="px-3 py-2 text-center num">{o.ab}</td>
+                      <td className="px-3 py-2 text-center num">{o.bedLimit} Gy</td>
+                      <td className="px-3 py-2 text-center">
+                        {o.recoveryModel === 'none'
+                          ? <span className="text-slate-400">None</span>
+                          : <span className="text-green-700 font-bold">{(o.recoveryFraction * 100).toFixed(0)}% after {o.recoveryThresholdMonths}m</span>
+                        }
+                      </td>
+                      <td className="px-3 py-2 text-slate-500 text-[10px] italic">{o.recoveryModel === 'none' ? '—' : o.recoveryModel}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Reference ────────────────────────────────────────────────── */}
+      <p className="text-[11px] text-slate-400 px-1">
+        Ref: Nieder C et al. IJROBP 61(3):851–855, 2005.
+        Sahgal A et al. IJROBP 82(1):107–116, 2012.
+        Dale RG. Br J Radiol 1985. QUANTEC 2010.
+      </p>
+
+      {/* Quick Reference Sidebar */}
+      <KeyFactsSidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+        onOpen={() => setIsSidebarOpen(true)} 
+        data={SIDEBAR_DATA} 
+      />
+
+      
+    </div>
+  );
+};
+
+export default ReirradiationCalcPage;

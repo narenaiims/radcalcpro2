@@ -1,0 +1,786 @@
+export interface NamedEffect {
+  id: string;
+  title: string;
+  subtitle: string;
+  definition: string;
+  mechanism: string;
+  clinicalRelevance: string;
+  examPoints: string[];
+  category: 'classic' | 'cell' | 'dna' | 'physical' | 'modern' | 'eponymous' | 'molecular' | 'physics' | 'dosimetry' | 'clinical' | 'biology' | 'imaging';
+  svgData?: string;
+}
+
+export const NAMED_EFFECTS: NamedEffect[] = [
+  {
+    id: 'bystander',
+    title: 'Bystander Effect',
+    subtitle: 'Cell-to-cell signaling',
+    definition: 'A phenomenon where cells not directly traversed by ionizing radiation exhibit radiation-induced damage, such as mutations, chromosomal aberrations, and cell death, as a result of signals received from neighboring irradiated cells.',
+    mechanism: 'Mediated primarily by gap junction intercellular communication (GJIC) and the release of soluble signaling factors (e.g., cytokines, chemokines, reactive oxygen species (ROS), and nitric oxide) into the extracellular environment, which trigger stress responses, DNA damage, and genomic instability in bystander cells. The effect is dose-dependent and can be inhibited by gap junction blockers or ROS scavengers.',
+    clinicalRelevance: 'Significant implications for low-dose radiation risk assessment, potential therapeutic applications in cancer treatment (bystander-mediated tumor kill), and concerns regarding bystander-mediated toxicity in normal tissues surrounding a target tumor. It challenges the traditional "direct hit" dogma of radiobiology.',
+    examPoints: ['Non-targeted effect (NTE)', 'Gap junction mediated', 'Soluble factor mediated', 'Important in low-dose risk', 'Genomic instability induction', 'Inhibitable by ROS scavengers'],
+    category: 'cell',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="50" r="15" fill="#38bdf8" /><circle cx="70" cy="50" r="15" fill="#475569" /><path d="M45 50 L55 50 M50 45 L50 55" stroke="#fbbf24" stroke-width="2" /></svg>'
+  },
+  {
+    id: 'abscopal',
+    title: 'Abscopal Effect',
+    subtitle: 'Systemic immune response',
+    definition: 'A rare phenomenon where localized radiation therapy to a primary tumor leads to the regression of metastatic tumors located outside the irradiated field, indicating a systemic, immune-mediated mechanism.',
+    mechanism: 'Radiation induces immunogenic cell death (ICD) in the target tumor, releasing tumor-associated antigens and Damage-Associated Molecular Patterns (DAMPs) like HMGB1 and ATP. These are captured by dendritic cells and presented to T-cells in the lymph nodes, which then activate a systemic, anti-tumor T-cell response capable of targeting distant metastases. The effect is heavily dependent on the presence of functional T-cells.',
+    clinicalRelevance: 'Significant clinical interest in combining localized radiotherapy with immune checkpoint inhibitors (e.g., anti-PD-1/PD-L1, anti-CTLA-4) to enhance the abscopal effect and treat metastatic disease. It transforms radiotherapy from a local treatment into a potential systemic therapeutic modality.',
+    examPoints: ['Systemic immune-mediated effect', 'Requires intact immune system', 'Rare phenomenon', 'Enhanced by immunotherapy', 'Immunogenic cell death (ICD)', 'DAMPs release (HMGB1, ATP)'],
+    category: 'classic',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="20" fill="#f97316" /><circle cx="20" cy="20" r="10" fill="#a3e635" /><circle cx="80" cy="80" r="10" fill="#a3e635" /><path d="M50 50 L25 25 M50 50 L75 75" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 2" /></svg>'
+  },
+  {
+    id: 'oxygen',
+    title: 'Oxygen Effect',
+    subtitle: 'Oxygen Enhancement Ratio (OER)',
+    definition: 'The phenomenon where cells are significantly more sensitive to ionizing radiation in the presence of oxygen (aerobic conditions) compared to oxygen-depleted (hypoxic) conditions.',
+    mechanism: 'Oxygen acts as a potent radiosensitizer by "fixing" (making permanent) the chemical damage induced by free radicals (indirect effect) on DNA. In the absence of oxygen, some of this damage can be chemically repaired through hydrogen donation from thiols. The OER is the ratio of doses required to produce the same biological effect under hypoxic vs. aerobic conditions.',
+    clinicalRelevance: 'Hypoxic tumors are highly radioresistant, with an OER of approximately 2.5–3.0. Overcoming tumor hypoxia through oxygen mimetics, hyperbaric oxygen, or dose escalation is a critical goal in enhancing radiotherapy efficacy. Hypoxia also promotes a more aggressive, metastatic phenotype via HIF-1α stabilization.',
+    examPoints: ['OER ~ 2.5-3.0', 'Fixation of free radical damage', 'Indirect effect mediated', 'Hypoxic tumors are radioresistant', 'Key goal: overcome hypoxia', 'Hypoxia promotes metastasis via HIF-1α'],
+    category: 'physical',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="30" fill="none" stroke="#38bdf8" stroke-width="4" /><circle cx="50" cy="50" r="10" fill="#38bdf8" /><text x="50" y="55" font-size="12" text-anchor="middle" fill="white">O2</text></svg>'
+  },
+  {
+    id: 'sldr',
+    title: 'Sublethal Damage Repair (SLDR) Effect',
+    subtitle: 'Repair Between Dose Fractions',
+    definition: 'The biological process by which cells repair radiation-induced DNA damage that, if accumulated, would lead to cell death, but can be fully repaired if given adequate time between dose fractions (typically 4–6 hours).',
+    mechanism: 'Primarily involves the repair of single-strand breaks (SSBs) and some double-strand breaks (DSBs) via Base Excision Repair (BER) and Non-Homologous End Joining (NHEJ) pathways. This repair capacity manifests as the characteristic "shoulder" region on cell survival curves. The rate of repair follows first-order kinetics.',
+    clinicalRelevance: 'The fundamental biological basis of fractionated radiotherapy. An inter-fraction interval of ≥6 hours is generally required to ensure complete SLDR. Normal tissue sparing is highly dependent on this repair capacity compared to tumor cells, which often have defective repair pathways.',
+    examPoints: ['SLDR = shoulder on survival curve', 'Complete in 4–6 hours', 'Large shoulder = large β component = high SLDR capacity', 'BID treatments must have ≥6h gap', 'Crucial for normal tissue sparing', 'First-order repair kinetics'],
+    category: 'dna',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 90 Q50 90 90 10" fill="none" stroke="#38bdf8" stroke-width="4" /><path d="M10 90 Q30 90 40 70 Q50 50 90 10" fill="none" stroke="#fbbf24" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'hrs',
+    title: 'Hyper-Radiosensitivity (HRS)',
+    subtitle: 'Low-Dose Hypersensitivity Effect',
+    definition: 'A phenomenon where cells exhibit greater-than-expected cell killing at very low radiation doses (<0.5 Gy), deviating from the standard Linear-Quadratic (LQ) model, followed by induced radioresistance (IRR) at slightly higher doses.',
+    mechanism: 'At doses <0.2 Gy, the ATM-dependent DSB repair pathway is not fully activated, leading to insufficient repair and excess cell death. Above ~0.5 Gy, ATM activates fully, triggering induced radioresistance (IRR).',
+    clinicalRelevance: 'Explains bystander low-dose toxicity; ultrafractionation (delivering multiple very small fractions) is a potential therapeutic strategy that exploits HRS for enhanced tumor killing.',
+    examPoints: ['HRS occurs <0.5 Gy', 'Followed by IRR', 'NOT predicted by standard LQ model', 'Related to ATM activation threshold', 'Ultrafractionation exploits this concept'],
+    category: 'cell',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 90 Q30 10 50 50 Q70 90 90 10" fill="none" stroke="#f472b6" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'split-dose',
+    title: 'Split Dose / Elkind Recovery',
+    subtitle: 'Repair Between Two Dose Fractions',
+    definition: 'A phenomenon where splitting a total radiation dose into two fractions separated by a sufficient time interval results in less cell killing compared to the same total dose delivered as a single exposure, due to the repair of sublethal damage (SLD).',
+    mechanism: 'First described by Elkind & Sutton (1960). Sublethal damage (SLD) is repaired over 4–6 hours between fractions. Normal tissues generally exhibit a higher capacity for SLD repair than most tumor cells, providing a therapeutic window for fractionation.',
+    clinicalRelevance: 'The fundamental biological basis of conventional fractionation (1.8–2 Gy/day). It explains why twice-daily (BID) treatments must have a minimum inter-fraction interval of ≥6 hours to allow for adequate normal tissue recovery.',
+    examPoints: ['Elkind recovery = SLDR = shoulder on survival curve', 'Split dose = less cell kill', 'Foundation of fractionated RT', 'Time gap critical: ≥6 hours', 'Exploits repair capacity difference'],
+    category: 'classic',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="40" width="30" height="20" fill="#34d399" /><rect x="60" y="40" width="30" height="20" fill="#34d399" /><path d="M40 50 L60 50" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="2 2" /></svg>'
+  },
+  {
+    id: 'hrs-irr',
+    title: 'HRS / IRR Effect',
+    subtitle: 'Hyper-Radiosensitivity & Induced Radioresistance',
+    definition: 'A biphasic response observed at very low radiation doses: Hyper-Radiosensitivity (HRS) characterized by excessive cell killing at doses <0.2 Gy, followed by Induced Radioresistance (IRR) at doses of 0.2–0.5 Gy.',
+    mechanism: 'Below the ATM activation threshold, the G2/M checkpoint is not triggered, allowing cells with DNA double-strand breaks (DSBs) to enter mitosis and undergo mitotic catastrophe. Above the threshold, ATM activates, triggering full repair machinery and inducing radioresistance.',
+    clinicalRelevance: 'A significant clinical challenge in low-dose radiation protocols. This biphasic response may contribute to tumor radioresistance in reirradiation scenarios. Targeting ATM with inhibitors is a potential strategy to overcome IRR.',
+    examPoints: ['HRS ≠ LQ model prediction', 'ATM kinase activation is the switch', 'Tumor cells often show more pronounced HRS than normal cells', 'Relevant for low-dose RT + immunotherapy combinations', 'Biphasic survival curve'],
+    category: 'cell',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 80 Q30 20 50 50 Q70 80 90 20" fill="none" stroke="#f472b6" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'irr',
+    title: 'Induced Radioresistance (IRR)',
+    subtitle: 'ATM-Mediated Adaptive Resistance',
+    definition: 'A state of relative radioresistance observed at doses of 0.2–0.5 Gy following an initial low-dose "conditioning" exposure, resulting from the activation of ATM kinase and the subsequent upregulation of DNA repair pathways.',
+    mechanism: 'A low conditioning dose activates ATM, which phosphorylates H2AX and CHK2, leading to G2/M checkpoint arrest and providing essential time for repair. Subsequent doses encounter primed repair machinery, resulting in significantly reduced lethality.',
+    clinicalRelevance: 'A clinical challenge in low-dose radiation protocols. This mechanism may contribute to tumor radioresistance in reirradiation settings. Targeting ATM with inhibitors is a potential strategy to abolish IRR.',
+    examPoints: ['IRR follows HRS on the survival curve', 'ATM inhibitors can abolish IRR', 'IRR is primarily seen in G2-phase cells', 'Occurs specifically at doses of 0.2–0.5 Gy', 'Priming effect of low dose'],
+    category: 'cell',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><line x1="10" y1="80" x2="90" y2="20" stroke="#f472b6" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'mitotic-catastrophe',
+    title: 'Mitotic Catastrophe',
+    subtitle: 'Death During or After Mitosis',
+    definition: 'A form of cell death occurring during or shortly after aberrant mitosis, caused by the premature entry of cells with unrepaired DNA damage or complex chromosomal abnormalities into the M phase.',
+    mechanism: 'A failed G2/M checkpoint allows cells with double-strand breaks (DSBs) to enter mitosis, leading to chromosome missegregation, micronuclei formation, and multinucleation, eventually resulting in cell death. This is widely considered the most common mechanism of radiation-induced cell death in solid tumors.',
+    clinicalRelevance: 'The primary mode of tumor cell killing by radiotherapy. Cells in the M phase are the most radiosensitive (consistent with the Bergonié-Tribondeau Law). Checkpoint kinase inhibitors (e.g., CHK1/2 inhibitors) can be used to enhance mitotic catastrophe.',
+    examPoints: ['Most common radiation-induced cell death mode', 'Occurs 1–2 cell divisions post-irradiation', 'Morphological features: giant cells, micronuclei, multinucleation', 'M-phase is the most radiosensitive phase', 'WEE1/CHK inhibitors promote this mechanism'],
+    category: 'cell',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="30" fill="none" stroke="#ef4444" stroke-width="4" /><path d="M30 30 L70 70 M30 70 L70 30" stroke="#ef4444" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'apoptosis',
+    title: 'Apoptotic Effect',
+    subtitle: 'Programmed Cell Death by Radiation',
+    definition: 'A form of programmed cell death characterized by membrane blebbing, chromatin condensation, DNA laddering, and the formation of apoptotic bodies, triggered by radiation-induced activation of the p53 pathway.',
+    mechanism: 'Radiation triggers the p53 pathway, leading to Bax upregulation and Bcl2 downregulation, resulting in cytochrome c release from mitochondria, caspase-9 and caspase-3 activation, and ultimately DNA fragmentation (intrinsic apoptotic pathway).',
+    clinicalRelevance: 'The primary mode of cell death in specific tumor types, such as lymphomas (which are highly apoptosis-prone) and certain normal tissues like salivary gland cells. Anti-apoptotic Bcl2 overexpression confers radioresistance. BCL2 inhibitors (e.g., venetoclax) can act as potent radiosensitizers.',
+    examPoints: ['Lymphomas die mainly by apoptosis', 'p53 mutant cells show reduced apoptosis and increased resistance', 'BCL2 is an anti-apoptotic protein', 'Apoptosis is NOT the most common mode of radiation-induced death (mitotic catastrophe is)'],
+    category: 'cell',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="20" fill="#a855f7" /><circle cx="30" cy="30" r="5" fill="#a855f7" /><circle cx="70" cy="70" r="5" fill="#a855f7" /></svg>'
+  },
+  {
+    id: 'necrosis',
+    title: 'Necrotic Effect',
+    subtitle: 'Passive Cell Death — High Dose RT',
+    definition: 'An uncontrolled, passive form of cell death induced by high-dose radiation, characterized by cellular swelling, membrane rupture, and the release of intracellular contents, which triggers a robust inflammatory response.',
+    mechanism: 'Very high radiation doses cause direct membrane damage and massive production of reactive oxygen species (ROS), leading to ATP depletion, failure of ion pump function, osmotic swelling, cell lysis, and the release of Damage-Associated Molecular Patterns (DAMPs), which recruit neutrophils and macrophages.',
+    clinicalRelevance: 'Commonly observed with ablative doses used in SBRT/SRS. Radiation necrosis of the brain post-SRS is a significant late toxicity. The release of DAMPs from necrotic cells can also trigger anti-tumor immunity, overlapping with mechanisms of immunogenic cell death (ICD).',
+    examPoints: ['Necrosis = swelling + lysis (vs apoptosis = shrinkage + blebbing)', 'Highly inflammatory response', 'High-dose phenomenon (e.g., SBRT/SRS)', 'Brain radiation necrosis post-SRS occurs 6–18 months later'],
+    category: 'cell',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="20" width="60" height="60" fill="#ef4444" /><path d="M20 20 L80 80 M20 80 L80 20" stroke="white" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'senescence',
+    title: 'Senescence Effect',
+    subtitle: 'Radiation-Induced Cellular Aging',
+    definition: 'A state of permanent cell cycle arrest induced by radiation, where cells remain metabolically active but lose their proliferative capacity, characterized by increased SA-β-galactosidase activity and the secretion of a pro-inflammatory Senescence-Associated Secretory Phenotype (SASP).',
+    mechanism: 'Radiation-induced double-strand breaks (DSBs) activate the p53/p21 or p16/Rb signaling axes, resulting in permanent G1 phase arrest. The SASP (secreting cytokines like IL-6, IL-8, and matrix metalloproteinases) creates a pro-inflammatory tumor microenvironment.',
+    clinicalRelevance: 'Contributes significantly to late radiotherapy toxicity via SASP-driven chronic inflammation and fibrosis. Senolytic drugs (e.g., navitoclax, ABT-737) are being investigated to clear senescent cells post-RT to mitigate late effects. Senescence can also act as a tumor suppressor mechanism.',
+    examPoints: ['Senescence = permanently arrested but metabolically active', 'Markers: SA-β-Gal, p21, p16', 'SASP = pro-inflammatory secretory phenotype', 'Senolytics target these cells', 'Contributes to radiation-induced fibrosis'],
+    category: 'cell',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="30" fill="none" stroke="#64748b" stroke-width="4" stroke-dasharray="5 5" /></svg>'
+  },
+  {
+    id: 'coherent-scattering',
+    title: 'Coherent Scattering Effect',
+    subtitle: 'Rayleigh / Thomson Scattering',
+    definition: 'An elastic scattering process where an incident photon interacts with an atom, changing its direction without any energy loss or ionization. The photon energy is preserved, and only its trajectory is altered.',
+    mechanism: 'The incident photon causes the oscillation of bound electrons, which then re-emit a photon at the same frequency (wavelength). No electron ejection occurs. This interaction is predominant at very low photon energies (<10 keV).',
+    clinicalRelevance: 'Negligible in therapeutic radiotherapy (MV range). It contributes approximately 5% of interactions in the diagnostic kV range but is not biologically significant. It is, however, relevant in mammography physics.',
+    examPoints: ['Coherent = elastic scattering = no ionization = no energy transfer', 'Also known as Rayleigh scattering', 'Dominant at very low energies only', 'Clinically insignificant in MV therapy', 'Compare with Compton (inelastic) scattering'],
+    category: 'physical',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="10" fill="#38bdf8" /><path d="M50 50 L20 20 M50 50 L80 80" stroke="#38bdf8" stroke-width="2" /></svg>'
+  },
+  {
+    id: 'pair-production',
+    title: 'Pair Production Effect',
+    subtitle: 'High-Energy Photon → e⁻ + e⁺',
+    definition: 'A process where a high-energy photon (≥1.02 MeV) interacts with the nuclear Coulomb field, resulting in the production of an electron-positron pair.',
+    mechanism: 'The threshold energy is 1.022 MeV (2 × 0.511 MeV, the electron rest mass). Any excess photon energy is converted into the kinetic energy of the electron and positron. The positron subsequently annihilates with a nearby electron, producing two 511 keV photons. The cross-section is proportional to Z².',
+    clinicalRelevance: 'Significant in high-energy beams (>10 MV linac). It is responsible for neutron activation at energies >10 MV and is the physical basis of PET imaging. It becomes the dominant photon interaction above 30 MeV.',
+    examPoints: ['Threshold energy = 1.022 MeV', 'Positron annihilation → 2 × 511 keV photons', 'Cross-section ∝ Z²', 'Dominant at high MV energies', 'No pair production below 1.02 MeV', 'Basis of PET imaging'],
+    category: 'physical',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 50 L20 20 M50 50 L80 20" stroke="#f472b6" stroke-width="2" /><circle cx="20" cy="20" r="5" fill="#f472b6" /><circle cx="80" cy="20" r="5" fill="#f472b6" /></svg>'
+  },
+  {
+    id: 'backscatter',
+    title: 'Backscatter Effect',
+    subtitle: 'Backscatter Factor (BSF) in kV Beams',
+    definition: 'The increase in dose at the surface entry point due to radiation scattered backward (toward the source) from the irradiated medium, quantified by the Backscatter Factor (BSF).',
+    mechanism: 'Compton scattering within the medium sends photons backward toward the surface. BSF is defined as the ratio of the dose at the surface with backscatter to the dose in free space. It is maximum at orthovoltage (kV) energies and increases with field size and the atomic number (Z) of the material.',
+    clinicalRelevance: 'Critical for accurate dosimetry in kV orthovoltage therapy. BSF values (typically 1.2–1.5) must be accounted for in dose calculations. It is negligible for MV beams (BSF ≈ 1).',
+    examPoints: ['BSF is maximum at orthovoltage (kV) energies', 'Negligible at MV energies', 'Increases with field size and atomic number (Z)', 'Decreases with increasing photon energy', 'Must correct dose in kV treatment planning'],
+    category: 'physical',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="50" width="80" height="40" fill="#475569" /><path d="M50 50 L50 20 M50 50 L20 50 M50 50 L80 50" stroke="#fbbf24" stroke-width="2" /></svg>'
+  },
+  {
+    id: 'heel',
+    title: 'Heel Effect',
+    subtitle: 'Anode-Cathode Intensity Variation',
+    definition: 'The non-uniform distribution of X-ray beam intensity along the anode-cathode axis, where intensity is higher toward the cathode and lower toward the anode, caused by the self-absorption of X-rays within the anode material.',
+    mechanism: 'X-rays generated deep within the anode target must travel through a greater thickness of anode material to exit toward the anode side, resulting in greater self-attenuation and lower intensity. Conversely, photons exiting toward the cathode side pass through less material, resulting in higher intensity.',
+    clinicalRelevance: 'Crucial for clinical positioning: thicker body parts (e.g., shoulder, hip) should be placed toward the cathode side for more uniform dose delivery. This effect is more pronounced with smaller anode angles and is particularly important in mammography positioning.',
+    examPoints: ['Cathode side = higher intensity', 'Anode side = lower intensity (heel)', 'Place thicker anatomy toward cathode', 'Smaller anode angle = more pronounced heel effect', 'Critical in mammography positioning'],
+    category: 'physical',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M20 80 L50 20 L80 80 Z" fill="#64748b" /><path d="M50 20 L50 50" stroke="#fbbf24" stroke-width="2" /></svg>'
+  },
+  {
+    id: 'ferroptosis',
+    title: 'Ferroptosis Effect',
+    subtitle: 'Iron-Dependent Lipid Peroxidation Death',
+    definition: 'A form of regulated, non-apoptotic cell death driven by iron-dependent lipid peroxidation, triggered when radiation-induced reactive oxygen species (ROS) interact with ferrous iron (Fe²⁺) via the Fenton reaction, overwhelming the GPX4 antioxidant defense system.',
+    mechanism: 'Radiation-induced ROS + Fe²⁺ → Fenton reaction (producing highly reactive OH• radicals) → polyunsaturated fatty acid (PUFA) peroxidation (LOOH) → catastrophic membrane disruption and cell death. Glutathione peroxidase 4 (GPX4) is the key gatekeeper; its inhibition or depletion drives ferroptosis.',
+    clinicalRelevance: 'An emerging mechanism of radiation-induced cell death. GPX4 inhibitors (e.g., RSL3, erastin) are being investigated as potent radiosensitizers. Iron nanoparticles are also being studied to enhance radiotherapy efficacy via ferroptosis. Hypoxic tumor cells, often resistant to apoptosis, remain susceptible to ferroptosis.',
+    examPoints: ['Ferroptosis = iron-dependent lipid peroxidation', 'GPX4 is the key protective gatekeeper', 'Distinct from apoptosis (no caspase activation)', 'Fenton reaction: Fe²⁺ + H₂O₂ → OH•', 'Promising target for radiosensitization'],
+    category: 'molecular',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="30" fill="#ef4444" /><text x="50" y="55" font-size="10" text-anchor="middle" fill="white">Fe</text></svg>'
+  },
+  {
+    id: 'pyroptosis',
+    title: 'Pyroptosis Effect',
+    subtitle: 'Inflammasome-Mediated Inflammatory Cell Death',
+    definition: 'A programmed inflammatory form of cell death involving the activation of the NLRP3 inflammasome, caspase-1 cleavage of Gasdermin D (GSDMD), the formation of membrane pores, and the massive release of pro-inflammatory cytokines (IL-1β, IL-18).',
+    mechanism: 'Radiation-induced cytosolic dsDNA or ROS activates the NLRP3/AIM2 inflammasome, which triggers caspase-1 activation. Caspase-1 cleaves GSDMD, and the N-terminal fragment forms pores in the plasma membrane, causing cell swelling, lysis, and the release of pro-inflammatory cytokines (IL-1β, IL-18).',
+    clinicalRelevance: 'Radiation-induced pyroptosis contributes to anti-tumor immunity by creating a pro-inflammatory microenvironment, but also contributes to radiation-induced toxicities like pneumonitis and fibrosis. NLRP3 inhibitors are being explored to reduce radiotherapy-induced toxicity.',
+    examPoints: ['Pyroptosis = inflammatory death via caspase-1 (NOT caspase-3)', 'GSDMD cleavage forms membrane pores', 'Releases IL-1β + IL-18', 'NLRP3/AIM2 inflammasome activation', 'Plays a dual role in immune activation and tissue toxicity'],
+    category: 'molecular',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="30" fill="#f97316" /><path d="M30 30 L40 40 M70 30 L60 40 M50 70 L50 80" stroke="white" stroke-width="2" /></svg>'
+  },
+  {
+    id: 'flash',
+    title: 'FLASH Effect',
+    subtitle: 'Ultra-High Dose Rate Radiotherapy Sparing',
+    definition: 'A phenomenon where normal tissues are significantly spared from radiation-induced damage when radiotherapy is delivered at ultra-high dose rates (≥40 Gy/s) in a very short time (<200 ms), while maintaining equivalent tumor control efficacy.',
+    mechanism: 'The leading hypothesis is rapid oxygen depletion in well-oxygenated normal tissue, leading to transient hypoxia, reduced reactive oxygen species (ROS) production, and less damage. Tumor tissue, which is already hypoxic, is less protected by this mechanism. Other factors include immune modulation and differences in DNA repair kinetics.',
+    clinicalRelevance: 'The first human trial (FAST-01) demonstrated safety for bone metastases using proton FLASH therapy. Electron FLASH (VHEE), proton, and carbon ion FLASH are currently under active development, with the potential to revolutionize the radiotherapy toxicity profile.',
+    examPoints: ['FLASH dose rate ≥40 Gy/s (vs conventional 0.03–0.05 Gy/s)', 'Delivered in <200ms', 'Spares normal tissue while maintaining tumor control', 'Rapid oxygen depletion hypothesis', 'FAST-01 = first human proton FLASH trial'],
+    category: 'modern',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 L90 50 M50 10 L50 90" stroke="#38bdf8" stroke-width="4" /><path d="M20 20 L80 80 M20 80 L80 20" stroke="#fbbf24" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'grid',
+    title: 'GRID Effect',
+    subtitle: 'Spatially Fractionated RT (SFRT)',
+    definition: 'A technique involving the delivery of high-dose radiation through a grid aperture, creating alternating regions of high dose (peaks) and low dose (valleys) within the tumor volume, exploiting bystander and immune effects for tumor control while reducing normal tissue toxicity.',
+    mechanism: 'High-dose peaks cause direct tumor cell kill and vascular damage. The low-dose valleys spare normal tissue but still contribute to tumor kill via bystander effects and systemic immune activation (e.g., immunogenic cell death). This is particularly effective for bulky, hypoxic tumors.',
+    clinicalRelevance: 'Used for large, bulky tumors (>8 cm) such as head and neck cancers or sarcomas. Palliative GRID enables the safe delivery of high doses (15–20 Gy in a single fraction). Can be used to debulk tumors before definitive RT and is increasingly combined with immunotherapy.',
+    examPoints: ['GRID = spatially fractionated RT', 'Peak-to-valley dose ratio is critical', 'Works via bystander + immune-mediated mechanisms', 'Primarily for bulky tumors >8 cm', 'Dose: 15–20 Gy single fraction', 'Reduces integral dose to normal tissues'],
+    category: 'modern',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="100" height="100" fill="#1e293b" /><rect x="10" y="10" width="20" height="20" fill="#38bdf8" /><rect x="70" y="10" width="20" height="20" fill="#38bdf8" /><rect x="10" y="70" width="20" height="20" fill="#38bdf8" /><rect x="70" y="70" width="20" height="20" fill="#38bdf8" /></svg>'
+  },
+  {
+    id: 'lattice',
+    title: 'LATTICE Effect',
+    subtitle: '3D Spatially Fractionated RT',
+    definition: 'A three-dimensional extension of GRID therapy that involves the delivery of high-dose radiation through multiple spherical vertices (ablative dose ~20 Gy) distributed in a lattice array throughout a large tumor volume, with low-dose fill regions between the vertices.',
+    mechanism: 'Similar to GRID but in 3D: the high-dose vertices cause direct tumor ablation and immunogenic cell death, while the low-dose inter-vertex regions receive bystander effects and immune-mediated kill. This approach allows for the conformal treatment of very large tumors using modern IMRT/VMAT techniques.',
+    clinicalRelevance: 'LATTICE radiotherapy via VMAT/SBRT is used for bulky tumors >6 cm. Vertex doses are typically ~18–20 Gy, with fill doses of ~2–4 Gy. It is currently being evaluated in clinical trials (e.g., the LATTICE trial) for both palliative and potentially curative intent, particularly in combination with immunotherapy.',
+    examPoints: ['LATTICE = 3D version of GRID', 'Spherical vertices ~20 Gy, spacing ≥2.5 cm', 'Delivered by VMAT/IMRT', 'Best for bulky tumors >6 cm', 'Combines with immunotherapy'],
+    category: 'modern',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="10" fill="#38bdf8" /><circle cx="50" cy="50" r="10" fill="#38bdf8" /><circle cx="80" cy="80" r="10" fill="#38bdf8" /><circle cx="20" cy="80" r="10" fill="#38bdf8" /><circle cx="80" cy="20" r="10" fill="#38bdf8" /></svg>'
+  },
+  {
+    id: 'microbeam',
+    title: 'Microbeam Effect',
+    subtitle: 'Microbeam Radiation Therapy (MRT)',
+    definition: 'A radiotherapy technique involving the delivery of radiation as arrays of ultra-thin (25–100 μm width) planar microbeams spaced 100–400 μm apart using high-flux synchrotron X-rays, which produces extraordinary normal tissue tolerance while effectively killing tumors.',
+    mechanism: 'The narrow beams spare normal tissue vasculature because vessels smaller than the beam width can regenerate from cells in the valley regions. Tumors, which have disorganized and dysfunctional vasculature, cannot repair this damage. The peak-to-valley dose ratio (PVDR) is the key parameter.',
+    clinicalRelevance: 'Currently experimental and requires a synchrotron source. It has shown pre-clinical success in treating brain tumors, including pediatric brain tumors. First human trials are underway in pediatric head and neck cancers (e.g., at ESRF, Grenoble). Potential for significant dose-escalation in radioresistant tumors.',
+    examPoints: ['MRT beam width 25–100 μm', 'Spacing 100–400 μm', 'Requires synchrotron source', 'PVDR = peak:valley dose ratio', 'Extreme normal tissue tolerance', 'Preclinical success in brain tumors'],
+    category: 'modern',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="0" width="5" height="100" fill="#38bdf8" /><rect x="30" y="0" width="5" height="100" fill="#38bdf8" /><rect x="50" y="0" width="5" height="100" fill="#38bdf8" /><rect x="70" y="0" width="5" height="100" fill="#38bdf8" /><rect x="90" y="0" width="5" height="100" fill="#38bdf8" /></svg>'
+  },
+  {
+    id: 'bragg-peak',
+    title: 'Bragg Peak Enhancement Effect',
+    subtitle: 'Proton & Carbon Ion Particle Therapy',
+    definition: 'The characteristic physical property of charged particles (e.g., protons, carbon ions) where they deposit their maximum energy at a specific depth (the Bragg peak) with a near-zero exit dose, enabling highly precise tumor dose escalation while sparing surrounding healthy tissues.',
+    mechanism: 'Governed by the Bethe-Bloch equation: energy loss is inversely proportional to the square of the particle velocity (1/v²). As particles slow down, they deposit more energy, leading to a sharp peak at the end of their range. Carbon ions have higher Linear Energy Transfer (LET) (~80 keV/μm) and higher Relative Biological Effectiveness (RBE) of 2–3, compared to protons (RBE 1.1).',
+    clinicalRelevance: 'Protons are used for pediatric tumors, skull base, eye tumors, and head and neck cancers. Carbon ions are used for radioresistant tumors (e.g., chordoma, sarcoma, head and neck). Carbon ions have a significant RBE advantage in hypoxic tumors. Higher infrastructure costs limit widespread availability.',
+    examPoints: ['Bragg peak = maximum dose at depth, near-zero exit dose', 'Proton RBE = 1.1', 'Carbon ion RBE = 2–3', 'SOBP = Spread-Out Bragg Peak used for clinical volume coverage', 'Carbon ions are superior for hypoxic/radioresistant tumors'],
+    category: 'modern',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 80 L40 80 L50 20 L60 80 L90 80" fill="none" stroke="#38bdf8" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'bergonie-tribondeau',
+    title: 'Bergonié-Tribondeau Law',
+    subtitle: 'Law of Radiosensitivity (1906)',
+    definition: 'A fundamental principle of radiobiology stating that the radiosensitivity of a cell is directly proportional to its mitotic activity and inversely proportional to its degree of differentiation.',
+    mechanism: 'Rapidly dividing cells have less time to repair DNA damage between divisions. Undifferentiated cells possess more stem-like properties and higher proliferative capacity, making them more vulnerable. The law is based on three factors: mitotic rate, mitotic future, and degree of differentiation.',
+    clinicalRelevance: 'Explains why lymphomas (highly radiosensitive) require lower doses compared to sarcomas (radioresistant). It also explains gonadal sensitivity and the rationale for radiation dose limits. A notable exception is the lymphocyte, which is highly differentiated yet extremely radiosensitive (dies via apoptosis).',
+    examPoints: ['Formulated in 1906', 'Radiosensitivity ∝ mitotic rate; ∝ 1/differentiation', 'Exception: lymphocytes (differentiated but highly sensitive — die by apoptosis)', 'Most radiosensitive cells: lymphocytes, oocytes'],
+    category: 'eponymous',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="20" fill="none" stroke="#64748b" stroke-width="4" /><path d="M50 30 L50 70 M30 50 L70 50" stroke="#64748b" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'strandquist',
+    title: 'Strandquist Effect',
+    subtitle: 'Dose-Time Relationship in Fractionation (1944)',
+    definition: 'A historical log-log graphical relationship between total radiation dose and overall treatment time, demonstrating that different biological endpoints (e.g., tumor control vs. skin tolerance) have different slopes, thus creating a therapeutic window for fractionated radiotherapy.',
+    mechanism: 'Strandquist (1944) plotted log(total dose) vs log(overall time) for skin reactions and tumor control. The resulting parallel lines had different slopes: the tumor cure slope was steeper than the skin tolerance slope. The window between these lines represented the therapeutic gain.',
+    clinicalRelevance: 'The historical foundation of radiobiological fractionation principles. It led to the development of the Nominal Standard Dose (NSD) formula (Ellis, 1969) and eventually the Linear-Quadratic (LQ) model. It explained why prolonging treatment time allows for higher total doses. Now superseded by the LQ model but historically significant.',
+    examPoints: ['Strandquist 1944 = log dose vs log time', 'Skin reaction slope: 0.22, Tumor control slope: 0.33', 'Therapeutic window between lines', 'Historical basis of NSD', 'Superseded by the LQ model'],
+    category: 'eponymous',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M20 80 L80 20 M20 70 L80 10" stroke="#fbbf24" stroke-width="2" /><path d="M10 90 L10 10 L90 10" stroke="black" stroke-width="2" /></svg>'
+  },
+  {
+    id: 'ellis-nsd',
+    title: 'Ellis NSD Formula',
+    subtitle: 'Nominal Standard Dose — Fractionation Model (1969)',
+    definition: 'A historical radiobiological model developed by Frank Ellis in 1969 to relate total radiation dose, number of fractions, and overall treatment time to predict skin tolerance, expressed as NSD = D × N⁻⁰·²⁴ × T⁻⁰·¹¹, measured in "rets" (radiation equivalent therapy).',
+    mechanism: 'The formula was empirically derived from Strandquist plots. It separates the effects of fractionation (N) and overall treatment time (T). An NSD value of ≤1800 rets was considered the threshold for acceptable skin tolerance. It assumes a 2:1 ratio for the contribution of time versus fractionation effects. Later extensions included CRE (Cumulative Radiation Effect) and TDF (Time-Dose-Fractionation).',
+    clinicalRelevance: 'Historically significant in the development of standardized fractionation schedules. It has been largely superseded by the Linear-Quadratic (LQ) model and the EQD2 (Equivalent Dose in 2 Gy fractions) formula, which better account for tissue-specific α/β ratios and differentiate between early and late radiation effects.',
+    examPoints: ['NSD = D × N⁻⁰·²⁴ × T⁻⁰·¹¹', 'Skin tolerance limit ≈ 1800 rets', 'Exponents: N = -0.24, T = -0.11', 'Replaced by LQ/EQD2 model', 'Does not distinguish between early and late tissue responses'],
+    category: 'eponymous',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><text x="50" y="50" font-size="20" text-anchor="middle" font-family="monospace">NSD</text></svg>'
+  },
+  {
+    id: 'withers-4rs',
+    title: 'Withers 4 R\'s Effect',
+    subtitle: '4 R\'s of Radiobiology (1975)',
+    definition: 'A foundational radiobiological framework proposed by H.R. Withers in 1975, identifying four critical biological processes that occur between radiation fractions and determine the therapeutic ratio: Repair, Repopulation, Redistribution, and Reoxygenation.',
+    mechanism: 'Repair (sublethal damage repair in normal tissues) and Reoxygenation (hypoxic tumor cells becoming oxygenated) favor fractionation. Redistribution (cells cycling into the radiosensitive G2/M phase) sensitizes tumors. Repopulation (accelerated tumor cell proliferation) occurs if treatment is prolonged, arguing against excessive treatment duration.',
+    clinicalRelevance: 'This framework provides the theoretical basis for all modern fractionated radiotherapy schedules. It explains the rationale for daily fractions (reoxygenation, repair), the need to avoid prolonged treatment times (repopulation), and the potential benefits of hyperfractionation.',
+    examPoints: ['Withers 1975 = 4 R\'s', 'Steel added 5th R (Radiosensitivity)', 'Repopulation "kickoff" typically occurs at 3–4 weeks', 'Reoxygenation OER ≈ 2.5–3', 'Redistribution: G2/M phase is most radiosensitive'],
+    category: 'eponymous',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><text x="50" y="30" font-size="15" text-anchor="middle">4 R\'s</text><circle cx="20" cy="60" r="10" fill="#38bdf8" /><circle cx="40" cy="60" r="10" fill="#38bdf8" /><circle cx="60" cy="60" r="10" fill="#38bdf8" /><circle cx="80" cy="60" r="10" fill="#38bdf8" /></svg>'
+  },
+  {
+    id: 'steel-5rs',
+    title: 'Steel\'s 5th R — Radiosensitivity',
+    subtitle: '5 R\'s of Radiobiology (Steel 1989)',
+    definition: 'A framework proposed by G.G. Steel in 1989, adding intrinsic Radiosensitivity as the 5th R to Withers\' original 4 R\'s, recognizing that the inherent cellular sensitivity (determined by the α/β ratio and DNA repair capacity) is an independent determinant of radiation response.',
+    mechanism: 'Intrinsic radiosensitivity is governed by factors such as the α/β ratio (the steepness of the cell survival curve), the presence of DNA repair gene mutations (e.g., ATM, BRCA1/2), chromatin compaction, and cell cycle checkpoint integrity. These factors are largely inherent to the cell type and cannot be easily modified by the fractionation schedule alone.',
+    clinicalRelevance: 'Explains why identical fractionation schedules can yield vastly different outcomes in different tumor histologies. The surviving fraction at 2 Gy (SF2) is a standard measure of intrinsic radiosensitivity. BRCA-mutant tumors are often intrinsically more radiosensitive. This concept is increasingly used for individualizing radiotherapy dose prescriptions.',
+    examPoints: ['Steel 1989 added 5th R = Radiosensitivity (intrinsic)', 'SF2 = standard measure of sensitivity', 'Low SF2 = radiosensitive', 'BRCA/ATM mutations → high sensitivity', '5 R\'s = Repair, Repopulation, Redistribution, Reoxygenation, Radiosensitivity'],
+    category: 'eponymous',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><text x="50" y="30" font-size="15" text-anchor="middle">5 R\'s</text><circle cx="15" cy="60" r="8" fill="#38bdf8" /><circle cx="32" cy="60" r="8" fill="#38bdf8" /><circle cx="49" cy="60" r="8" fill="#38bdf8" /><circle cx="66" cy="60" r="8" fill="#38bdf8" /><circle cx="83" cy="60" r="8" fill="#ef4444" /></svg>'
+  },
+  {
+    id: 'thames-hendry',
+    title: 'Thames & Hendry α/β Concept',
+    subtitle: 'Linear-Quadratic Model & α/β Ratios',
+    definition: 'A radiobiological principle formalized by Thames and Hendry (1987) that applies tissue-specific α/β ratios to the Linear-Quadratic (LQ) model, distinguishing early-reacting tissues (high α/β ratio, ~10 Gy) from late-reacting tissues (low α/β ratio, ~3 Gy).',
+    mechanism: 'The LQ model is defined as SF = e^-(αD+βD²). The α/β ratio is the dose at which the linear (αD) and quadratic (βD²) components of cell killing are equal. High α/β tissues have less repair capacity between fractions, making them less sensitive to fraction size changes. Low α/β tissues have a large "shoulder" on their survival curve, making them highly sensitive to fraction size.',
+    clinicalRelevance: 'The EQD2 (Equivalent Dose in 2 Gy fractions) formula is used for all fractionation conversions. Hypofractionation (larger fraction size) spares late-reacting normal tissue when the tumor α/β ratio is higher than the normal tissue α/β ratio. Prostate cancer is a notable exception, with a low α/β ratio (~1.5–3 Gy), which favors hypofractionation.',
+    examPoints: ['Early-reacting tissues: α/β ≈ 10 Gy', 'Late-reacting tissues: α/β ≈ 3 Gy', 'Spinal cord α/β ≈ 2 Gy', 'Prostate cancer α/β ≈ 1.5–3 Gy', 'EQD2 formula is the standard for conversion', 'Thames & Hendry (1987) formalized this'],
+    category: 'eponymous',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 80 Q50 80 90 20" fill="none" stroke="#ef4444" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'compton',
+    title: 'Compton Scattering Effect',
+    subtitle: 'Inelastic Photon Scattering',
+    definition: 'The dominant photon interaction in soft tissue at therapeutic energies (25 keV to 25 MeV), where an incident photon interacts with a loosely bound outer-shell electron, resulting in the ejection of a Compton electron and the scattering of the photon with reduced energy.',
+    mechanism: 'The incident photon transfers a portion of its energy to an outer-shell electron, which is then ejected. The photon is scattered at an angle with reduced energy. The energy transfer is dependent on the scattering angle, not on the atomic number (Z) of the material.',
+    clinicalRelevance: 'This is the primary interaction for dose deposition in radiotherapy (MV range). Because the interaction is independent of Z, it explains why the radiation dose is relatively uniform across different soft tissues. It is also the main source of scatter radiation within the treatment room.',
+    examPoints: ['Inelastic scattering', 'Dominant interaction in MV therapy', 'Energy loss depends on the scattering angle', 'Independent of atomic number (Z)', 'Primary cause of dose in radiotherapy'],
+    category: 'physical',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="10" fill="#38bdf8" /><path d="M20 20 L50 50 L80 20" stroke="#fbbf24" stroke-width="2" /><path d="M50 50 L80 80" stroke="#ef4444" stroke-width="2" /></svg>'
+  },
+  {
+    id: 'photoelectric',
+    title: 'Photoelectric Effect',
+    subtitle: 'Total Photon Absorption',
+    definition: 'An interaction where an incident photon is completely absorbed by a tightly bound inner-shell electron, which is then ejected as a photoelectron, with the photon energy being entirely transferred to the electron.',
+    mechanism: 'The photon energy must be greater than the binding energy of the electron. The photoelectron is ejected with kinetic energy equal to the incident photon energy minus the binding energy. The vacancy is filled by an outer-shell electron, emitting a characteristic X-ray or Auger electron. The cross-section is highly dependent on Z³ and inversely proportional to energy³ (Z³/E³).',
+    clinicalRelevance: 'Dominant at low energies (<25 keV) and in high-Z materials (e.g., bone, contrast agents). It is responsible for the high contrast in diagnostic X-ray imaging and contributes to increased dose at bone-tissue interfaces in radiotherapy.',
+    examPoints: ['Total photon absorption', 'Dominant at low energies (<25 keV)', 'Cross-section ∝ Z³/E³', 'Ejects photoelectron', 'Responsible for contrast in diagnostic imaging', 'High dose at bone-tissue interfaces'],
+    category: 'physical',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="10" fill="#fbbf24" /><path d="M50 50 L20 20" stroke="#fbbf24" stroke-width="2" /></svg>'
+  },
+  {
+    id: 'auger',
+    title: 'Auger Effect',
+    subtitle: 'Radiationless Electron Emission',
+    definition: 'A process where an inner-shell vacancy is filled by an outer-shell electron, and the released energy is transferred to another outer-shell electron (the Auger electron), which is then ejected from the atom instead of emitting a characteristic X-ray.',
+    mechanism: 'When an inner-shell vacancy is filled, the energy difference can be emitted as a characteristic X-ray or transferred to an outer-shell electron. The Auger effect is the radiationless alternative to characteristic X-ray emission. It is more prevalent in low-Z atoms, where binding energies are low.',
+    clinicalRelevance: 'Auger electrons have very low energy and very short range (nanometers), causing dense, localized ionization. This property is exploited in targeted radionuclide therapy (e.g., using Auger-emitting isotopes like I-125) to achieve highly localized cell killing with minimal damage to surrounding healthy cells.',
+    examPoints: ['Radiationless emission of an electron', 'Alternative to characteristic X-ray emission', 'Auger electron range = nanometers (very short)', 'Causes dense, localized ionization', 'Used in targeted radionuclide therapy (e.g., I-125)'],
+    category: 'physical',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="10" fill="#a855f7" /><path d="M50 50 L30 30 M50 50 L70 30" stroke="#a855f7" stroke-width="2" /></svg>'
+  },
+  {
+    id: 'let',
+    title: 'Linear Energy Transfer (LET)',
+    subtitle: 'Energy Deposition Density',
+    definition: 'A measure of the energy deposited by ionizing radiation per unit track length in a medium, typically expressed in keV/μm.',
+    mechanism: 'LET depends on the charge and velocity of the particle. High-LET radiation (e.g., alpha particles, neutrons, carbon ions) causes dense, clustered DNA damage that is difficult for cells to repair (direct action). Low-LET radiation (e.g., X-rays, gamma rays, protons) causes sparse, distributed damage that is largely repaired (indirect action via ROS).',
+    clinicalRelevance: 'High-LET radiation has a higher Relative Biological Effectiveness (RBE) and is less dependent on oxygen (lower OER). This makes high-LET particles effective for radioresistant, hypoxic tumors. Low-LET radiation is the standard for most radiotherapy but requires oxygen to produce ROS for effective cell killing.',
+    examPoints: ['LET = energy deposited per unit distance (keV/μm)', 'High LET = dense damage, direct action, OER ≈ 1', 'Low LET = sparse damage, indirect action (ROS), OER ≈ 2.5–3', 'High LET = higher RBE', 'Carbon ions = high LET; Protons = low LET'],
+    category: 'physics',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 L90 50" stroke="#ef4444" stroke-width="4" /><path d="M20 40 L20 60 M40 40 L40 60 M60 40 L60 60 M80 40 L80 60" stroke="#ef4444" stroke-width="2" /></svg>'
+  },
+  {
+    id: 'rbe',
+    title: 'Relative Biological Effectiveness (RBE)',
+    subtitle: 'Radiation Quality Factor',
+    definition: 'The ratio of the dose of a standard reference radiation (typically 250 kV X-rays) to the dose of a test radiation required to produce the same biological effect.',
+    mechanism: 'RBE is influenced by several factors, including the Linear Energy Transfer (LET) of the radiation, the dose per fraction, the number of fractions, and the specific biological endpoint being measured. It is not a fixed constant but a variable dependent on these conditions.',
+    clinicalRelevance: 'Crucial for particle therapy (e.g., protons, carbon ions) where the RBE is greater than 1.0. Protons are generally assigned a generic RBE of 1.1 for clinical planning, while carbon ions have a higher, variable RBE (often 2–3), which is advantageous for treating radioresistant tumors.',
+    examPoints: ['Standard reference = 250 kV X-rays', 'RBE depends on LET, dose, fractionation, and endpoint', 'Protons RBE = 1.1 (standard clinical value)', 'Carbon ions RBE > 1.0 (due to higher LET)', 'RBE is not a fixed constant'],
+    category: 'biology',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 80 L90 20" stroke="#38bdf8" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'dose-rate',
+    title: 'Dose-Rate Effect',
+    subtitle: 'Time-Dependent Response',
+    definition: 'The observation that the biological effect of a given total dose of radiation is dependent on the rate at which that dose is delivered.',
+    mechanism: 'At lower dose rates, cells have more time to repair sublethal DNA damage during the irradiation process itself, leading to reduced cell killing compared to higher dose rates where damage accumulates more rapidly.',
+    clinicalRelevance: 'Explains the sparing effect of Low Dose Rate (LDR) brachytherapy compared to High Dose Rate (HDR) brachytherapy or external beam radiotherapy. It is a critical factor in determining the therapeutic index in brachytherapy planning.',
+    examPoints: ['Low dose-rate = more repair = less biological effect', 'Inverse dose-rate effect (observed in some cell lines)', 'Crucial factor in brachytherapy planning', 'Dose-rate depends on repair kinetics'],
+    category: 'classic',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 80 L90 20" stroke="#ef4444" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'volume',
+    title: 'Volume Effect',
+    subtitle: 'Organ Tolerance & FSUs',
+    definition: 'The principle that the tolerance of an organ to radiation is strongly dependent on the volume of the organ irradiated, as determined by its functional architecture.',
+    mechanism: 'Organs are composed of Functional Subunits (FSUs). Serial organs (e.g., spinal cord, optic nerve) fail if a small volume is damaged, as they are essential links in a chain. Parallel organs (e.g., lung, liver, kidney) can tolerate damage to a portion of the volume, as the remaining functional units can compensate for the loss.',
+    clinicalRelevance: 'This principle is fundamental to radiotherapy treatment planning, leading to the development of Dose-Volume Histograms (DVHs) and dose-volume constraints (e.g., V20 for lung) to ensure that the dose to critical organs at risk (OARs) remains within safe limits.',
+    examPoints: ['Serial organs = low volume tolerance (e.g., spinal cord)', 'Parallel organs = high volume tolerance (e.g., lung, liver)', 'Functional Subunits (FSUs) determine tolerance', 'Dose-Volume Histograms (DVHs) are essential for planning'],
+    category: 'clinical',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" fill="none" stroke="#64748b" stroke-width="4" /><rect x="30" y="30" width="40" height="40" fill="#38bdf8" /></svg>'
+  },
+  {
+    id: 'fractionation',
+    title: 'Fractionation Effect',
+    subtitle: 'Dose Splitting & The 4 R\'s',
+    definition: 'The practice of delivering a total radiation dose in multiple smaller fractions rather than a single large dose, to improve the therapeutic ratio.',
+    mechanism: 'Fractionation exploits the "4 R\'s" of radiobiology: Repair of sublethal damage (normal tissue), Repopulation (tumor/normal tissue), Redistribution (cell cycle), and Reoxygenation (tumor). By splitting the dose, normal tissues have time to repair sublethal damage between fractions, while tumor cells are sensitized through reoxygenation and redistribution.',
+    clinicalRelevance: 'It is the cornerstone of conventional radiotherapy. The therapeutic ratio is increased because normal tissues generally have a higher capacity for repair than most tumors, and the time between fractions allows for tumor reoxygenation, making them more radiosensitive.',
+    examPoints: ['Exploits the 4 R\'s', 'Sparing normal tissue via repair', 'Increases therapeutic ratio', 'Standard of care for most solid tumors'],
+    category: 'classic',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 80 L30 80 L30 20 L50 20 L50 80 L70 80 L70 40 L90 40" fill="none" stroke="#38bdf8" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'hyperthermia',
+    title: 'Hyperthermia Effect',
+    subtitle: 'Thermal Radiosensitization',
+    definition: 'The therapeutic application of heat (typically 40–45°C) to tumor tissue to enhance the efficacy of radiation therapy and chemotherapy.',
+    mechanism: 'Heat directly denatures proteins, including DNA repair enzymes (e.g., PARP), thereby inhibiting the repair of radiation-induced DNA damage. It also increases tumor blood flow, which improves oxygenation and reduces hypoxia, further sensitizing the tumor to radiation.',
+    clinicalRelevance: 'Used as an adjuvant to radiotherapy or chemotherapy for certain tumors (e.g., breast cancer, cervical cancer, sarcomas). It is particularly effective in treating hypoxic, radioresistant tumors.',
+    examPoints: ['Radiosensitizer (inhibits DNA repair)', 'Increases tumor blood flow (improves oxygenation)', 'Synergistic with RT and chemotherapy', 'Effective for hypoxic tumors'],
+    category: 'biology',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="30" fill="#ef4444" opacity="0.5" /><path d="M50 20 L50 40 M30 50 L50 50 M70 50 L50 50" stroke="white" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'radiosensitization',
+    title: 'Radiosensitization Effect',
+    subtitle: 'Enhancing Radiation Damage',
+    definition: 'The use of chemical agents or drugs to increase the sensitivity of tumor cells to the effects of ionizing radiation.',
+    mechanism: 'Sensitizers work through various mechanisms, including: 1) Fixation of radiation-induced DNA damage (e.g., oxygen mimetics), 2) Inhibition of DNA repair pathways (e.g., PARP inhibitors), 3) Induction of cell cycle arrest in radiosensitive phases, or 4) Increasing the production of reactive oxygen species (ROS).',
+    clinicalRelevance: 'Widely used in chemoradiotherapy (e.g., cisplatin in head and neck cancer, cervical cancer). The goal is to achieve a greater tumor kill for the same radiation dose without significantly increasing normal tissue toxicity.',
+    examPoints: ['Enhances tumor cell kill', 'Fixation of DNA damage', 'Inhibition of DNA repair', 'Commonly used in chemoradiotherapy', 'Goal: increase therapeutic ratio'],
+    category: 'clinical',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M20 80 L50 20 L80 80 Z" fill="#ef4444" /></svg>'
+  },
+  {
+    id: 'radioprotection',
+    title: 'Radioprotection Effect',
+    subtitle: 'Reducing Radiation Damage',
+    definition: 'The use of chemical agents to reduce the damage caused by ionizing radiation to normal tissues, thereby increasing the therapeutic window.',
+    mechanism: 'Radioprotectors primarily act by scavenging free radicals (ROS) produced by the indirect action of radiation before they can damage DNA. Other mechanisms include inducing temporary hypoxia or cell cycle arrest in normal tissues to make them more radioresistant.',
+    clinicalRelevance: 'Amifostine is a clinically used radioprotector, particularly for reducing xerostomia in head and neck radiotherapy. The challenge is ensuring the protector is selectively active in normal tissue and not in the tumor.',
+    examPoints: ['Scavenging of ROS (free radicals)', 'Amifostine is a clinical example', 'Reduces normal tissue toxicity', 'Goal: protect normal tissue without protecting the tumor'],
+    category: 'clinical',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#38bdf8" opacity="0.5" /></svg>'
+  },
+  {
+    id: 'adaptive',
+    title: 'Adaptive Response',
+    subtitle: 'Low-Dose Priming Effect',
+    definition: 'The phenomenon where exposure to a low "priming" dose of radiation induces cellular mechanisms that make the cell more resistant to a subsequent, larger "challenge" dose.',
+    mechanism: 'The priming dose triggers the upregulation of DNA repair enzymes (e.g., PARP, DNA-PK), antioxidant pathways, and cell cycle checkpoint proteins, which prepare the cell to more efficiently repair the damage caused by the subsequent larger dose.',
+    clinicalRelevance: 'This effect is highly controversial and is not currently utilized in clinical radiotherapy. It challenges the Linear-No-Threshold (LNT) model, but its clinical significance remains unproven.',
+    examPoints: ['Low-dose priming induces resistance to high dose', 'Upregulation of DNA repair and antioxidant pathways', 'Controversial phenomenon', 'Challenges LNT model'],
+    category: 'biology',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="none" stroke="#38bdf8" stroke-width="4" stroke-dasharray="10 10" /></svg>'
+  },
+  {
+    id: 'genomic-instability',
+    title: 'Genomic Instability',
+    subtitle: 'Delayed Radiation Effects',
+    definition: 'The increased rate of mutation and chromosomal aberrations observed in the progeny of irradiated cells, even many generations after the initial exposure.',
+    mechanism: 'Radiation-induced damage leads to persistent epigenetic changes, telomere dysfunction, and the activation of signaling pathways that maintain a state of chronic stress and error-prone DNA replication in the cell lineage.',
+    clinicalRelevance: 'This is a key mechanism underlying the late effects of radiation, including secondary cancer induction and chronic tissue dysfunction, as it allows for the accumulation of mutations over time.',
+    examPoints: ['Increased mutation rate in progeny', 'Persistent epigenetic changes', 'Key mechanism for late effects (e.g., secondary cancer)', 'Can occur generations after exposure'],
+    category: 'dna',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M20 50 Q50 20 80 50 T20 50" fill="none" stroke="#ef4444" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'targeted-vs-non-targeted',
+    title: 'Targeted vs Non-Targeted Effects',
+    subtitle: 'Direct vs Indirect Damage',
+    definition: 'The distinction between effects caused by radiation directly hitting the DNA (targeted) and those caused by signaling from irradiated cells to neighboring non-irradiated cells (non-targeted/bystander).',
+    mechanism: 'Targeted effects result from direct ionization or ROS damage to DNA. Non-targeted effects (e.g., bystander effect) are mediated by intercellular signaling molecules (e.g., cytokines, ROS) released by irradiated cells, which induce damage in neighboring cells that never received a direct hit.',
+    clinicalRelevance: 'Non-targeted effects complicate risk assessment models and may contribute to both the therapeutic effect (abscopal effect) and normal tissue toxicity in radiotherapy.',
+    examPoints: ['Targeted = direct DNA damage', 'Non-targeted = bystander effect, genomic instability', 'Mediated by intercellular signaling (cytokines, ROS)', 'Complicates risk assessment models'],
+    category: 'biology',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="10" fill="#38bdf8" /><circle cx="20" cy="50" r="5" fill="#64748b" /><circle cx="80" cy="50" r="5" fill="#64748b" /></svg>'
+  },
+  {
+    id: 'dna-repair',
+    title: 'DNA Repair Pathways',
+    subtitle: 'NHEJ vs HR',
+    definition: 'The cellular mechanisms responsible for detecting and repairing DNA damage, particularly double-strand breaks (DSBs), which are the most lethal form of radiation-induced damage.',
+    mechanism: 'Non-Homologous End Joining (NHEJ) is the dominant, fast, but error-prone pathway, active throughout the cell cycle. Homologous Recombination (HR) is a slower, high-fidelity pathway that uses a sister chromatid as a template, active primarily in the S and G2 phases.',
+    clinicalRelevance: 'Deficiencies in these pathways (e.g., ATM, BRCA mutations) significantly increase intrinsic radiosensitivity, which is a critical factor in patient-specific radiotherapy planning and the potential for severe normal tissue toxicity.',
+    examPoints: ['NHEJ = dominant, fast, error-prone, active in G0/G1', 'HR = high-fidelity, uses sister chromatid, active in S/G2', 'DSBs = most lethal damage', 'Deficiencies (e.g., BRCA) → high radiosensitivity'],
+    category: 'dna',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M20 20 L80 80 M80 20 L20 80" stroke="#64748b" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'cell-cycle',
+    title: 'Cell Cycle Checkpoints',
+    subtitle: 'Regulatory Control Points',
+    definition: 'Regulatory mechanisms that halt the cell cycle in response to DNA damage, allowing time for repair before proceeding to the next phase.',
+    mechanism: 'Key checkpoints include G1/S (monitored by p53/p21) and G2/M (monitored by ATM/ATR/Chk1/Chk2). If damage is irreparable, the cell may undergo apoptosis or senescence. Radiation-induced cell cycle arrest is a major determinant of radiosensitivity.',
+    clinicalRelevance: 'Tumors with defective checkpoints (e.g., p53 mutation) often fail to arrest in G1, bypassing repair and potentially becoming more radioresistant or undergoing mitotic catastrophe. Checkpoint inhibitors are an area of active research to radiosensitize tumors.',
+    examPoints: ['G1/S checkpoint = p53/p21 dependent', 'G2/M checkpoint = ATM/ATR/Chk1/Chk2 dependent', 'Cell cycle arrest allows time for repair', 'Defective checkpoints → radiosensitivity/resistance'],
+    category: 'cell',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="none" stroke="#64748b" stroke-width="4" /><path d="M50 10 L50 30 M90 50 L70 50 M50 90 L50 70 M10 50 L30 50" stroke="#64748b" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'hif',
+    title: 'Hypoxia-Inducible Factors (HIF)',
+    subtitle: 'Hypoxic Response Pathway',
+    definition: 'A family of transcription factors (primarily HIF-1α) that are stabilized in response to low oxygen levels (hypoxia) within the tumor microenvironment.',
+    mechanism: 'Under normoxia, HIF-1α is rapidly degraded. Under hypoxia, it is stabilized, translocates to the nucleus, and activates genes involved in angiogenesis (e.g., VEGF), glucose metabolism (e.g., GLUT1), and survival, promoting tumor adaptation to the hypoxic niche.',
+    clinicalRelevance: 'HIF-1α stabilization is a major driver of tumor radioresistance and aggressiveness. It is a target for therapeutic intervention to overcome hypoxia-induced resistance.',
+    examPoints: ['Transcription factor stabilized by hypoxia', 'Activates VEGF (angiogenesis) and glucose metabolism genes', 'Key driver of radioresistance', 'Target for therapeutic intervention'],
+    category: 'molecular',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M20 80 L50 20 L80 80 Z" fill="#ef4444" /></svg>'
+  },
+  {
+    id: 'angiogenesis',
+    title: 'Angiogenesis',
+    subtitle: 'New Blood Vessel Formation',
+    definition: 'The physiological process through which new blood vessels form from pre-existing vessels, which is critical for tumor growth and metastasis.',
+    mechanism: 'Tumor cells secrete pro-angiogenic factors (e.g., VEGF, FGF) in response to hypoxia (often mediated by HIF-1α). These factors stimulate endothelial cell proliferation, migration, and tube formation to create a new vascular network.',
+    clinicalRelevance: 'Angiogenesis is essential for tumor survival beyond a few millimeters in size. Anti-angiogenic therapies (e.g., bevacizumab) aim to normalize or destroy tumor vasculature to starve the tumor and improve drug/radiation delivery.',
+    examPoints: ['Formation of new blood vessels', 'Driven by VEGF, FGF in response to hypoxia', 'Essential for tumor growth > 1-2 mm', 'Anti-angiogenic therapy target'],
+    category: 'molecular',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 Q30 10 50 50 T90 50" fill="none" stroke="#ef4444" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'tme',
+    title: 'Tumor Microenvironment (TME)',
+    subtitle: 'Tumor Niche & Resistance',
+    definition: 'The complex ecosystem surrounding a tumor, consisting of blood vessels, immune cells, fibroblasts, signaling molecules, and the extracellular matrix.',
+    mechanism: 'The TME is characterized by hypoxia, acidity (due to glycolysis), and high interstitial fluid pressure. These factors create a barrier to drug delivery, suppress immune cell function, and promote a radioresistant phenotype in tumor cells.',
+    clinicalRelevance: 'The TME is a major determinant of treatment response. Strategies to modulate the TME (e.g., hypoxia-activated prodrugs, immune checkpoint inhibitors) are actively investigated to enhance radiotherapy efficacy.',
+    examPoints: ['Complex ecosystem (vessels, immune cells, ECM)', 'Characterized by hypoxia, acidity, high fluid pressure', 'Major determinant of treatment response', 'Target for TME modulation strategies'],
+    category: 'molecular',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#f1f5f9" stroke="#64748b" stroke-width="2" /><circle cx="50" cy="50" r="10" fill="#ef4444" /></svg>'
+  },
+  {
+    id: 'ici',
+    title: 'Immune Checkpoint Inhibitors (ICI)',
+    subtitle: 'Immunotherapy Synergy',
+    definition: 'A class of immunotherapy drugs that block proteins (checkpoints) on immune cells or tumor cells that prevent the immune system from attacking the tumor.',
+    mechanism: 'Checkpoints like PD-1/PD-L1 and CTLA-4 normally act as "brakes" on the immune system to prevent autoimmunity. ICIs block these brakes, reinvigorating T-cell-mediated anti-tumor immunity.',
+    clinicalRelevance: 'ICIs have revolutionized cancer treatment. Radiotherapy can synergize with ICIs by releasing tumor antigens and increasing T-cell infiltration (the "abscopal effect"), potentially enhancing the systemic response.',
+    examPoints: ['Block immune "brakes" (PD-1, PD-L1, CTLA-4)', 'Reinvigorate T-cell anti-tumor immunity', 'Synergy with RT (antigen release, T-cell infiltration)', 'Can induce abscopal effect'],
+    category: 'clinical',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="none" stroke="#38bdf8" stroke-width="4" /><path d="M50 10 L50 90 M10 50 L90 50" stroke="#38bdf8" stroke-width="2" /></svg>'
+  },
+  {
+    id: 'proton',
+    title: 'Proton Therapy',
+    subtitle: 'Charged Particle Therapy',
+    definition: 'A form of particle therapy that uses a beam of protons to irradiate diseased tissue, most commonly cancer.',
+    mechanism: 'Protons have a unique physical property called the "Bragg Peak," where they deposit the maximum dose at a specific depth determined by their energy, with minimal dose deposition beyond that point (no exit dose).',
+    clinicalRelevance: 'Allows for highly conformal dose delivery, sparing surrounding healthy tissues and reducing the risk of secondary cancers, which is particularly beneficial in pediatric and complex anatomical cases.',
+    examPoints: ['Charged particle therapy', 'Bragg Peak = maximum dose at specific depth', 'No exit dose', 'Highly conformal', 'Ideal for pediatric/complex cases'],
+    category: 'physics',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 80 L40 20 L70 80" fill="none" stroke="#38bdf8" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'carbon',
+    title: 'Carbon Ion Therapy',
+    subtitle: 'High-LET Particle Therapy',
+    definition: 'A form of particle therapy that utilizes carbon ions, which are heavier than protons, to deliver radiation to tumors.',
+    mechanism: 'Carbon ions have a high Linear Energy Transfer (LET), causing dense, clustered DNA damage that is less dependent on oxygen (low OER) and cell cycle phase, making them highly effective against radioresistant, hypoxic tumors.',
+    clinicalRelevance: 'The high RBE of carbon ions offers a significant advantage for treating radioresistant tumors (e.g., adenoid cystic carcinoma, sarcomas) where conventional photon or proton therapy may be less effective.',
+    examPoints: ['High-LET particle therapy', 'Dense, clustered DNA damage', 'Low OER (effective against hypoxic tumors)', 'High RBE', 'Ideal for radioresistant tumors'],
+    category: 'physics',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="30" fill="none" stroke="#64748b" stroke-width="6" /><path d="M50 20 L50 80 M20 50 L80 50" stroke="#64748b" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'brachy',
+    title: 'Brachytherapy',
+    subtitle: 'Internal Radiation Therapy',
+    definition: 'A form of radiotherapy where a sealed radiation source is placed inside or next to the area requiring treatment.',
+    mechanism: 'Relies on the inverse square law, where the radiation dose decreases rapidly with distance from the source, allowing for a very high dose to the tumor while sparing surrounding healthy tissues.',
+    clinicalRelevance: 'Used for various cancers (e.g., prostate, cervical, breast). It provides highly localized dose delivery and is often used as a boost to external beam radiotherapy.',
+    examPoints: ['Internal radiation source', 'Inverse square law (rapid dose fall-off)', 'Highly localized dose delivery', 'Used for prostate, cervical, breast cancers'],
+    category: 'dosimetry',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="10" fill="#ef4444" /><circle cx="50" cy="50" r="30" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="5 5" /></svg>'
+  },
+  {
+    id: 'imrt',
+    title: 'IMRT',
+    subtitle: 'Intensity-Modulated RT',
+    definition: 'A form of external beam radiotherapy that uses computer-controlled linear accelerator gantries to deliver precise radiation doses to a tumor or specific areas within the tumor.',
+    mechanism: 'Uses inverse planning algorithms to modulate the intensity of each beam, allowing for the creation of complex, highly conformal dose distributions that conform to the tumor shape while sparing critical OARs.',
+    clinicalRelevance: 'Standard of care for many tumors, particularly in complex anatomical regions (e.g., head and neck, prostate) where dose conformity is critical.',
+    examPoints: ['Inverse planning', 'Modulates beam intensity', 'Highly conformal dose distribution', 'Standard of care for complex anatomy'],
+    category: 'dosimetry',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" fill="none" stroke="#38bdf8" stroke-width="4" /><path d="M20 20 L80 80 M20 80 L80 20" stroke="#38bdf8" stroke-width="2" /></svg>'
+  },
+  {
+    id: 'vmat',
+    title: 'VMAT',
+    subtitle: 'Volumetric Modulated Arc Therapy',
+    definition: 'An advanced form of IMRT that delivers radiation continuously as the treatment machine rotates around the patient.',
+    mechanism: 'VMAT modulates beam intensity, gantry speed, and multileaf collimator (MLC) positions simultaneously during the arc, allowing for faster treatment delivery compared to conventional static-field IMRT.',
+    clinicalRelevance: 'Offers highly conformal dose delivery with improved efficiency, reducing treatment time and improving patient comfort.',
+    examPoints: ['Advanced IMRT', 'Continuous delivery during rotation', 'Modulates intensity, gantry speed, MLCs', 'Faster treatment delivery than static IMRT'],
+    category: 'dosimetry',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 10 A40 40 0 1 0 90 50" fill="none" stroke="#38bdf8" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'srs',
+    title: 'Stereotactic Radiosurgery (SRS)',
+    subtitle: 'Ablative RT',
+    definition: 'A non-surgical radiation therapy used to treat functional abnormalities and small tumors of the brain, delivering a high dose of radiation in a single or few fractions.',
+    mechanism: 'Uses highly precise image guidance and multiple beams to deliver a very high, ablative dose of radiation to a small, well-defined target with a steep dose gradient, minimizing the dose to surrounding healthy brain tissue.',
+    clinicalRelevance: 'Effective for small brain tumors (e.g., metastases, meningiomas) and functional disorders (e.g., trigeminal neuralgia).',
+    examPoints: ['High, ablative dose', 'Single or few fractions', 'Highly precise image guidance', 'Steep dose gradient', 'Used for brain tumors/functional disorders'],
+    category: 'dosimetry',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="10" fill="#ef4444" /><path d="M50 10 L50 90 M10 50 L90 50" stroke="#64748b" stroke-width="2" /></svg>'
+  },
+  {
+    id: 'igrt',
+    title: 'Image-Guided RT (IGRT)',
+    subtitle: 'Precision Imaging & Verification',
+    definition: 'The use of frequent imaging during a course of radiation therapy to improve the precision and accuracy of treatment delivery.',
+    mechanism: 'Uses imaging modalities (e.g., kV-CBCT, MV-CT, ultrasound) integrated into the treatment machine to verify the patient\'s position and tumor location immediately before or during each fraction, allowing for real-time adjustments.',
+    clinicalRelevance: 'Crucial for reducing setup errors and accounting for anatomical changes (e.g., tumor shrinkage, organ filling) during the treatment course, enabling tighter margins and sparing of surrounding healthy tissues.',
+    examPoints: ['Frequent imaging during treatment course', 'Verifies patient position/tumor location', 'Allows real-time adjustments', 'Reduces setup errors and margins'],
+    category: 'imaging',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="none" stroke="#64748b" stroke-width="4" /><path d="M50 10 L50 90 M10 50 L90 50" stroke="#64748b" stroke-width="2" /></svg>'
+  },
+  {
+    id: 'pet',
+    title: 'PET Imaging',
+    subtitle: 'Metabolic & Functional Imaging',
+    definition: 'Positron Emission Tomography (PET) is a functional imaging technique that uses radiotracers to visualize metabolic processes in the body.',
+    mechanism: 'A radiotracer (e.g., 18F-FDG, a glucose analog) is injected, and the PET scanner detects the gamma rays emitted by the positron-emitting isotope, creating images that reflect metabolic activity (e.g., high glucose uptake in tumors).',
+    clinicalRelevance: 'Essential for tumor staging, treatment planning (delineating metabolically active tumor volume), and assessing treatment response.',
+    examPoints: ['Functional/metabolic imaging', 'Uses radiotracers (e.g., 18F-FDG)', 'Visualizes metabolic activity (e.g., glucose uptake)', 'Used for staging, planning, response assessment'],
+    category: 'imaging',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="30" fill="none" stroke="#38bdf8" stroke-width="4" /><circle cx="50" cy="50" r="10" fill="#38bdf8" /></svg>'
+  },
+  {
+    id: 'mri-rt',
+    title: 'MRI-Guided RT',
+    subtitle: 'Soft Tissue Precision',
+    definition: 'The use of Magnetic Resonance Imaging (MRI) for radiotherapy planning and treatment guidance, offering superior soft tissue contrast.',
+    mechanism: 'MRI uses magnetic fields and radiofrequency pulses to create detailed images of soft tissues without ionizing radiation. MRI-guided linear accelerators (MR-Linacs) allow for real-time imaging during treatment.',
+    clinicalRelevance: 'Provides unparalleled soft tissue visualization, which is critical for delineating tumors and OARs in regions like the pelvis and brain, and enables real-time adaptive radiotherapy based on daily anatomical changes.',
+    examPoints: ['Superior soft tissue contrast', 'No ionizing radiation', 'MR-Linacs allow real-time imaging', 'Critical for pelvic/brain tumor delineation'],
+    category: 'imaging',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" fill="none" stroke="#38bdf8" stroke-width="4" /><circle cx="50" cy="50" r="20" fill="none" stroke="#38bdf8" stroke-width="2" /></svg>'
+  },
+  {
+    id: 'ct',
+    title: 'CT Imaging',
+    subtitle: 'Anatomic Planning Imaging',
+    definition: 'Computed Tomography (CT) is the standard imaging modality for radiotherapy treatment planning, providing detailed anatomical information and electron density data.',
+    mechanism: 'Uses X-ray beams and detectors rotating around the patient to create cross-sectional images. The Hounsfield Units (HU) in CT images directly correlate with electron density, which is essential for accurate dose calculation.',
+    clinicalRelevance: 'The foundation of radiotherapy planning. CT images are used for tumor and OAR delineation and for calculating the radiation dose distribution throughout the patient.',
+    examPoints: ['Standard for RT planning', 'Provides anatomical information', 'HU correlates with electron density (for dose calculation)', 'Foundation of RT planning'],
+    category: 'imaging',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="none" stroke="#64748b" stroke-width="4" /><path d="M50 50 L80 50" stroke="#64748b" stroke-width="2" /></svg>'
+  },
+  {
+    id: 'hormesis',
+    title: 'Radiation Hormesis',
+    subtitle: 'Low-Dose Stimulation',
+    definition: 'The controversial hypothesis that low doses of ionizing radiation (typically <100 mSv) stimulate protective biological mechanisms, potentially reducing cancer risk and improving longevity, contrary to the Linear-No-Threshold (LNT) model.',
+    mechanism: 'Upregulation of DNA repair enzymes (e.g., PARP), activation of antioxidant pathways (e.g., Nrf2), and enhanced immune surveillance, which collectively counteract oxidative stress and DNA damage.',
+    clinicalRelevance: 'Remains highly controversial and is not utilized in clinical radiation therapy or radiation protection standards, which continue to adhere to the LNT model for safety.',
+    examPoints: ['Low-dose stimulation', 'Controversial', 'Nrf2 pathway', 'LNT model contradiction', 'Not used in RT'],
+    category: 'biology',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="30" fill="none" stroke="#38bdf8" stroke-width="4" /><path d="M50 20 L50 80 M20 50 L80 50" stroke="#38bdf8" stroke-width="2" /></svg>'
+  },
+  {
+    id: 'inverse-dose-rate-effect',
+    title: 'Inverse Dose-Rate Effect',
+    subtitle: 'Paradoxical Sensitivity',
+    definition: 'The paradoxical observation in certain cell lines where lower dose rates produce greater cell killing than higher dose rates for the same total dose.',
+    mechanism: 'Radiation-induced cell cycle redistribution into more radiosensitive phases (e.g., G2/M) during the prolonged irradiation period, which counteracts the sparing effect of repair that typically occurs at low dose rates.',
+    clinicalRelevance: 'Important consideration in brachytherapy and low-dose rate external beam studies; may complicate dose-rate effect predictions and requires careful planning to avoid unexpected toxicity.',
+    examPoints: ['Paradoxical increased kill at low rates', 'Cell cycle redistribution is the driver', 'Brachytherapy relevance', 'Contradicts standard repair-sparing'],
+    category: 'classic',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 80 L90 20" stroke="#ef4444" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'target-theory',
+    title: 'Target Theory',
+    subtitle: 'Direct Hit Model',
+    definition: 'The fundamental radiobiological concept that cell death occurs if a critical "target" within the cell—specifically DNA—is hit by ionizing radiation.',
+    mechanism: 'Radiation interactions are stochastic; a "hit" (direct ionization or indirect ROS damage) to the DNA target leads to lethal damage if repair is insufficient. The probability of a hit is proportional to the dose.',
+    clinicalRelevance: 'Forms the foundation of all radiobiological modeling, including the Linear-Quadratic (LQ) model used for dose fractionation, and explains the dose-response relationship in radiotherapy.',
+    examPoints: ['DNA is the critical target', 'Direct hit vs indirect effect', 'Stochastic nature', 'Foundation of radiobiology', 'Basis for dose-response curves'],
+    category: 'physics',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="none" stroke="#64748b" stroke-width="4" /><circle cx="50" cy="50" r="10" fill="#ef4444" /></svg>'
+  },
+  {
+    id: 'hit-theory',
+    title: 'Hit Theory',
+    subtitle: 'Stochastic Interaction',
+    definition: 'A radiobiological framework describing the probabilistic nature of radiation-cell interactions, where the probability of a "hit" follows Poisson statistics.',
+    mechanism: 'Radiation interactions are random events; the number of hits per cell follows a Poisson distribution, determining the probability of cell survival based on the number of hits required for inactivation.',
+    clinicalRelevance: 'Essential for understanding dose-response curves and the statistical basis of cell killing in radiotherapy, explaining why a fraction of cells survive even at high doses.',
+    examPoints: ['Stochastic interaction', 'Poisson statistics', 'Probabilistic cell killing', 'Dose-response basis', 'Explains survival at high doses'],
+    category: 'physics',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="5" fill="#38bdf8" /><circle cx="80" cy="80" r="5" fill="#ef4444" /></svg>'
+  },
+  {
+    id: 'multi-target-model',
+    title: 'Multi-Target Model',
+    subtitle: 'Multiple Hits Required',
+    definition: 'A model of cell survival where a cell must receive multiple hits (or hits to multiple targets) to be inactivated, resulting in a survival curve with a characteristic initial "shoulder" region.',
+    mechanism: 'Accumulation of sublethal damage (SLD) across multiple targets or hits; the shoulder represents the capacity of the cell to repair damage before the threshold for lethality is reached.',
+    clinicalRelevance: 'Describes the survival curves of most mammalian cells, particularly those with high repair capacity; historically important before the LQ model became dominant.',
+    examPoints: ['Shoulder on survival curve', 'Accumulation of SLD', 'Multiple hits required', 'Historically important', 'Precursor to LQ model'],
+    category: 'biology',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="50" r="10" fill="#38bdf8" /><circle cx="50" cy="50" r="10" fill="#38bdf8" /><circle cx="70" cy="50" r="10" fill="#38bdf8" /></svg>'
+  },
+  {
+    id: 'single-hit-model',
+    title: 'Single-Hit Model',
+    subtitle: 'One Hit Required',
+    definition: 'A model of cell survival where a single hit is sufficient to inactivate the cell, resulting in a linear (exponential) survival curve.',
+    mechanism: 'Direct inactivation of the target without the need for damage accumulation; typically observed with high-LET radiation or in simple organisms.',
+    clinicalRelevance: 'Describes the survival curves of cells with limited repair capacity or when exposed to high-LET radiation (e.g., alpha particles, neutrons).',
+    examPoints: ['One hit = death', 'Linear survival curve', 'High-LET radiation', 'No shoulder'],
+    category: 'biology',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="10" fill="#ef4444" /></svg>'
+  },
+  {
+    id: 'therapeutic-ratio',
+    title: 'Therapeutic Ratio',
+    subtitle: 'Benefit vs Harm',
+    definition: 'The ratio of the probability of tumor control (TCP) to the probability of normal tissue complications (NTCP) for a given radiation dose.',
+    mechanism: 'Exploits the differential radiobiological response between tumor and normal tissue, primarily through fractionation, which allows normal tissue repair (SLDR) while tumor cells undergo reoxygenation and redistribution.',
+    clinicalRelevance: 'The primary objective of all radiotherapy planning: maximizing tumor kill while keeping normal tissue toxicity within acceptable limits.',
+    examPoints: ['TCP/NTCP ratio', 'Therapeutic window', 'Fractionation exploitation', 'RT planning objective'],
+    category: 'clinical',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 80 L90 20" stroke="#38bdf8" stroke-width="4" /><path d="M10 20 L90 80" stroke="#ef4444" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'tcp',
+    title: 'Tumor Control Probability (TCP)',
+    subtitle: 'Probability of Cure',
+    definition: 'Tumor Control Probability (TCP) is a mathematical model predicting the probability of achieving local control of a tumor as a function of the radiation dose.',
+    mechanism: 'Based on cell kill kinetics (e.g., Poisson statistics of clonogenic cell survival); TCP typically follows a sigmoidal dose-response curve.',
+    clinicalRelevance: 'Used in treatment planning to estimate the dose required for a desired level of tumor control, balancing it against toxicity.',
+    examPoints: ['Probability of cure', 'Sigmoidal dose-response', 'Clonogenic cell kill', 'RT planning'],
+    category: 'dosimetry',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 80 Q50 20 90 20" fill="none" stroke="#38bdf8" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'ntcp',
+    title: 'Normal Tissue Complication Probability (NTCP)',
+    subtitle: 'Probability of Toxicity',
+    definition: 'Normal Tissue Complication Probability (NTCP) is a mathematical model predicting the probability of inducing a specific normal tissue toxicity as a function of the radiation dose and volume.',
+    mechanism: 'Based on the dose-volume response of functional subunits (FSUs) within an organ; NTCP also typically follows a sigmoidal dose-response curve, where toxicity increases sharply above a certain threshold dose.',
+    clinicalRelevance: 'Essential for defining dose-volume constraints to spare critical organs at risk (OARs) and minimize long-term toxicity in radiotherapy planning.',
+    examPoints: ['Probability of toxicity', 'Sigmoidal dose-response', 'Dose-volume constraints', 'OAR sparing', 'Functional subunits (FSUs)'],
+    category: 'dosimetry',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 20 Q50 80 90 80" fill="none" stroke="#ef4444" stroke-width="4" /></svg>'
+  },
+  {
+    id: 'therapeutic-index',
+    title: 'Therapeutic Index',
+    subtitle: 'Safety Margin',
+    definition: 'The margin or ratio between the dose that provides a therapeutic effect (e.g., tumor control) and the dose that causes toxic effects.',
+    mechanism: 'Determined by the separation between the TCP and NTCP dose-response curves; a wider separation indicates a safer, more effective treatment regimen with a higher therapeutic index.',
+    clinicalRelevance: 'Fundamental concept in both pharmacology and radiotherapy for assessing the safety and efficacy of a treatment regimen and optimizing the therapeutic ratio.',
+    examPoints: ['Safety margin', 'TCP vs NTCP separation', 'Dose-response curves', 'Drug/RT safety', 'Optimizing therapeutic ratio'],
+    category: 'clinical',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="40" width="60" height="20" fill="#38bdf8" /><rect x="40" y="30" width="20" height="40" fill="#ef4444" /></svg>'
+  },
+  {
+    id: 'ultrasound',
+    title: 'Ultrasound Imaging',
+    subtitle: 'Real-Time Imaging',
+    definition: 'Real-time imaging technique using high-frequency sound waves to visualize internal structures.',
+    mechanism: 'Transducer emits sound waves that reflect off tissues; echoes are processed to create images based on differences in acoustic impedance.',
+    clinicalRelevance: 'Used for guidance in procedures (e.g., brachytherapy, biopsy) and for monitoring organ motion in real-time.',
+    examPoints: ['Real-time imaging', 'High-frequency sound waves', 'Acoustic impedance', 'Guidance for procedures'],
+    category: 'imaging',
+    svgData: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M20 50 Q50 20 80 50" fill="none" stroke="#38bdf8" stroke-width="4" /></svg>'
+  },
+];
+
+export const uniqueCategories = Array.from(new Set(NAMED_EFFECTS.map(e => e.category)));

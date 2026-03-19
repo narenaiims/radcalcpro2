@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="radcalcpro2" />
+  <meta name="theme-color" content="#1e3a5f" />
+  <meta name="application-name" content="radcalcpro2" />
+
+  <title>radcalcpro2 | Clinical Radiobiology Portal</title>
+  <meta name="description" content="Evidence-based Radiation Oncology calculators: BED/EQD2, HDR Brachytherapy, OAR constraints, Gap Correction, Re-irradiation. RNT Medical College Udaipur." />
+
+  <link rel="manifest" href="/manifest.json" />
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(r => console.log('SW:', r.scope))
+          .catch(e => console.warn('SW:', e));
+      });
+    }
+  </script>
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="radcalcpro2 | Clinical Radiobiology Portal" />
+  <meta property="og:description" content="BED/EQD2, HDR Brachytherapy, OAR Constraints — for radiation oncology postgraduates." />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:creator" content="@drn_dr" />
+
+  <!-- Tailwind CSS CDN (v3) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold:   '#D4AF37',
+            teal:   '#2DD4BF',
+            coral:  '#F87171',
+            violet: '#A78BFA',
+            lime:   '#A3E635',
+            sky:    '#38BDF8',
+            clinical: {
+              navy:    '#1e3a5f',
+              blue:    '#1d4ed8',
+              teal:    '#0f766e',
+              amber:   '#b45309',
+              red:     '#b91c1c',
+              green:   '#15803d',
+              surface: '#f1f5f9',
+            },
+          },
+          fontFamily: {
+            sans:    ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Barlow Condensed', 'sans-serif'],
+            mono:    ['JetBrains Mono', 'Menlo', 'monospace'],
+            serif:   ['Cormorant Garamond', 'Georgia', 'serif'],
+          },
+        },
+      },
+    }
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!--
+    IMPORTMAP: Google AI Studio ESM mode ONLY.
+    When running via `vite dev` or `vite build`, Vite handles all module
+    resolution and this importmap is effectively ignored by the bundler.
+    Only active when served as raw files in AI Studio / browser ESM mode.
+  -->
+  <!--
+    IMPORTMAP — Google AI Studio ESM mode (no Vite build step at runtime)
+    ════════════════════════════════════════════════════════════════════════
+    KEY RULE: every package that has react as a peer dependency MUST have
+    ?external=react,react-dom appended. Without it, esm.sh bundles a
+    private copy of React inside each package → multiple React instances
+    → "Invalid hook call" / "Cannot read properties of null (reading useState)"
+
+    Packages needing ?external: framer-motion, motion, react-router-dom,
+    recharts, lucide-react, react-to-print, @google/genai
+    Packages NOT needing it: mathjs, date-fns, prop-types, html2canvas, jspdf
+  -->
+  <script type="importmap">
+  {
+    "imports": {
+      "react":            "https://esm.sh/react@19.2.4",
+      "react/":           "https://esm.sh/react@19.2.4/",
+      "react-dom":        "https://esm.sh/react-dom@19.2.4",
+      "react-dom/":       "https://esm.sh/react-dom@19.2.4/",
+      "react-dom/client": "https://esm.sh/react-dom@19.2.4/client",
+
+      "react-router-dom": "https://esm.sh/react-router-dom@7.13.0?external=react,react-dom",
+
+      "framer-motion":    "https://esm.sh/motion@12.6.3/react?external=react,react-dom",
+      "motion":           "https://esm.sh/motion@12.6.3?external=react,react-dom",
+      "motion/react":     "https://esm.sh/motion@12.6.3/react?external=react,react-dom",
+
+      "lucide-react":     "https://esm.sh/lucide-react@0.575.0?external=react,react-dom",
+
+      "recharts":         "https://esm.sh/recharts@2.15.0?external=react,react-dom",
+
+      "react-to-print":   "https://esm.sh/react-to-print@3.3.0?external=react,react-dom",
+
+      "@google/genai":    "https://esm.sh/@google/genai@1.41.0",
+
+      "prop-types":       "https://esm.sh/prop-types@15.8.1",
+      "mathjs":           "https://esm.sh/mathjs@14.2.1",
+      "date-fns":         "https://esm.sh/date-fns@4.1.0",
+      "date-fns/":        "https://esm.sh/date-fns@4.1.0/",
+      "html2canvas":      "https://esm.sh/html2canvas@1.4.1",
+      "jspdf":            "https://esm.sh/jspdf@2.5.2",
+
+      "@/components/KeyFactsSidebar":      "/components/KeyFactsSidebar.tsx",
+      "@/components/TumourSelector":       "/components/TumourSelector.tsx",
+      "@/components/Card":                 "/components/Card.tsx",
+      "@/components/Tooltip":              "/components/Tooltip.tsx",
+      "@/components/Footer":               "/components/Footer.tsx",
+
+      "@/src/data/radiobiologyData":       "/src/data/radiobiologyData.ts",
+      "@/src/services/oarDataService":     "/src/services/oarDataService.ts",
+      "@/src/services/pwaService":         "/src/services/pwaService.ts",
+      "@/src/context/RadiobiologyContext": "/src/context/RadiobiologyContext.tsx",
+      "@/src/components/CalcHistoryPanel": "/src/components/CalcHistoryPanel.tsx",
+      "@/src/components/AnimatedNumber":   "/src/components/AnimatedNumber.tsx",
+      "@/src/components/PrintReport":      "/src/components/PrintReport.tsx",
+      "../src/components/NamedEffectIcon":   "/src/components/NamedEffectIcon.tsx",
+      "../src/components/DynamicEffectIcon": "/src/components/DynamicEffectIcon.tsx",
+      "../src/data/namedEffectsData":        "/src/data/namedEffectsData.ts",
+      "../src/components/AnimatedNumber":    "/src/components/AnimatedNumber.tsx",
+      "../src/components/PrintReport":       "/src/components/PrintReport.tsx"
+    }
+  }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior-y: none;
+    }
+
+    /* CSS custom properties used by inner pages (dark card components) */
+    :root {
+      --gold:   #D4AF37;
+      --teal:   #2DD4BF;
+      --coral:  #F87171;
+      --violet: #A78BFA;
+      --lime:   #A3E635;
+      --sky:    #38BDF8;
+      --font-sans:  'Inter', system-ui, sans-serif;
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-mono:  'JetBrains Mono', monospace;
+    }
+
+    .safe-top    { padding-top:    env(safe-area-inset-top);    }
+    .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+    /* Numeric display */
+    .num { font-family: 'JetBrains Mono', monospace; font-feature-settings: "tnum"; }
+
+    .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* Result badges */
+    .result-badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: 4px;
+      font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .result-badge.pass  { background: #dcfce7; color: #15803d; }
+    .result-badge.warn  { background: #fef9c3; color: #a16207; }
+    .result-badge.fail  { background: #fee2e2; color: #b91c1c; }
+
+    /* Clinical input */
+    .input-clinical {
+      width: 100%; padding: 6px 10px;
+      background: #f8fafc; border: 1px solid #cbd5e1;
+      border-radius: 6px; font-size: 0.85rem; color: #0f172a;
+      outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .input-clinical:focus {
+      border-color: #1d4ed8;
+      box-shadow: 0 0 0 2px rgba(29,78,216,0.15);
+    }
+
+    /* Glass morphism — used by dark inner pages */
+    .glass {
+      background-color: rgba(255,255,255,0.05);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .glass-hover {
+      transition: all 0.3s;
+    }
+    .glass-hover:hover {
+      background-color: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    /* Atmosphere background for dark immersive pages */
+    .atmosphere-bg {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(45,212,191,0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(167,139,250,0.05) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(212,175,55,0.02) 0%, transparent 70%);
+    }
+    .mesh-grid {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* Font utilities */
+    .font-display { font-family: var(--font-serif); }
+    .font-body    { font-family: var(--font-sans);  }
+
+    /* Dark page typography */
+    .station      { border-radius: 1rem; overflow: hidden; margin-bottom: 1rem; }
+    .station-head { padding: 1rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; }
+    .stn-num      { width: 2.5rem; height: 2.5rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 0.875rem; font-weight: 700; }
+    .stn-name     { flex: 1; font-family: var(--font-serif); font-size: 1.125rem; color: white; }
+    .stn-badge    { font-size: 0.5625rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; padding: 2px 8px; border-radius: 4px; border-width: 1px; border-style: solid; }
+    .badge-bil    { color: var(--gold);  border-color: rgba(212,175,55,0.2);  background: rgba(212,175,55,0.05);  }
+    .badge-sel    { color: var(--teal);  border-color: rgba(45,212,191,0.2);  background: rgba(45,212,191,0.05);  }
+    .b-item       { display: flex; flex-direction: column; padding: 0.75rem; border-radius: 0.75rem; }
+    .b-label      { font-size: 0.5625rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 0.25rem; }
+    .b-val        { font-size: 0.6875rem; color: #cbd5e1; line-height: 1.4; }
+    .pro-note     { padding: 1rem; border-radius: 0.75rem; font-size: 0.75rem; color: #94a3b8; font-style: italic; line-height: 1.6; }
+    .evidence-tag { font-size: 0.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 4px; }
+
+    /* Tab styles */
+    .tab-btn { position: relative; transition: all 0.3s; }
+    .tab-btn.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--teal); }
+
+    /* Quiz styles */
+    .quiz-opt { width: 100%; padding: 1rem; border-radius: 0.75rem; border: 1px solid rgba(255,255,255,0.1); text-align: left; transition: all 0.2s; }
+    .quiz-opt:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
+    .quiz-opt.selected  { border-color: var(--teal);  background: rgba(45,212,191,0.05);  color: #5eead4; }
+    .quiz-opt.correct   { border-color: var(--teal);  background: rgba(45,212,191,0.1);   color: #5eead4; }
+    .quiz-opt.wrong     { border-color: var(--coral); background: rgba(248,113,113,0.1);  color: #f87171; }
+
+    /* Animations */
+    .fade-in { animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+
+    @keyframes slamIn { 0% { transform:scale(1.1) translateY(-20px); opacity:0; } 100% { transform:scale(1) translateY(0); opacity:1; } }
+    .animate-slam { animation: slamIn 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+
+    .label-micro { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 9999px; }
+
+    .animate-in { animation-duration: 0.3s; animation-fill-mode: both; animation-timing-function: ease-out; }
+    @keyframes _kSlideTop    { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
+    @keyframes _kSlideBottom { from { opacity:0; transform:translateY( 8px); } to { opacity:1; transform:none; } }
+    @keyframes _kZoom95      { from { opacity:0; transform:scale(0.95);      } to { opacity:1; transform:none; } }
+    @keyframes _kFade        { from { opacity:0; }                             to { opacity:1; } }
+    .slide-in-from-top-2,
+    .slide-in-from-top-4    { animation-name: _kSlideTop;    }
+    .slide-in-from-bottom-4 { animation-name: _kSlideBottom; }
+    .zoom-in-95             { animation-name: _kZoom95;      }
+    .animate-in.fade-in     { animation-name: _kFade;        }
+    .duration-300 { animation-duration: 0.3s; }
+    .duration-500 { animation-duration: 0.5s; }
+
+    @media print {
+      header, nav { display: none !important; }
+      body { background: white; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>

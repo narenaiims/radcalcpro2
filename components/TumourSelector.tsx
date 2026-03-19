@@ -12,7 +12,7 @@ import {
   RadiobiologyData,
   uniqueSites,
   getSubsites,
-} from '../src/data/radiobiologyData';
+} from '@/src/data/radiobiologyData';
 
 // ── Site icons (emoji fallback — no external deps) ────────────────────────
 const SITE_ICONS: Record<string, string> = {

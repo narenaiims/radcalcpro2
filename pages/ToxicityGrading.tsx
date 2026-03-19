@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { BookOpen, ChevronRight } from "lucide-react";
-import KeyFactsSidebar, { KeyFactSection } from "../components/KeyFactsSidebar";
+import KeyFactsSidebar, { KeyFactSection } from "@/components/KeyFactsSidebar";
 
 // ─── GRADE CONFIG ─────────────────────────────────────────────────────────────
 const GRADE: Record<number, { label: string; desc: string; color: string; text: string; dot: string }> = {

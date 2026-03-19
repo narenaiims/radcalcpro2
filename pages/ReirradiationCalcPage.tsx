@@ -12,8 +12,8 @@
 import React, { useState, useMemo } from 'react';
 import { BookOpen, ChevronRight, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
-import { RadiobiologyData } from '../src/data/radiobiologyData';
+import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
+import { RadiobiologyData } from '@/src/data/radiobiologyData';
 
 const STORAGE_KEY = 'radonco_reRT_state_v1';
 

@@ -208,19 +208,90 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'oar-brachial', site: 'OAR', subsite: 'Brachial plexus', tumour: 'N/A', alphaBeta: 2 },
   { id: 'oar-mandible', site: 'OAR', subsite: 'Mandible', tumour: 'N/A', alphaBeta: 3 },
   { id: 'oar-skin', site: 'OAR', subsite: 'Skin', tumour: 'N/A', alphaBeta: 3 },
-].map(entry => ({
-  ...entry,
-  ab: entry.alphaBeta,
-  abLow: entry.alphaBeta - 1,
-  abHigh: entry.alphaBeta + 1,
-  tk: entry.site === 'CNS' || entry.site === 'OAR' || entry.site === 'Prostate' ? 0 : 28,
-  k: entry.site === 'CNS' || entry.site === 'OAR' || entry.site === 'Prostate' ? 0 : 0.6,
-  uncertaintyFlag: false,
-  histology: entry.tumour,
-  abSource: 'Standard Literature',
-  repopNote: entry.site === 'CNS' || entry.site === 'OAR' || entry.site === 'Prostate' ? 'Minimal repopulation' : 'Standard repopulation',
-  clinicalContext: 'Standard clinical context'
-}));
+].map(entry => {
+  const tumour = entry.tumour.toLowerCase();
+  const site = entry.site;
+  
+  // Default repopulation parameters
+  let tk = 28;
+  let k = 0.6;
+  let repopNote = 'Standard repopulation (SCC-like)';
+  
+  // OARs and Late Effects
+  if (site === 'OAR') {
+    tk = 0;
+    k = 0;
+    repopNote = 'Late responding tissue; no clinical repopulation';
+  }
+  // Prostate
+  else if (site === 'Genitourinary' && entry.subsite === 'Prostate') {
+    tk = 0;
+    k = 0;
+    repopNote = 'Minimal repopulation (low alpha/beta)';
+  }
+  // Breast
+  else if (site === 'Breast') {
+    tk = 0;
+    k = 0;
+    repopNote = 'Minimal repopulation in adjuvant setting';
+  }
+  // CNS
+  else if (site === 'CNS') {
+    if (tumour.includes('glioblastoma') || tumour.includes('anaplastic')) {
+      tk = 21;
+      k = 0.4;
+      repopNote = 'High-grade glioma repopulation';
+    } else {
+      tk = 0;
+      k = 0;
+      repopNote = 'Slow-growing CNS tumour';
+    }
+  }
+  // SCLC
+  else if (tumour.includes('sclc')) {
+    tk = 14;
+    k = 1.0;
+    repopNote = 'Rapidly repopulating small cell';
+  }
+  // Melanoma
+  else if (tumour.includes('melanoma')) {
+    tk = 21;
+    k = 0.2;
+    repopNote = 'Slow repopulation';
+  }
+  // Lymphoma
+  else if (site === 'Lymphoma') {
+    tk = 0;
+    k = 0;
+    repopNote = 'Highly sensitive; repopulation usually negligible';
+  }
+  // Adenocarcinomas (often slower than SCC)
+  else if (tumour.includes('adeno')) {
+    tk = 28;
+    k = 0.4;
+    repopNote = 'Standard Adenocarcinoma repopulation';
+  }
+  // Sarcomas
+  else if (site === 'Sarcoma') {
+    tk = 0;
+    k = 0;
+    repopNote = 'Variable; often minimal clinical repopulation';
+  }
+
+  return {
+    ...entry,
+    ab: entry.alphaBeta,
+    abLow: Math.max(0.5, entry.alphaBeta - (entry.alphaBeta > 5 ? 2 : 0.5)),
+    abHigh: entry.alphaBeta + (entry.alphaBeta > 5 ? 2 : 0.5),
+    tk,
+    k,
+    uncertaintyFlag: false,
+    histology: entry.tumour,
+    abSource: 'Standard Literature (Joiner & van der Kogel)',
+    repopNote,
+    clinicalContext: `Radiobiological parameters for ${entry.tumour} of the ${entry.subsite}.`
+  };
+});
 
 export const uniqueSites: string[] = Array.from(
   new Set(MASTER_RADIOBIOLOGY_TABLE.map(t => t.site))

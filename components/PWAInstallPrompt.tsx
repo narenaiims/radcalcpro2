@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Download, X } from 'lucide-react';
-import { setDeferredPrompt, installPWA } from '../src/services/pwaService';
+import { setDeferredPrompt, installPWA } from '@/src/services/pwaService';
 
 // Pure-CSS slide-up — no motion/react dependency needed for a simple toast
 const PWAInstallPrompt: React.FC = () => {

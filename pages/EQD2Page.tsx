@@ -2,13 +2,13 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, ChevronRight, GraduationCap, Calculator, Activity, AlertTriangle, Printer } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
-import { RadiobiologyData } from '../src/data/radiobiologyData';
-import TumourSelector from '../components/TumourSelector';
-import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
-import { AnimatedNumber } from "../src/components/AnimatedNumber";
+import { RadiobiologyData } from '@/src/data/radiobiologyData';
+import TumourSelector from '@/components/TumourSelector';
+import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
+import { AnimatedNumber } from "@/src/components/AnimatedNumber";
 import { useReactToPrint } from 'react-to-print';
-import { PrintReport } from '../src/components/PrintReport';
-import { useRxContext } from '../src/context/RadiobiologyContext';
+import { PrintReport } from '@/src/components/PrintReport';
+import { useRxContext } from '@/src/context/RadiobiologyContext';
 
 const STORAGE_KEY = 'radonco_eqd2_state_v2';
 
@@ -185,7 +185,7 @@ EQD2${ab}: ${eqd2.toFixed(2)} Gy
 Cover: (1) what tissue this α/β represents, (2) clinical context where this schedule is used, (3) key OAR consideration if relevant, (4) comparison with standard 2 Gy/fx fractionation. Be concise — 4–6 sentences max. No markdown headers.`;
  
       const resp = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-preview-04-17',
+        model: 'gemini-3-flash-preview',
         contents: prompt,
       });
       setAiText(resp.text ?? 'No response returned.');

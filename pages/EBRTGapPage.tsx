@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { ChevronRight, ChevronLeft, CheckCircle, Info, Calculator, RotateCcw, Calendar, Activity, BookOpen, GraduationCap, Printer } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
-import { RadiobiologyData, getInterpretation } from '../src/data/radiobiologyData';
+import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
+import { RadiobiologyData, getInterpretation } from '@/src/data/radiobiologyData';
 
 const QUICK_REF_DATA = [
   {
@@ -22,9 +22,9 @@ const QUICK_REF_DATA = [
     ]
   }
 ];
-import TumourSelector from '../components/TumourSelector';
+import TumourSelector from '@/components/TumourSelector';
 import { useReactToPrint } from 'react-to-print';
-import { PrintReport } from '../src/components/PrintReport';
+import { PrintReport } from '@/src/components/PrintReport';
 
 // ── Types ─────────────────────────────────────────────────────────────────
 type WizardStep = 'site' | 'prescription' | 'gap' | 'results';

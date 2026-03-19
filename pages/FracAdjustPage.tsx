@@ -16,14 +16,14 @@
  */
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
+import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
 import { 
   Calculator, Info, RefreshCw, ChevronRight, 
   TrendingUp, AlertTriangle, CheckCircle2,
   BookOpen, GraduationCap
 } from 'lucide-react';
-import { RadiobiologyData } from '../src/data/radiobiologyData';
-import TumourSelector from '../components/TumourSelector';
+import { RadiobiologyData } from '@/src/data/radiobiologyData';
+import TumourSelector from '@/components/TumourSelector';
 
 const STORAGE_KEY = 'radonco_frac_adjust_state_v2';
 

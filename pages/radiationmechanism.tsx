@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { BookOpen, ChevronRight, GraduationCap } from "lucide-react";
-import KeyFactsSidebar, { KeyFactSection } from "../components/KeyFactsSidebar";
+import KeyFactsSidebar, { KeyFactSection } from "@/components/KeyFactsSidebar";
 
 // ── Data: Quick Reference ────────────────────────────────────────────────────
 const SIDEBAR_DATA: KeyFactSection[] = [

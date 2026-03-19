@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import ShareButton from './ShareButton';
-import { CalcHistoryPanel } from '../src/components/CalcHistoryPanel';
-import { useRxContext } from '../src/context/RadiobiologyContext';
+import ShareButton from '@/components/ShareButton';
+import { CalcHistoryPanel } from '@/src/components/CalcHistoryPanel';
+import { useRxContext } from '@/src/context/RadiobiologyContext';
 
 import { RotateCcw, Home, History } from 'lucide-react';
 

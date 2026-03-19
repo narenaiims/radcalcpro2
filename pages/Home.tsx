@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ROUTES } from '../components/Header';
+import { ROUTES } from '@/components/Header';
 import { Download, X, Share2 } from 'lucide-react';
-import { getDeferredPrompt, installPWA } from '../src/services/pwaService';
+import { getDeferredPrompt, installPWA } from '@/src/services/pwaService';
 
 // ── Types ─────────────────────────────────────────────────────────────────
 interface RecentItem {

@@ -1,9 +1,9 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from '../App';
-import { RadiobiologyProvider } from './context/RadiobiologyContext';
-import './index.css';
+import App from '@/App';
+import { RadiobiologyProvider } from '@/src/context/RadiobiologyContext';
+import '@/src/index.css';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

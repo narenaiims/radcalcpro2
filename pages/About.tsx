@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card } from '../components/Card';
+import { Card } from '@/components/Card';
 import { ExternalLink, Globe, Gamepad2, HeartPulse, Apple, BookOpen, Info, Download, Share2 } from 'lucide-react';
-import { getDeferredPrompt, installPWA } from '../src/services/pwaService';
+import { getDeferredPrompt, installPWA } from '@/src/services/pwaService';
 
 const About: React.FC = () => {
   const [canInstall, setCanInstall] = useState(!!getDeferredPrompt());

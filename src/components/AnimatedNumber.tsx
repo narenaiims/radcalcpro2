@@ -38,3 +38,5 @@ export const AnimatedNumber: React.FC<AnimatedNumberProps> = ({ value, decimals 
     </span>
   );
 };
+
+export default AnimatedNumber;

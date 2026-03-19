@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
-import { RadiobiologyData } from '../src/data/radiobiologyData';
-import TumourSelector from '../components/TumourSelector';
+import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
+import { RadiobiologyData } from '@/src/data/radiobiologyData';
+import TumourSelector from '@/components/TumourSelector';
 import { BookOpen, ChevronRight, GraduationCap, Printer } from 'lucide-react';
-import { AnimatedNumber } from "../src/components/AnimatedNumber";
+import { AnimatedNumber } from "@/src/components/AnimatedNumber";
 import { useReactToPrint } from 'react-to-print';
-import { PrintReport } from '../src/components/PrintReport';
+import { PrintReport } from '@/src/components/PrintReport';
 
 const STORAGE_KEY = 'radonco_bed_eqd2_state_v2';
 

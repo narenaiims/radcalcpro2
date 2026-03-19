@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { BookOpen, ChevronRight, Activity, Target, Layers, Zap, Calculator, CheckSquare, AlertTriangle, X, ArrowRight, Info, AlertCircle, CheckCircle2 } from "lucide-react";
-import KeyFactsSidebar, { KeyFactSection } from "../components/KeyFactsSidebar";
-import { AnimatedNumber } from "../src/components/AnimatedNumber";
+import KeyFactsSidebar, { KeyFactSection } from "@/components/KeyFactsSidebar";
+import { AnimatedNumber } from "@/src/components/AnimatedNumber";
 
 // --- DATA ---
 const ART_TYPES = [

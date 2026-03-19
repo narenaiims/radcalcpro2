@@ -22,7 +22,7 @@ import {
   AlertTriangle, CheckCircle, XCircle, Info, Activity, Shield,
   RefreshCw, BarChart2, Zap
 } from 'lucide-react';
-import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
+import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
 import {
   OAR_DATABASE,
   FRACTIONATION_PRESETS,
@@ -33,7 +33,7 @@ import {
   OAR_QUIZ_QUESTIONS,
   OARQuizQuestion,
   EvidenceLevel,
-} from '../src/services/oarDataService';
+} from '@/src/services/oarDataService';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 type TabType = 'Constraints' | 'Checker' | 'Pearls' | 'Quiz' | 'ReRT';

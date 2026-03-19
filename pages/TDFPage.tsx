@@ -18,9 +18,9 @@
 import React, { useState, useMemo } from 'react';
 import { BookOpen, ChevronRight, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
-import TumourSelector from '../components/TumourSelector';
-import { RadiobiologyData } from '../src/data/radiobiologyData';
+import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
+import TumourSelector from '@/components/TumourSelector';
+import { RadiobiologyData } from '@/src/data/radiobiologyData';
 
 // ── Constants & Presets ───────────────────────────────────────────────────────
 const QUICK_REF_DATA = [

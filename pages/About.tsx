@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/Card';
-import { ExternalLink, Globe, Gamepad2, HeartPulse, BookOpen, Info, Download, Share2 } from 'lucide-react';
+import { ExternalLink, Globe, Gamepad2, HeartPulse, BookOpen, Info, Download, Share2, Calculator, Zap } from 'lucide-react';
 import { getDeferredPrompt, installPWA } from '@/src/services/pwaService';
 
 const About: React.FC = () => {
@@ -19,36 +19,44 @@ const About: React.FC = () => {
 
   const otherApps = [
     {
-      title: 'Poshan Shakti 2',
-      description: '7-दिवसीय सप्लीमेंट डाइट प्लान अपने लक्षणों और पसंद के आधार पर बनाएं।',
-      url: 'https://poshan-shakti-2.vercel.app/',
-      icon: Globe,
-      color: 'bg-emerald-500',
-      tag: 'Diet & Nutrition'
-    },
-    {
       title: 'Preventive Health Advisor',
-      description: 'कैंसर, शुगर व हृदय रोग की हेल्थ स्क्रीनिंग और समय पर इलाज के लिए गाइड।',
-      url: 'https://preventive-health-advisor-udaipur-m.vercel.app/',
+      description: 'Comprehensive mass screening guide for cancer, diabetes, and cardiovascular diseases.',
+      url: 'https://preventive-health-advisor-udaipur-m.vercel.app',
       icon: HeartPulse,
-      color: 'bg-red-500',
+      color: 'bg-rose-500',
       tag: 'Screening'
     },
     {
-      title: 'Onco-Game',
-      description: 'खेल-खेल में कैंसर की जानकारी और समाज में फैले मिथकों को दूर करें।',
+      title: 'Poshan Shakti 2',
+      description: 'AI-driven personalized 7-day supplement and nutrition planning based on symptoms.',
+      url: 'https://poshan-shakti-2.vercel.app',
+      icon: Globe,
+      color: 'bg-emerald-500',
+      tag: 'Nutrition'
+    },
+    {
+      title: 'Medical Oncology Calculator',
+      description: 'Essential clinical tools including BSA, GFR, and TLS calculators for oncology residents.',
+      url: 'https://oncocalcpro2.vercel.app',
+      icon: Calculator,
+      color: 'bg-blue-600',
+      tag: 'Medical Onco'
+    },
+    {
+      title: 'Radiation Oncology Calculator',
+      description: 'Advanced radiobiology tools for BED/EQD2 calculations and fractionation planning.',
+      url: 'https://radcalcpro2.vercel.app',
+      icon: Zap,
+      color: 'bg-amber-500',
+      tag: 'Radiation Onco'
+    },
+    {
+      title: 'Onco Game',
+      description: 'Interactive gamified education to dispel cancer myths and spread awareness.',
       url: 'https://onco-game.netlify.app/',
       icon: Gamepad2,
       color: 'bg-purple-500',
       tag: 'Education'
-    },
-    {
-      title: 'Medical Oncology calculator',
-      description: ' BSA, GFR, TLS and many other ward and ICU  calculators for residents.',
-      url: 'https://oncocalcpro2.vercel.app/',
-      icon: BookOpen,
-      color: 'bg-blue-600',
-      tag: 'Professional'
     }
   ];
 
@@ -143,14 +151,15 @@ const About: React.FC = () => {
           )}
           <button 
             onClick={() => {
+              const shareData = {
+                title: 'RadCalcPro V2',
+                text: 'Clinical Radiobiology & OAR Reference for Radiation Oncology by Dr. Narendra Rathore.',
+                url: window.location.origin,
+              };
               if (navigator.share) {
-                navigator.share({
-                  title: 'radcalcpro2 Portal',
-                  text: 'Check out radcalcpro2 — Clinical Radiobiology Calculators for Radiation Oncology by Dr. Narendra Rathore.',
-                  url: 'https://radcalcpro2.vercel.app/',
-                });
+                navigator.share(shareData);
               } else {
-                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent('Check out radcalcpro2 — Clinical Radiobiology Calculators for Radiation Oncology by Dr. Narendra Rathore. https://radcalcpro2.vercel.app/')}`, '_blank');
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareData.text + ' ' + shareData.url)}`, '_blank');
               }
             }}
             className="px-4 py-2 bg-green-600 border border-green-700 rounded-xl text-xs font-bold text-white hover:bg-green-700 transition-colors flex items-center gap-2"

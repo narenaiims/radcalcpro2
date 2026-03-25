@@ -14,7 +14,7 @@
  * without needing a build-time Workbox config.
  */
 
-const APP_VERSION = '2.0.0';
+const APP_VERSION = '2.0.1';
 const CACHE_NAME = `radcalcpro-${APP_VERSION}`;
 const SHELL_ASSETS   = ['/', '/index.html', '/manifest.json'];
 
@@ -64,7 +64,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Static assets (JS, CSS, fonts, images) → cache-first, populate lazily
+  // Static assets (JS, CSS, fonts, images) → network-first, fallback to cache
   if (
     request.destination === 'script'  ||
     request.destination === 'style'   ||
@@ -73,18 +73,15 @@ self.addEventListener('fetch', event => {
     url.pathname.startsWith('/assets/')
   ) {
     event.respondWith(
-      caches.open(CACHE_NAME).then(cache =>
-        cache.match(request).then(cached => {
-          if (cached) return cached;
-          return fetch(request).then(response => {
-            // Only cache valid, non-opaque responses
-            if (response && response.status === 200 && response.type === 'basic') {
-              cache.put(request, response.clone());
-            }
-            return response;
-          });
+      fetch(request)
+        .then(response => {
+          if (response && response.status === 200 && response.type === 'basic') {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+          }
+          return response;
         })
-      )
+        .catch(() => caches.match(request))
     );
     return;
   }

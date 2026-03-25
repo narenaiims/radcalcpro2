@@ -1,5 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import { Analytics } from '@vercel/analytics/react';
 import App from '@/App';
 import { RadiobiologyProvider } from '@/src/context/RadiobiologyContext';
 import '@/src/index.css';
@@ -14,6 +15,7 @@ root.render(
   <React.StrictMode>
     <RadiobiologyProvider>
       <App />
+      <Analytics />
     </RadiobiologyProvider>
   </React.StrictMode>
 );

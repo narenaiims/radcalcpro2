@@ -579,7 +579,7 @@ const OERLETRBEPage: React.FC = () => {
   const [pO2Val, setPO2Val] = useState(() => localStorage.getItem('oer_let_pO2Val') || '5');
   const [photonDose, setPhotonDose] = useState(() => localStorage.getItem('oer_let_photonDose') || '2.0');
   const [fractions, setFractions] = useState(() => localStorage.getItem('oer_let_fractions') || '25');
-  const [particleType, setParticleType] = useState<'proton' | 'carbon' | 'neutron' | 'alpha'>(() => (localStorage.getItem('oer_let_particleType') as any) || 'carbon');
+  const [particleType, setParticleType] = useState<'proton' | 'carbon' | 'neutron' | 'alpha'>(() => (localStorage.getItem('oer_let_particleType') as 'proton' | 'carbon' | 'neutron' | 'alpha') || 'carbon');
   const [showFormula, setShowFormula] = useState(false);
 
   // Persist to localStorage

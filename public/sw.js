@@ -14,13 +14,14 @@
  * without needing a build-time Workbox config.
  */
 
-const CACHE_VERSION  = 'radonc-pro-v3';
+const APP_VERSION = '2.0.0';
+const CACHE_NAME = `radcalcpro-${APP_VERSION}`;
 const SHELL_ASSETS   = ['/', '/index.html', '/manifest.json'];
 
 // ── Install: pre-cache the app shell ──────────────────────────────────────
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_VERSION)
+    caches.open(CACHE_NAME)
       .then(cache => cache.addAll(SHELL_ASSETS))
       .then(() => self.skipWaiting())
   );
@@ -32,7 +33,7 @@ self.addEventListener('activate', event => {
     caches.keys()
       .then(keys => Promise.all(
         keys
-          .filter(k => k !== CACHE_VERSION)
+          .filter(k => k !== CACHE_NAME)
           .map(k => caches.delete(k))
       ))
       .then(() => self.clients.claim())
@@ -72,7 +73,7 @@ self.addEventListener('fetch', event => {
     url.pathname.startsWith('/assets/')
   ) {
     event.respondWith(
-      caches.open(CACHE_VERSION).then(cache =>
+      caches.open(CACHE_NAME).then(cache =>
         cache.match(request).then(cached => {
           if (cached) return cached;
           return fetch(request).then(response => {
@@ -94,7 +95,7 @@ self.addEventListener('fetch', event => {
       .then(response => {
         if (response && response.status === 200 && response.type === 'basic') {
           const clone = response.clone();
-          caches.open(CACHE_VERSION).then(cache => cache.put(request, clone));
+          caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
         }
         return response;
       })

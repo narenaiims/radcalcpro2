@@ -1,42 +1,42 @@
 import React, { Component, Suspense, lazy } from 'react';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'motion/react';
 import Header from '@/components/Header';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 
 // Lazy-load all pages for performance
-const Home                = lazy(() => import('@/pages/Home'));
-const About               = lazy(() => import('@/pages/About'));
-const EQD2Page            = lazy(() => import('@/pages/EQD2Page'));
-const EBRTGapPage         = lazy(() => import('@/pages/EBRTGapPage'));
-const HDRBrachyPage       = lazy(() => import('@/pages/HDRBrachyPage'));
-const BEDtoEQD2Page       = lazy(() => import('@/pages/BEDtoEQD2Page'));
-const FracAdjustPage      = lazy(() => import('@/pages/FracAdjustPage'));
-const TDFPage             = lazy(() => import('@/pages/TDFPage'));
-const RadiationUnitsPage  = lazy(() => import('@/pages/RadiationUnitsPage'));
-const DoseExposuresPage   = lazy(() => import('@/pages/DoseExposuresPage'));
-const VivaDefinitionsPage = lazy(() => import('@/pages/VivaDefinitionsPage'));
-const RadiationHistoryPage= lazy(() => import('@/pages/RadiationHistoryPage'));
-const OARReferencePage    = lazy(() => import('@/pages/OARReferencePage'));
-const ReirradiationCalcPage = lazy(() => import('@/pages/ReirradiationCalcPage'));
-const ClinicalGuidelinesPage = lazy(() => import('@/pages/ClinicalGuidelinesPage'));
-const SBRTConstraintsPage   = lazy(() => import('@/pages/SBRTConstraintsPage'));
-const RadioactiveSourcesPage = lazy(() => import('@/pages/RadioactiveSourcesPage'));
-const RadioiodineI131Page    = lazy(() => import('@/pages/RadioiodineI131Page'));
-const ICRUPage               = lazy(() => import('@/pages/ICRUPage'));
-const OERLETRBEPage          = lazy(() => import('@/pages/oerletrbe'));
-const IonizingRadiationEffectsPage = lazy(() => import('@/pages/ionizingradiation'));
-const NamedEffectsPage       = lazy(() => import('@/pages/NamedEffectsPage'));
-const RadiationMechanismPage     = lazy(() => import('@/pages/radiationmechanism'));
-const CellSurvivalPage           = lazy(() => import('@/pages/cellsurvivalcurve'));
-const PediatricConstraints     = lazy(() => import('@/pages/PediatricConstraints'));
-const ClinicalTrials           = lazy(() => import('@/pages/ClinicalTrials'));
-const ToxicityGrading          = lazy(() => import('@/pages/ToxicityGrading'));
-const DoseRateComparison       = lazy(() => import('@/pages/DoseRateComparison'));
-const CervixBrachytherapy      = lazy(() => import('@/pages/CervixBrachytherapy'));
-const BrachytherapyReference     = lazy(() => import('@/pages/BrachytherapyReference'));
-const AdaptiveRT                 = lazy(() => import('@/pages/AdaptiveRT'));
-const ContouringAtlas            = lazy(() => import('@/pages/ContouringAtlas'));
+const Home                = lazy(() => import('./pages/Home'));
+const About               = lazy(() => import('./pages/About'));
+const EQD2Page            = lazy(() => import('./pages/EQD2Page'));
+const EBRTGapPage         = lazy(() => import('./pages/EBRTGapPage'));
+const HDRBrachyPage       = lazy(() => import('./pages/HDRBrachyPage'));
+const BEDtoEQD2Page       = lazy(() => import('./pages/BEDtoEQD2Page'));
+const FracAdjustPage      = lazy(() => import('./pages/FracAdjustPage'));
+const TDFPage             = lazy(() => import('./pages/TDFPage'));
+const RadiationUnitsPage  = lazy(() => import('./pages/RadiationUnitsPage'));
+const DoseExposuresPage   = lazy(() => import('./pages/DoseExposuresPage'));
+const VivaDefinitionsPage = lazy(() => import('./pages/VivaDefinitionsPage'));
+const RadiationHistoryPage= lazy(() => import('./pages/RadiationHistoryPage'));
+const OARReferencePage    = lazy(() => import('./pages/OARReferencePage'));
+const OARReferenceV2Page  = lazy(() => import('./pages/OARReferenceV2Page'));
+const ReirradiationCalcPage = lazy(() => import('./pages/ReirradiationCalcPage'));
+const ClinicalGuidelinesPage = lazy(() => import('./pages/ClinicalGuidelinesPage'));
+const SBRTConstraintsPage   = lazy(() => import('./pages/SBRTConstraintsPage'));
+const RadioactiveSourcesPage = lazy(() => import('./pages/RadioactiveSourcesPage'));
+const RadioiodineI131Page    = lazy(() => import('./pages/RadioiodineI131Page'));
+const ICRUPage               = lazy(() => import('./pages/ICRUPage'));
+const OERLETRBEPage          = lazy(() => import('./pages/oerletrbe'));
+const IonizingRadiationEffectsPage = lazy(() => import('./pages/ionizingradiation'));
+const NamedEffectsPage       = lazy(() => import('./pages/NamedEffectsPage'));
+const RadiationMechanismPage     = lazy(() => import('./pages/radiationmechanism'));
+const CellSurvivalPage           = lazy(() => import('./pages/cellsurvivalcurve'));
+const PediatricConstraints     = lazy(() => import('./pages/PediatricConstraints'));
+const ClinicalTrials           = lazy(() => import('./pages/ClinicalTrials'));
+const ToxicityGrading          = lazy(() => import('./pages/ToxicityGrading'));
+const DoseRateComparison       = lazy(() => import('./pages/DoseRateComparison'));
+const CervixBrachytherapy      = lazy(() => import('./pages/CervixBrachytherapy'));
+const BrachytherapyReference     = lazy(() => import('./pages/BrachytherapyReference'));
+const AdaptiveRT                 = lazy(() => import('./pages/AdaptiveRT'));
+const ContouringAtlas            = lazy(() => import('./pages/ContouringAtlas'));
 
 // ── Minimal inline spinner — no external deps ─────────────────────────────
 const PageLoader: React.FC = () => (
@@ -87,7 +87,7 @@ class ErrorBoundary extends Component<{ children: React.ReactNode }, ErrState> {
 // ── App ───────────────────────────────────────────────────────────────────
 const Layout: React.FC = () => {
   const location = useLocation();
-  const isImmersive = ['/radiation-mechanism', '/cell-survival', '/eqd2', '/pediatric-constraints', '/clinical-trials', '/toxicity-grading', '/dose-rate-comparison', '/cervix-brachytherapy', '/brachytherapy-reference', '/adaptive-rt'].includes(location.pathname);
+  const isImmersive = ['/radiation-mechanism', '/cell-survival', '/eqd2', '/pediatric-constraints', '/clinical-trials', '/toxicity-grading', '/dose-rate-comparison', '/cervix-brachytherapy', '/brachytherapy-reference', '/adaptive-rt', '/oar-limits', '/oar-limits-v2', '/sbrt'].includes(location.pathname);
 
   return (
     <div className={`flex flex-col min-h-screen ${isImmersive ? 'bg-slate-950' : 'bg-zinc-50'}`}>
@@ -96,15 +96,7 @@ const Layout: React.FC = () => {
       <main className={`flex-grow w-full ${isImmersive ? '' : 'max-w-3xl mx-auto px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10'}`}>
         <ErrorBoundary>
           <Suspense fallback={<PageLoader />}>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={location.pathname}
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.02 }}
-                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                className="w-full h-full"
-              >
+            <div className="w-full h-full">
                 <Routes location={location} key={location.pathname}>
                   <Route path="/"              element={<Home />} />
                   <Route path="/about"         element={<About />} />
@@ -119,6 +111,7 @@ const Layout: React.FC = () => {
                   <Route path="/viva-definitions" element={<VivaDefinitionsPage />} />
                   <Route path="/radiation-history" element={<RadiationHistoryPage />} />
                   <Route path="/oar-limits"    element={<OARReferencePage />} />
+                  <Route path="/oar-limits-v2" element={<OARReferenceV2Page />} />
                   <Route path="/reirradiation" element={<ReirradiationCalcPage />} />
                   <Route path="/guidelines"    element={<ClinicalGuidelinesPage />} />
                   <Route path="/sbrt"          element={<SBRTConstraintsPage />} />
@@ -139,8 +132,7 @@ const Layout: React.FC = () => {
                   <Route path="/adaptive-rt"           element={<AdaptiveRT />} />
                   <Route path="/contouring-atlas"      element={<ContouringAtlas />} />
                 </Routes>
-              </motion.div>
-            </AnimatePresence>
+            </div>
           </Suspense>
         </ErrorBoundary>
       </main>

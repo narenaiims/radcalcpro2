@@ -32,8 +32,8 @@ export const CalcHistoryPanel: React.FC<CalcHistoryPanelProps> = ({ open, onClos
                 <p>No calculations yet</p>
               </div>
             ) : (
-              history.slice(-10).reverse().map((entry: HistoryEntry, i: number) => (
-                <div key={i} className="bg-slate-800 p-3 rounded-lg text-sm">
+              history.slice(-10).reverse().map((entry: HistoryEntry) => (
+                <div key={entry.id} className="bg-slate-800 p-3 rounded-lg text-sm">
                   <div className="flex justify-between text-xs text-slate-400 mb-1">
                     <span>{entry.tool}</span>
                     <span>{new Date(entry.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>

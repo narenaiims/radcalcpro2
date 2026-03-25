@@ -67,7 +67,7 @@ const BEDtoEQD2Page: React.FC = () => {
     accent: "#00d4ff",
     bg: "rgba(0, 212, 255, 0.1)",
     border: "rgba(0, 212, 255, 0.3)",
-    rows: (items as any[]).map((item: any) => ({ k: item.label, v: item.value }))
+    rows: (items as {label: string, value: string}[]).map(item => ({ k: item.label, v: item.value }))
   }));
 
 

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/Card';
-import { ExternalLink, Globe, Gamepad2, HeartPulse, Apple, BookOpen, Info, Download, Share2 } from 'lucide-react';
+import { ExternalLink, Globe, Gamepad2, HeartPulse, BookOpen, Info, Download, Share2 } from 'lucide-react';
 import { getDeferredPrompt, installPWA } from '@/src/services/pwaService';
 
 const About: React.FC = () => {
@@ -16,12 +16,13 @@ const About: React.FC = () => {
       window.removeEventListener('pwa-prompt-cleared', handler);
     };
   }, []);
+
   const otherApps = [
     {
       title: 'Poshan Shakti 2',
       description: '7-दिवसीय सप्लीमेंट डाइट प्लान अपने लक्षणों और पसंद के आधार पर बनाएं।',
       url: 'https://poshan-shakti-2.vercel.app/',
-      icon: Apple,
+      icon: Globe,
       color: 'bg-emerald-500',
       tag: 'Diet & Nutrition'
     },
@@ -75,7 +76,9 @@ const About: React.FC = () => {
         </div>
         
         <div className="grid grid-cols-1 gap-4">
-          {otherApps.map((app, i) => (
+          {otherApps.map((app, i) => {
+            const Icon = app.icon;
+            return (
             <a
               key={app.url}
               href={app.url}
@@ -87,7 +90,7 @@ const About: React.FC = () => {
               <Card className="hover:border-zinc-900 transition-all cursor-pointer overflow-hidden relative">
                 <div className="flex items-start gap-5">
                   <div className={`w-14 h-14 rounded-2xl ${app.color} flex items-center justify-center text-white shrink-0 shadow-lg group-hover:scale-110 transition-transform`}>
-                    <app.icon className="w-7 h-7" />
+                    <Icon className="w-7 h-7" />
                   </div>
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center justify-between">
@@ -100,7 +103,8 @@ const About: React.FC = () => {
                 </div>
               </Card>
             </a>
-          ))}
+            );
+          })}
         </div>
       </section>
 

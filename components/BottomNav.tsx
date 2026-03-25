@@ -9,6 +9,7 @@ const BottomNav: React.FC = () => {
     { path: '/', label: 'Home', icon: Home },
     { path: '/eqd2', label: 'Calc', icon: Calculator },
     { path: '/oar-limits', label: 'Ref', icon: BookOpen },
+    { path: '/oar-limits-v2', label: 'V2', icon: BookOpen },
   ];
 
   return (

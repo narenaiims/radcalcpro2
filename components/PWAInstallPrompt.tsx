@@ -4,10 +4,10 @@ import { setDeferredPrompt, installPWA } from '@/src/services/pwaService';
 
 // Pure-CSS slide-up — no motion/react dependency needed for a simple toast
 const PWAInstallPrompt: React.FC = () => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isExiting, setIsExiting] = useState(false);
+  const [isVisible, setIsVisible] = React.useState(false);
+  const [isExiting, setIsExiting] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handler = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);

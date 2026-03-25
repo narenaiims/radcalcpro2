@@ -945,7 +945,7 @@ const IonizingRadiationEffectsPage: React.FC = () => {
               <select
                 value={qDiff}
                 onChange={e => {
-                  setQDiff(e.target.value as any);
+                  setQDiff(e.target.value as 'all' | 'basic' | 'intermediate' | 'advanced');
                   setQIdx(0); setQAnswered(null); setQScore(0); setQDone(false);
                 }}
                 className="text-[10px] border border-slate-200 rounded px-2 py-1 bg-slate-50 outline-none"

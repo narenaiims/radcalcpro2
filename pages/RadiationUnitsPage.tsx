@@ -826,7 +826,7 @@ const RadiationUnitsPage: React.FC = () => {
     accent: "#00d4ff",
     bg: "rgba(0, 212, 255, 0.1)",
     border: "rgba(0, 212, 255, 0.3)",
-    rows: (items as any[]).map((item: any) => ({ k: item.label, v: item.value }))
+    rows: (items as {label: string, value: string}[]).map(item => ({ k: item.label, v: item.value }))
   }));
 
   const [radiobioTab, setRadiobioTab] = useState<'lq' | 'survival' | 'effects'>('lq');
@@ -1241,7 +1241,7 @@ const RadiationUnitsPage: React.FC = () => {
                 ].map(t => (
                   <button
                     key={t.id}
-                    onClick={() => setRadiobioTab(t.id as any)}
+                    onClick={() => setRadiobioTab(t.id as 'lq' | 'survival' | 'effects')}
                     className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
                       radiobioTab === t.id ? 'bg-white shadow-sm text-amber-700' : 'text-slate-400 hover:text-slate-600'
                     }`}

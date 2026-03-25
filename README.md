@@ -15,3 +15,6 @@ npm run dev       # starts Vite dev server on port 3000
 npm run build     # production build to /dist
 ```
 Note: vite.config.ts is only active in this mode.
+
+### Vercel Deployment
+Set `VITE_GEMINI_API_KEY` in Vercel Project Settings → Environment Variables.

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, ChevronRight, GraduationCap, Calculator, Activity, AlertTriangle, Printer } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
@@ -104,21 +104,21 @@ const LEVEL_STYLES = {
 
 // ── Main page ─────────────────────────────────────────────────────────────
 const EQD2Page: React.FC = () => {
-  const [dosePerFx,  setDosePerFx]  = useState('2.0');
-  const [fractions,  setFractions]  = useState('25');
-  const [alphaBeta,  setAlphaBeta]  = useState('10');
-  const [selectedTumour, setSelectedTumour] = useState<RadiobiologyData | null>(null);
-  const [aiText,     setAiText]     = useState('');
-  const [aiLoading,  setAiLoading]  = useState(false);
-  const [showFormula, setShowFormula] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const [dosePerFx,  setDosePerFx]  = React.useState('2.0');
+  const [fractions,  setFractions]  = React.useState('25');
+  const [alphaBeta,  setAlphaBeta]  = React.useState('10');
+  const [selectedTumour, setSelectedTumour] = React.useState<RadiobiologyData | null>(null);
+  const [aiText,     setAiText]     = React.useState('');
+  const [aiLoading,  setAiLoading]  = React.useState(false);
+  const [showFormula, setShowFormula] = React.useState(false);
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const contentRef = React.useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
 
   const { logCalculation } = useRxContext();
 
   // ── Persistence ───────────────────────────────────────────────────────
-  useEffect(() => {
+  React.useEffect(() => {
     try {
       const s = localStorage.getItem(STORAGE_KEY);
       if (s) {
@@ -130,23 +130,23 @@ const EQD2Page: React.FC = () => {
     } catch { /* ignore */ }
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ dosePerFx, fractions, alphaBeta }));
   }, [dosePerFx, fractions, alphaBeta]);
 
   // ── Core calculations ────────────────────────────────────────────────
-  const dpf = useMemo(() => parseFloat(dosePerFx) || 0, [dosePerFx]);
-  const n   = useMemo(() => parseFloat(fractions)  || 0, [fractions]);
-  const ab  = useMemo(() => parseFloat(alphaBeta)  || 0, [alphaBeta]);
+  const dpf = React.useMemo(() => parseFloat(dosePerFx) || 0, [dosePerFx]);
+  const n   = React.useMemo(() => parseFloat(fractions)  || 0, [fractions]);
+  const ab  = React.useMemo(() => parseFloat(alphaBeta)  || 0, [alphaBeta]);
 
-  const totalDose = useMemo(() => dpf * n,                                       [dpf, n]);
-  const bed       = useMemo(() => ab > 0 ? totalDose * (1 + dpf / ab) : 0,      [totalDose, dpf, ab]);
-  const eqd2      = useMemo(() => ab > 0 ? bed / (1 + 2 / ab) : 0,              [bed, ab]);
+  const totalDose = React.useMemo(() => dpf * n,                                       [dpf, n]);
+  const bed       = React.useMemo(() => ab > 0 ? totalDose * (1 + dpf / ab) : 0,      [totalDose, dpf, ab]);
+  const eqd2      = React.useMemo(() => ab > 0 ? bed / (1 + 2 / ab) : 0,              [bed, ab]);
 
-  const interp    = useMemo(() => ab > 0 && eqd2 > 0 ? interpretEQD2(eqd2, ab) : null, [eqd2, ab]);
+  const interp    = React.useMemo(() => ab > 0 && eqd2 > 0 ? interpretEQD2(eqd2, ab) : null, [eqd2, ab]);
 
   // ── Sensitivity table (±0.2 Gy/fx steps) ────────────────────────────
-  const sensitivityRows = useMemo(() => {
+  const sensitivityRows = React.useMemo(() => {
     if (ab === 0 || dpf === 0) return [];
     return [-0.4, -0.2, 0, 0.2, 0.4].map(delta => {
       const d = parseFloat((dpf + delta).toFixed(2));
@@ -159,7 +159,7 @@ const EQD2Page: React.FC = () => {
   }, [dpf, n, ab]);
 
   // ── α/β comparison table ─────────────────────────────────────────────
-  const abCompRows = useMemo(() => {
+  const abCompRows = React.useMemo(() => {
     if (dpf === 0 || n === 0) return [];
     return [1.5, 2, 3, 4, 10, 15].map(a => {
       const b = totalDose * (1 + dpf / a);
@@ -171,10 +171,16 @@ const EQD2Page: React.FC = () => {
   // ── AI explanation ───────────────────────────────────────────────────
   const fetchAI = async () => {
     if (aiLoading || ab === 0) return;
+    
+    if (!import.meta.env.VITE_GEMINI_API_KEY) {
+      setAiText('AI explanation requires API key configuration');
+      return;
+    }
+
     setAiLoading(true);
     setAiText('');
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY ?? '' });
       const prompt = `You are a radiation oncology educator. Explain the radiobiological significance of the following fractionation schedule concisely for a postgraduate trainee:
  
 Schedule: ${n} fractions × ${dpf} Gy = ${totalDose.toFixed(1)} Gy total

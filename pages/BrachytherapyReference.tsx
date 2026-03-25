@@ -1633,7 +1633,7 @@ export default function BrachytherapyReference() {
             { id:"content",  label:"📚 Reference" },
             { id:"diagram",  label:"🔬 Diagram" },
           ].map(t => (
-            <button key={t.id} onClick={() => setTab(t.id as any)} style={{
+            <button key={t.id} onClick={() => setTab(t.id as 'content' | 'diagram')} style={{
               flex:1, padding:"9px 5px", borderRadius:"10px",
               backgroundColor: tab===t.id ? site.primary : "transparent",
               border:"none",

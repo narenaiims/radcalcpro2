@@ -236,7 +236,7 @@ function AnimatedBar({ value, max, color, label, unit }: { value: number; max: n
 
 // ─── MODAL CARD ───────────────────────────────────────────────────────────────
 function ModalityCard({ m, isActive, onClick }: { m: any; isActive: boolean; onClick: () => void }) {
-  const col = (C as any)[m.id];
+  const col = C[m.id as keyof typeof C];
   return (
     <button onClick={onClick} style={{
       flex: "1 1 0", minWidth: "80px",
@@ -268,7 +268,7 @@ function ModalityCard({ m, isActive, onClick }: { m: any; isActive: boolean; onC
 
 // ─── DETAIL PANEL ─────────────────────────────────────────────────────────────
 function DetailPanel({ m }: { m: any }) {
-  const col = (C as any)[m.id];
+  const col = C[m.id as keyof typeof C];
   const [subTab, setSubTab] = useState("overview");
 
   const tabs = [
@@ -442,7 +442,7 @@ function DetailPanel({ m }: { m: any }) {
               letterSpacing: "0.12em", marginBottom: "14px",
               fontFamily: "'Space Mono', monospace"
             }}>CLINICAL APPLICATIONS & REGIMENS</div>
-            {(m.clinicalSites as any[]).map((cs, i) => (
+            {m.clinicalSites.map((cs: any, i: number) => (
               <div key={i} style={{
                 marginBottom: "10px", padding: "14px 16px",
                 borderRadius: "12px", backgroundColor: "rgba(255,255,255,0.03)",
@@ -583,7 +583,7 @@ function ComparisonTable() {
             {["ldr","hdr","pdr"].map(id => (
               <th key={id} style={{
                 padding: "10px 14px", textAlign: "left",
-                fontSize: "14px", color: (C as any)[id].primary,
+                fontSize: "14px", color: C[id as keyof typeof C].primary,
                 fontFamily: "'Bebas Neue', sans-serif",
                 letterSpacing: "0.1em"
               }}>{id.toUpperCase()}</th>
@@ -608,11 +608,11 @@ function ComparisonTable() {
               {["ldr","hdr","pdr"].map(id => (
                 <td key={id} style={{
                   padding: "10px 14px",
-                  backgroundColor: hovered === i ? (C as any)[id].bg : "rgba(255,255,255,0.02)",
+                  backgroundColor: hovered === i ? C[id as keyof typeof C].bg : "rgba(255,255,255,0.02)",
                   fontSize: "11px", color: "#CBD5E1", lineHeight: 1.5,
-                  borderRight: `1px solid ${hovered === i ? (C as any)[id].border : "transparent"}`,
+                  borderRight: `1px solid ${hovered === i ? C[id as keyof typeof C].border : "transparent"}`,
                   transition: "all 0.15s"
-                }}>{(row as any)[id]}</td>
+                }}>{(row as Record<string, any>)[id]}</td>
               ))}
             </tr>
           ))}
@@ -662,7 +662,7 @@ function BEDCalculator() {
         {[{id:"hdr",label:"HDR BED"},{id:"ldr",label:"LDR BED"}].map(m => (
           <button key={m.id} onClick={() => setMode(m.id)} style={{
             flex: 1, padding: "9px",
-            backgroundColor: mode === m.id ? (C as any)[m.id].primary : "transparent",
+            backgroundColor: mode === m.id ? C[m.id as keyof typeof C].primary : "transparent",
             border: "none", borderRadius: "8px",
             color: mode === m.id ? "#0A0F1A" : "#64748B",
             fontSize: "11px", fontWeight: 800, cursor: "pointer",
@@ -880,13 +880,13 @@ export default function DoseRateComparison() {
           ].map(t => (
             <button key={t.id} onClick={() => setMainTab(t.id)} style={{
               flex: 1, padding: "10px 8px",
-              backgroundColor: mainTab === t.id ? (C as any)[activeModality].primary : "transparent",
+              backgroundColor: mainTab === t.id ? C[activeModality as keyof typeof C].primary : "transparent",
               border: "none", borderRadius: "10px",
               color: mainTab === t.id ? "#0A0F1A" : "#64748B",
               fontSize: "11px", fontWeight: 800, cursor: "pointer",
               fontFamily: "'Space Mono', monospace",
               transition: "all 0.25s ease",
-              boxShadow: mainTab === t.id ? `0 0 16px ${(C as any)[activeModality].glow}` : "none"
+              boxShadow: mainTab === t.id ? `0 0 16px ${C[activeModality as keyof typeof C].glow}` : "none"
             }}>{t.label}</button>
           ))}
         </div>

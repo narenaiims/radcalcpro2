@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, ChevronDown, ChevronUp, ExternalLink, BookOpen, AlertTriangle, HelpCircle, Info, Layers, Map, Target, Calendar, CheckCircle2 } from 'lucide-react';
+import { 
+  Search, ChevronDown, ChevronUp, ExternalLink, BookOpen, 
+  AlertTriangle, HelpCircle, Info, Layers, Map, Target, 
+  Calendar, CheckCircle2, XCircle, ChevronRight, Shield,
+  Activity, Zap, BarChart2
+} from 'lucide-react';
+import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface Station {
@@ -370,16 +376,65 @@ const DAILY_CASES: DailyCase[] = [
   }
 ];
 
-// ── Components ─────────────────────────────────────────────────────────────
+// ── Constants ──────────────────────────────────────────────────────────────
+const SIDEBAR_DATA: KeyFactSection[] = [
+  {
+    title: "Core Principles",
+    emoji: "🎯",
+    accent: "#2dd4bf",
+    bg: "rgba(45, 212, 191, 0.05)",
+    border: "rgba(45, 212, 191, 0.1)",
+    rows: [
+      { k: "Anatomical Barriers", v: "Bone, air, and intact fascia are barriers to microscopic spread." },
+      { k: "CTV Expansion", v: "Typically 5-10mm, but must be trimmed at anatomical boundaries." },
+      { k: "Nodal Levels", v: "Standardized by DAHANCA, RTOG, and ESTRO consensus." }
+    ]
+  },
+  {
+    title: "H&N Landmarks",
+    emoji: "🧠",
+    accent: "#e8c84a",
+    bg: "rgba(232, 200, 74, 0.05)",
+    border: "rgba(232, 200, 74, 0.1)",
+    rows: [
+      { k: "Level II/III", v: "Divided by the inferior border of the hyoid bone." },
+      { k: "Level III/IV", v: "Divided by the inferior border of the cricoid cartilage." },
+      { k: "RP Nodes", v: "Skull base to C2; mandatory for NPC." }
+    ]
+  },
+  {
+    title: "Pelvic Landmarks",
+    emoji: "🦴",
+    accent: "#fb7185",
+    bg: "rgba(251, 113, 133, 0.05)",
+    border: "rgba(251, 113, 133, 0.1)",
+    rows: [
+      { k: "Common Iliac", v: "Aortic bifurcation (L4/L5) to CI bifurcation." },
+      { k: "Inguinal", v: "Superior boundary is the inguinal ligament." }
+    ]
+  }
+];
+
 const ContouringAtlas: React.FC = () => {
   const [activeTab, setActiveTab] = useState('hn');
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedStations, setExpandedStations] = useState<Set<string>>(new Set());
+  const [selId, setSelId] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [quizState, setQuizState] = useState({ current: 0, score: 0, finished: false, showFeedback: false, selected: null as number | null });
   const [dailyCaseState, setDailyCaseState] = useState<{
     selectedOption: number | null;
     submitted: boolean;
   }>({ selectedOption: null, submitted: false });
+
+  const selItem = useMemo(() => {
+    if (!selId) return null;
+    const allStations = [...HN_STATIONS, ...PELVIS_STATIONS, ...THORAX_STATIONS];
+    const station = allStations.find(s => s.id === selId);
+    if (station) return { type: 'station', data: station };
+    const error = ERROR_CASES.find(e => e.id === selId);
+    if (error) return { type: 'error', data: error };
+    return null;
+  }, [selId]);
 
   const currentDailyCase = useMemo(() => {
     const dayIndex = new Date().getDate() % DAILY_CASES.length;
@@ -398,13 +453,6 @@ const ContouringAtlas: React.FC = () => {
     const newState = { ...dailyCaseState, submitted: true };
     setDailyCaseState(newState);
     localStorage.setItem(`daily-case-${currentDailyCase.id}-${new Date().toDateString()}`, JSON.stringify(newState));
-  };
-
-  const toggleStation = (id: string) => {
-    const next = new Set(expandedStations);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setExpandedStations(next);
   };
 
   const filteredHN = HN_STATIONS.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.clinical.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -433,17 +481,25 @@ const ContouringAtlas: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen font-body selection:bg-teal-500/30">
+    <div className="min-h-screen bg-[#060810] text-slate-300 font-body selection:bg-teal-500/30 overflow-x-hidden">
       <div className="atmosphere-bg" />
       <div className="mesh-grid" />
 
+      <KeyFactsSidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onOpen={() => setSidebarOpen(true)}
+        data={SIDEBAR_DATA}
+        title="Contouring Atlas"
+      />
+
       {/* ── Hero Section ─────────────────────────────────────────────────── */}
-      <section className="relative pt-24 pb-20 px-6 overflow-hidden">
-        <div className="max-w-5xl mx-auto relative z-10 text-center">
+      <section className="relative pt-24 pb-12 px-6 overflow-hidden">
+        <div className="max-w-6xl mx-auto relative z-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-teal-400 text-[10px] font-black uppercase tracking-[0.2em] mb-8"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-teal-400 text-[10px] font-black uppercase tracking-[0.2em] mb-6"
           >
             <Layers className="w-3 h-3" />
             Clinical Reference v2.0
@@ -452,7 +508,7 @@ const ContouringAtlas: React.FC = () => {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-6xl md:text-8xl font-display font-bold text-white mb-8 tracking-tight animate-slam"
+            className="text-5xl md:text-7xl font-display font-bold text-white mb-6 tracking-tight"
           >
             RadOnc <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500">Pro Atlas</span>
           </motion.h1>
@@ -461,7 +517,7 @@ const ContouringAtlas: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-slate-400 max-w-2xl mx-auto text-xl font-light leading-relaxed font-serif italic"
+            className="text-slate-400 max-w-2xl text-lg font-light leading-relaxed font-serif italic"
           >
             A comprehensive guide for radiation oncology contouring, covering nodal stations, anatomical boundaries, and evidence-based recommendations.
           </motion.p>
@@ -469,8 +525,8 @@ const ContouringAtlas: React.FC = () => {
       </section>
 
       {/* ── Navigation Tabs ──────────────────────────────────────────────── */}
-      <div className="sticky top-12 z-40 glass border-y border-white/5">
-        <div className="max-w-5xl mx-auto px-4 overflow-x-auto no-scrollbar">
+      <div className="sticky top-0 z-40 bg-[#060810]/80 backdrop-blur-md border-y border-white/5">
+        <div className="max-w-6xl mx-auto px-4 overflow-x-auto no-scrollbar">
           <div className="flex items-center gap-8 h-16 min-w-max">
             {[
               { id: 'hn', label: 'H&N Nodes', icon: Target },
@@ -480,25 +536,33 @@ const ContouringAtlas: React.FC = () => {
               { id: 'daily', label: 'Daily Case', icon: Calendar },
               { id: 'links', label: 'Atlas Links', icon: BookOpen },
               { id: 'quiz', label: 'Quiz', icon: HelpCircle }
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`tab-btn flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] h-full px-2 ${activeTab === tab.id ? 'active text-teal-400' : 'text-slate-500 hover:text-slate-300'}`}
-              >
-                <tab.icon className="w-4 h-4" />
-                {tab.label}
-              </button>
-            ))}
+            ].map(tab => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => { setActiveTab(tab.id); setSelId(null); }}
+                  className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] h-full px-2 transition-all relative ${
+                    activeTab === tab.id ? 'text-teal-400' : 'text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {tab.label}
+                  {activeTab === tab.id && (
+                    <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-400" />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* ── Main Content ─────────────────────────────────────────────────── */}
-      <main className="max-w-5xl mx-auto px-6 py-12">
+      <main className="max-w-6xl mx-auto px-6 py-12 relative">
         {/* Search Bar */}
         {['hn', 'pelvis', 'thorax', 'errors'].includes(activeTab) && (
-          <div className="mb-12 relative group">
+          <div className="mb-12 relative group max-w-2xl">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-teal-400 transition-colors" />
             <input
               type="text"
@@ -510,148 +574,89 @@ const ContouringAtlas: React.FC = () => {
           </div>
         )}
 
-        <AnimatePresence mode="wait">
-          {/* H&N Nodes */}
-          {activeTab === 'hn' && (
-            <motion.div
-              key="hn"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="space-y-2"
-            >
-              {filteredHN.map(station => (
-                <div key={station.id} className="station glass-hover">
-                  <div
-                    onClick={() => toggleStation(station.id)}
-                    className="station-head"
+        <div className="relative">
+          <AnimatePresence mode="wait">
+            {/* H&N Nodes */}
+            {activeTab === 'hn' && (
+              <motion.div
+                key="hn"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+              >
+                {filteredHN.map(station => (
+                  <button
+                    key={station.id}
+                    onClick={() => setSelId(station.id)}
+                    className={`text-left p-5 rounded-2xl border transition-all group flex flex-col justify-between h-32 ${
+                      selId === station.id ? 'bg-teal/10 border-teal/50' : 'bg-white/5 border-white/5 hover:bg-white/10'
+                    }`}
                   >
-                    <div className="stn-num" style={{ backgroundColor: `${station.accent}20`, color: station.accent }}>
-                      {station.num}
-                    </div>
-                    <div className="stn-name font-display">{station.name}</div>
-                    {station.badge && (
-                      <div className={`stn-badge ${station.badgeClass}`}>
-                        {station.badge}
-                      </div>
-                    )}
-                    {expandedStations.has(station.id) ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
-                  </div>
-                  <AnimatePresence>
-                    {expandedStations.has(station.id) && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="border-t border-white/5"
-                      >
-                        <div className="p-6 space-y-6">
-                          <div className="boundary-grid">
-                            {Object.entries(station.boundaries).map(([key, val]) => (
-                              <div key={key} className="b-item">
-                                <span className="b-label">{key}</span>
-                                <span className="b-val">{val}</span>
-                              </div>
-                            ))}
-                          </div>
-                          
-                          <div className="space-y-4">
-                            <div>
-                              <h4 className="text-[10px] font-black uppercase tracking-widest text-teal-400 mb-2 font-body">Clinical Relevance</h4>
-                              <p className="text-sm text-slate-300 leading-relaxed font-serif italic">{station.clinical}</p>
-                            </div>
-                            {station.fullNote && (
-                              <div className="pro-note font-serif">
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-gold mb-2 font-body">Detailed Note</h4>
-                                {station.fullNote}
-                              </div>
-                            )}
-                            {(station.consensus || station.evidence) && (
-                              <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                                <span className="text-[10px] text-slate-500 italic font-serif">{station.consensus}</span>
-                                {station.evidence && <span className="evidence-tag">{station.evidence}</span>}
-                              </div>
-                            )}
-                          </div>
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-xs font-black px-2 py-0.5 rounded bg-white/5 border border-white/10 text-teal-400 font-mono">
+                          {station.num}
                         </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
-            </motion.div>
-          )}
+                        {station.badge && (
+                          <div className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter border ${
+                            station.badgeClass === 'badge-bil' ? 'border-teal/30 text-teal/70' : 'border-gold/30 text-gold/70'
+                          }`}>
+                            {station.badge}
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="text-lg font-bold text-white font-display group-hover:text-teal-400 transition-colors">{station.name}</h3>
+                    </div>
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-[9px] text-slate-500 font-serif italic line-clamp-1">{station.clinical}</span>
+                      <ChevronRight className={`w-4 h-4 ${selId === station.id ? 'text-teal' : 'text-slate-600'}`} />
+                    </div>
+                  </button>
+                ))}
+              </motion.div>
+            )}
 
-          {/* Pelvis Nodes */}
-          {activeTab === 'pelvis' && (
-            <motion.div
-              key="pelvis"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="space-y-2"
-            >
-              {filteredPelvis.map(station => (
-                <div key={station.id} className="station glass-hover">
-                  <div
-                    onClick={() => toggleStation(station.id)}
-                    className="station-head"
+            {/* Pelvis Nodes */}
+            {activeTab === 'pelvis' && (
+              <motion.div
+                key="pelvis"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+              >
+                {filteredPelvis.map(station => (
+                  <button
+                    key={station.id}
+                    onClick={() => setSelId(station.id)}
+                    className={`text-left p-5 rounded-2xl border transition-all group flex flex-col justify-between h-32 ${
+                      selId === station.id ? 'bg-teal/10 border-teal/50' : 'bg-white/5 border-white/5 hover:bg-white/10'
+                    }`}
                   >
-                    <div className="stn-num" style={{ backgroundColor: `${station.accent}20`, color: station.accent }}>
-                      {station.num}
-                    </div>
-                    <div className="stn-name font-display">{station.name}</div>
-                    {station.badge && (
-                      <div className={`stn-badge ${station.badgeClass}`}>
-                        {station.badge}
-                      </div>
-                    )}
-                    {expandedStations.has(station.id) ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
-                  </div>
-                  <AnimatePresence>
-                    {expandedStations.has(station.id) && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="border-t border-white/5"
-                      >
-                        <div className="p-6 space-y-6">
-                          <div className="boundary-grid">
-                            {Object.entries(station.boundaries).map(([key, val]) => (
-                              <div key={key} className="b-item">
-                                <span className="b-label">{key}</span>
-                                <span className="b-val">{val}</span>
-                              </div>
-                            ))}
-                          </div>
-                          
-                          <div className="space-y-4">
-                            <div>
-                              <h4 className="text-[10px] font-black uppercase tracking-widest text-teal-400 mb-2 font-body">Clinical Relevance</h4>
-                              <p className="text-sm text-slate-300 leading-relaxed font-serif italic">{station.clinical}</p>
-                            </div>
-                            {station.fullNote && (
-                              <div className="pro-note font-serif">
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-gold mb-2 font-body">Detailed Note</h4>
-                                {station.fullNote}
-                              </div>
-                            )}
-                            {(station.consensus || station.evidence) && (
-                              <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                                <span className="text-[10px] text-slate-500 italic font-serif">{station.consensus}</span>
-                                {station.evidence && <span className="evidence-tag">{station.evidence}</span>}
-                              </div>
-                            )}
-                          </div>
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-xs font-black px-2 py-0.5 rounded bg-white/5 border border-white/10 text-teal-400 font-mono">
+                          {station.num}
                         </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
-            </motion.div>
-          )}
+                        {station.badge && (
+                          <div className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter border ${
+                            station.badgeClass === 'badge-bil' ? 'border-teal/30 text-teal/70' : 'border-gold/30 text-gold/70'
+                          }`}>
+                            {station.badge}
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="text-lg font-bold text-white font-display group-hover:text-teal-400 transition-colors">{station.name}</h3>
+                    </div>
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-[9px] text-slate-500 font-serif italic line-clamp-1">{station.clinical}</span>
+                      <ChevronRight className={`w-4 h-4 ${selId === station.id ? 'text-teal' : 'text-slate-600'}`} />
+                    </div>
+                  </button>
+                ))}
+              </motion.div>
+            )}
 
           {/* Thorax */}
           {activeTab === 'thorax' && (
@@ -694,68 +699,36 @@ const ContouringAtlas: React.FC = () => {
                 </div>
               </div>
 
-              {/* Thorax Stations List */}
-              <div className="space-y-2">
+              {/* Thorax Stations Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredThorax.map(station => (
-                  <div key={station.id} className="station glass-hover">
-                    <div
-                      onClick={() => toggleStation(`thorax-${station.id}`)}
-                      className="station-head"
-                    >
-                      <div className="stn-num" style={{ backgroundColor: `${station.accent}20`, color: station.accent }}>
-                        {station.num}
-                      </div>
-                      <div className="stn-name font-display">{station.name}</div>
-                      {station.badge && (
-                        <div className={`stn-badge ${station.badgeClass}`}>
-                          {station.badge}
+                  <button
+                    key={station.id}
+                    onClick={() => setSelId(station.id)}
+                    className={`text-left p-5 rounded-2xl border transition-all group flex flex-col justify-between h-32 ${
+                      selId === station.id ? 'bg-teal/10 border-teal/50' : 'bg-white/5 border-white/5 hover:bg-white/10'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-xs font-black px-2 py-0.5 rounded bg-white/5 border border-white/10 text-teal-400 font-mono">
+                          {station.num}
                         </div>
-                      )}
-                      {expandedStations.has(`thorax-${station.id}`) ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
-                    </div>
-                    <AnimatePresence>
-                      {expandedStations.has(`thorax-${station.id}`) && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="border-t border-white/5"
-                        >
-                          <div className="p-6 space-y-6">
-                            {Object.keys(station.boundaries).length > 0 && (
-                              <div className="boundary-grid">
-                                {Object.entries(station.boundaries).map(([key, val]) => (
-                                  <div key={key} className="b-item">
-                                    <span className="b-label">{key}</span>
-                                    <span className="b-val">{val}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                            
-                            <div className="space-y-4">
-                              <div>
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-teal-400 mb-2 font-body">Clinical Relevance</h4>
-                                <p className="text-sm text-slate-300 leading-relaxed font-serif italic">{station.clinical}</p>
-                              </div>
-                              {station.fullNote && (
-                                <div className="pro-note font-serif">
-                                  <h4 className="text-[10px] font-black uppercase tracking-widest text-gold mb-2 font-body">Detailed Note</h4>
-                                  {station.fullNote}
-                                </div>
-                              )}
-                              {(station.consensus || station.evidence) && (
-                                <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                                  <span className="text-[10px] text-slate-500 italic font-serif">{station.consensus}</span>
-                                  {station.evidence && <span className="evidence-tag">{station.evidence}</span>}
-                                </div>
-                              )}
-                            </div>
+                        {station.badge && (
+                          <div className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter border ${
+                            station.badgeClass === 'badge-bil' ? 'border-teal/30 text-teal/70' : 'border-gold/30 text-gold/70'
+                          }`}>
+                            {station.badge}
                           </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                        )}
+                      </div>
+                      <h3 className="text-lg font-bold text-white font-display group-hover:text-teal-400 transition-colors">{station.name}</h3>
+                    </div>
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-[9px] text-slate-500 font-serif italic line-clamp-1">{station.clinical}</span>
+                      <ChevronRight className={`w-4 h-4 ${selId === station.id ? 'text-teal' : 'text-slate-600'}`} />
+                    </div>
+                  </button>
                 ))}
               </div>
             </motion.div>
@@ -767,68 +740,32 @@ const ContouringAtlas: React.FC = () => {
               key="errors"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="grid md:grid-cols-2 gap-6"
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
             >
-              {filteredErrors.map(err => {
-                const isExpanded = expandedStations.has(`err-${err.id}`);
-                return (
-                  <div 
-                    key={err.id} 
-                    className={`glass rounded-2xl border-l-4 border-l-coral flex flex-col overflow-hidden cursor-pointer transition-all hover:bg-white/5 ${isExpanded ? 'ring-1 ring-coral/20' : ''}`}
-                    onClick={() => toggleStation(`err-${err.id}`)}
-                  >
-                    <div className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 block mb-1 font-body">{err.site}</span>
-                          <h3 className="font-bold text-white text-lg leading-snug font-display">{err.title}</h3>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <AlertTriangle className="w-5 h-5 text-coral shrink-0" />
-                          {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-2 mt-2">
-                         <HelpCircle className="w-3.5 h-3.5 text-gold" />
-                         <span className="text-[11px] text-gold font-medium italic font-serif">{err.tip}</span>
-                      </div>
+              {filteredErrors.map(err => (
+                <button
+                  key={err.id}
+                  onClick={() => setSelId(err.id)}
+                  className={`text-left p-6 rounded-2xl border transition-all group flex flex-col justify-between h-40 ${
+                    selId === err.id ? 'bg-coral/10 border-coral/50' : 'bg-white/5 border-white/5 hover:bg-white/10'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 font-body">{err.site}</span>
+                      <AlertTriangle className={`w-5 h-5 ${selId === err.id ? 'text-coral' : 'text-slate-600'}`} />
                     </div>
-
-                    <AnimatePresence>
-                      {isExpanded && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="border-t border-white/5"
-                        >
-                          <div className="p-6 pt-4 space-y-4">
-                            <div className="bg-coral/5 rounded-xl p-4 border border-coral/10">
-                              <span className="text-[9px] font-black uppercase tracking-widest text-coral block mb-2 font-body">Common Error</span>
-                              <p className="text-sm text-slate-300 leading-relaxed font-serif italic">{err.error}</p>
-                            </div>
-                            <div className="bg-teal-500/5 rounded-xl p-4 border border-teal-500/10">
-                              <span className="text-[9px] font-black uppercase tracking-widest text-teal-400 block mb-2 font-body">Corrective Action</span>
-                              <p className="text-sm text-slate-300 leading-relaxed font-serif italic">{err.fix}</p>
-                            </div>
-                            <div className="pro-note !p-4 !border-none">
-                              <p className="text-xs text-slate-400 leading-relaxed font-serif">
-                                <span className="font-bold text-slate-300 uppercase text-[9px] tracking-wider font-body">Consequence:</span> {err.why}
-                              </p>
-                            </div>
-                            {err.evidence && (
-                              <div className="pt-2 flex justify-end">
-                                <span className="evidence-tag">{err.evidence}</span>
-                              </div>
-                            )}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <h3 className="font-bold text-white text-lg leading-snug font-display group-hover:text-coral transition-colors">{err.title}</h3>
                   </div>
-                );
-              })}
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-2">
+                      <HelpCircle className="w-3.5 h-3.5 text-gold" />
+                      <span className="text-[10px] text-gold font-medium italic font-serif">{err.tip}</span>
+                    </div>
+                    <ChevronRight className={`w-4 h-4 ${selId === err.id ? 'text-coral' : 'text-slate-600'}`} />
+                  </div>
+                </button>
+              ))}
             </motion.div>
           )}
 
@@ -1087,7 +1024,128 @@ const ContouringAtlas: React.FC = () => {
             </motion.div>
           )}
         </AnimatePresence>
+        </div>
       </main>
+
+      {/* ── Side Drawer ─────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {selId && selItem && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelId(null)}
+              className="fixed inset-0 bg-[#060810]/80 backdrop-blur-sm z-50"
+            />
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 bottom-0 w-full max-w-2xl bg-[#0a0c14] border-l border-white/10 z-50 overflow-y-auto shadow-2xl"
+            >
+              <div className="p-12">
+                <div className="flex items-center justify-between mb-12">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center text-teal-400 border border-teal-500/20">
+                      {selItem.type === 'station' ? <Target className="w-6 h-6" /> : <AlertTriangle className="w-6 h-6" />}
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-400 block mb-1 font-body">
+                        {selItem.type === 'station' ? 'Contouring Station' : 'Error Case'}
+                      </span>
+                      <h2 className="text-3xl font-bold text-white font-display">
+                        {selItem.type === 'station' ? (selItem.data as Station).name : (selItem.data as ErrorCase).title}
+                      </h2>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setSelId(null)}
+                    className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all border border-white/10"
+                  >
+                    <XCircle className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {selItem.type === 'station' ? (
+                  <div className="space-y-10">
+                    <div className="grid grid-cols-2 gap-4">
+                      {Object.entries((selItem.data as Station).boundaries).map(([key, val]) => (
+                        <div key={key} className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-teal-400 block mb-2 font-body">{key}</span>
+                          <p className="text-sm text-slate-300 font-serif italic">{val}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-teal-400 mb-3 font-body">Clinical Relevance</h4>
+                        <p className="text-base text-slate-300 leading-relaxed font-serif italic">{(selItem.data as Station).clinical}</p>
+                      </div>
+
+                      {(selItem.data as Station).fullNote && (
+                        <div className="p-6 rounded-2xl bg-gold/5 border border-gold/10">
+                          <h4 className="text-[10px] font-black uppercase tracking-widest text-gold mb-3 font-body">Detailed Note</h4>
+                          <div className="text-sm text-slate-300 leading-relaxed font-serif italic">{(selItem.data as Station).fullNote}</div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between p-6 rounded-2xl bg-white/5 border border-white/10">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 font-body">Consensus</span>
+                          <span className="text-xs text-slate-400 italic font-serif">{(selItem.data as Station).consensus}</span>
+                        </div>
+                        {(selItem.data as Station).evidence && (
+                          <div className="px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-[10px] font-black uppercase tracking-widest">
+                            {(selItem.data as Station).evidence}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-10">
+                    <div className="p-8 rounded-3xl bg-coral/5 border border-coral/10">
+                      <div className="flex items-center gap-3 mb-4">
+                        <AlertTriangle className="w-5 h-5 text-coral" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-coral font-body">Common Error</span>
+                      </div>
+                      <p className="text-lg text-slate-200 leading-relaxed font-serif italic">{(selItem.data as ErrorCase).error}</p>
+                    </div>
+
+                    <div className="p-8 rounded-3xl bg-teal-500/5 border border-teal-500/10">
+                      <div className="flex items-center gap-3 mb-4">
+                        <CheckCircle2 className="w-5 h-5 text-teal-400" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-teal-400 font-body">Corrective Action</span>
+                      </div>
+                      <p className="text-lg text-slate-200 leading-relaxed font-serif italic">{(selItem.data as ErrorCase).fix}</p>
+                    </div>
+
+                    <div className="p-8 rounded-3xl bg-white/5 border border-white/10">
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 font-body">Clinical Consequence</h4>
+                      <p className="text-sm text-slate-400 leading-relaxed font-serif italic">{(selItem.data as ErrorCase).why}</p>
+                    </div>
+
+                    <div className="flex items-center justify-between p-6 rounded-2xl bg-gold/5 border border-gold/10">
+                      <div className="flex items-center gap-3">
+                        <HelpCircle className="w-5 h-5 text-gold" />
+                        <span className="text-sm text-gold font-bold italic font-serif">{(selItem.data as ErrorCase).tip}</span>
+                      </div>
+                      {(selItem.data as ErrorCase).evidence && (
+                        <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-slate-400 text-[10px] font-black uppercase tracking-widest">
+                          {(selItem.data as ErrorCase).evidence}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
       <footer className="max-w-5xl mx-auto px-6 py-20 border-t border-white/5 text-center">

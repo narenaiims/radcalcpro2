@@ -574,7 +574,7 @@ export default function RadiationMechanismPage() {
               { id: "clinical", label: "Clinical Use" },
               { id: "pitfall", label: "Boards Pitfall" }
             ].map(t => (
-              <button key={t.id} onClick={() => setTab(t.id as any)}
+              <button key={t.id} onClick={() => setTab(t.id as 'physics' | 'clinical' | 'pitfall')}
                 className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${tab === t.id ? "bg-slate-800 text-white shadow-sm" : "text-slate-500 hover:text-slate-300"}`}
               >
                 {t.label}

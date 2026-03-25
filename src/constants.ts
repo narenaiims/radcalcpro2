@@ -10,6 +10,7 @@ export const ROUTES = [
   { path: '/oerletrbe',      label: 'OER / LET / RBE',      group: 'Calculators',  short: 'OER/RBE' },
   // ── References
   { path: '/oar-limits',     label: 'OAR Dose Limits',      group: 'Reference',    short: 'OAR' },
+  { path: '/oar-limits-v2',  label: 'OAR Reference V2',     group: 'Reference',    short: 'OAR V2' },
   { path: '/pediatric-constraints', label: 'Pediatric Constraints', group: 'Reference', short: 'Pediatric' },
   { path: '/clinical-trials',      label: 'Clinical Trials Ref',  group: 'Reference', short: 'Trials' },
   { path: '/toxicity-grading',     label: 'RT Toxicity Grading',  group: 'Reference', short: 'Toxicity' },

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface AnimatedNumberProps {
   value: number;
@@ -8,11 +8,11 @@ interface AnimatedNumberProps {
 }
 
 export const AnimatedNumber: React.FC<AnimatedNumberProps> = ({ value, decimals = 1, suffix = '', className = '' }) => {
-  const [displayValue, setDisplayValue] = useState<number>(value);
-  const startValue = useRef<number>(displayValue);
-  const startTime = useRef<number | null>(null);
+  const [displayValue, setDisplayValue] = React.useState<number>(value);
+  const startValue = React.useRef<number>(displayValue);
+  const startTime = React.useRef<number | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     startValue.current = displayValue;
     startTime.current = null;
 

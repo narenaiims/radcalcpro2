@@ -146,6 +146,36 @@ h1, h2, h3, h4 {
     @apply border-coral bg-coral/10 text-coral;
   }
 
+/* Premium UI Components */
+.card-premium {
+  @apply bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl transition-all duration-300;
+}
+
+.label-micro {
+  @apply text-[10px] font-black uppercase tracking-[0.2em] text-slate-500;
+}
+
+.btn-premium {
+  @apply relative px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all duration-300 active:scale-95 overflow-hidden;
+}
+
+.btn-primary {
+  @apply bg-teal text-white shadow-[0_0_20px_rgba(45,212,191,0.3)] hover:shadow-[0_0_30px_rgba(45,212,191,0.5)] hover:bg-teal/90;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+}
+
 /* Animations */
 @keyframes slamIn {
   0% { transform: scale(1.1) translateY(-20px); opacity: 0; }

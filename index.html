@@ -10,6 +10,9 @@
   <meta name="theme-color" content="#1e3a5f" />
   <meta name="application-name" content="radcalcpro2" />
 
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>radcalcpro2 | Clinical Radiobiology Portal</title>
   <meta name="description" content="Evidence-based Radiation Oncology calculators: BED/EQD2, HDR Brachytherapy, OAR constraints, Gap Correction, Re-irradiation. RNT Medical College Udaipur." />
 
@@ -18,7 +21,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
           .then(r => console.log('SW:', r.scope))
           .catch(e => console.warn('SW:', e));
       });
@@ -31,197 +34,11 @@
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:creator" content="@drn_dr" />
 
-  <!-- Tailwind CSS CDN (v3) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            gold:   '#D4AF37',
-            teal:   '#2DD4BF',
-            coral:  '#F87171',
-            violet: '#A78BFA',
-            lime:   '#A3E635',
-            sky:    '#38BDF8',
-            clinical: {
-              navy:    '#1e3a5f',
-              blue:    '#1d4ed8',
-              teal:    '#0f766e',
-              amber:   '#b45309',
-              red:     '#b91c1c',
-              green:   '#15803d',
-              surface: '#f1f5f9',
-            },
-          },
-          fontFamily: {
-            sans:    ['Inter', 'system-ui', 'sans-serif'],
-            display: ['Barlow Condensed', 'sans-serif'],
-            mono:    ['JetBrains Mono', 'Menlo', 'monospace'],
-            serif:   ['Cormorant Garamond', 'Georgia', 'serif'],
-          },
-        },
-      },
-    }
-  </script>
-
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
 
-  <!--
-    IMPORTMAP: Google AI Studio ESM mode ONLY.
-    When running via `vite dev` or `vite build`, Vite handles all module
-    resolution and this importmap is effectively ignored by the bundler.
-    Only active when served as raw files in AI Studio / browser ESM mode.
-  -->
-  <!--
-    IMPORTMAP — Google AI Studio ESM mode (no Vite build step at runtime)
-    ════════════════════════════════════════════════════════════════════════
-    KEY RULE: every package that has react as a peer dependency MUST have
-    ?external=react,react-dom appended. Without it, esm.sh bundles a
-    private copy of React inside each package → multiple React instances
-    → "Invalid hook call" / "Cannot read properties of null (reading useState)"
-
-    Packages needing ?external: framer-motion, motion, react-router-dom,
-    recharts, lucide-react, react-to-print, @google/genai
-    Packages NOT needing it: mathjs, date-fns, prop-types, html2canvas, jspdf
-  -->
-  <script type="importmap">
-  {
-    "imports": {
-      "react":            "https://esm.sh/react@19.2.4",
-      "react/":           "https://esm.sh/react@19.2.4/",
-      "react-dom":        "https://esm.sh/react-dom@19.2.4",
-      "react-dom/":       "https://esm.sh/react-dom@19.2.4/",
-      "react-dom/client": "https://esm.sh/react-dom@19.2.4/client",
-
-      "react-router-dom": "https://esm.sh/react-router-dom@7.13.0?external=react,react-dom",
-
-      "framer-motion":    "https://esm.sh/motion@12.6.3?external=react,react-dom",
-      "motion":           "https://esm.sh/motion@12.6.3?external=react,react-dom",
-      "motion/react":     "https://esm.sh/motion@12.6.3?external=react,react-dom",
-
-      "lucide-react":     "https://esm.sh/lucide-react@0.575.0?external=react,react-dom",
-      "recharts":         "https://esm.sh/recharts@2.15.0?external=react,react-dom",
-      "react-to-print":   "https://esm.sh/react-to-print@3.3.0?external=react,react-dom",
-
-      "@google/genai":    "https://esm.sh/@google/genai@1.41.0",
-      "prop-types":       "https://esm.sh/prop-types@15.8.1",
-      "mathjs":           "https://esm.sh/mathjs@14.2.1",
-      "date-fns":         "https://esm.sh/date-fns@4.1.0",
-      "date-fns/":        "https://esm.sh/date-fns@4.1.0/",
-      "html2canvas":      "https://esm.sh/html2canvas@1.4.1",
-      "jspdf":            "https://esm.sh/jspdf@2.5.1",
-
-      "@/components/Header":               "/components/Header.tsx",
-      "@/components/Footer":               "/components/Footer.tsx",
-      "@/components/BottomNav":            "/components/BottomNav.tsx",
-      "@/components/PWAInstallPrompt":     "/components/PWAInstallPrompt.tsx",
-      "@/components/ShareButton":          "/components/ShareButton.tsx",
-      "@/components/Card":                 "/components/Card.tsx",
-      "@/components/Tooltip":              "/components/Tooltip.tsx",
-      "@/components/TumourSelector":       "/components/TumourSelector.tsx",
-      "@/components/KeyFactsSidebar":      "/components/KeyFactsSidebar.tsx",
-      "@/components/FormulaBlock":         "/components/FormulaBlock.tsx",
-      "@/components/PageLoader":           "/components/PageLoader.tsx",
-      "@/components/ErrorBoundary":        "/components/ErrorBoundary.tsx",
-
-      "@/src/components/AnimatedNumber":   "/src/components/AnimatedNumber.tsx",
-      "@/src/components/CalcHistoryPanel": "/src/components/CalcHistoryPanel.tsx",
-      "@/src/components/DynamicEffectIcon": "/src/components/DynamicEffectIcon.tsx",
-      "@/src/components/NamedEffectIcon":   "/src/components/NamedEffectIcon.tsx",
-      "@/src/components/PrintReport":      "/src/components/PrintReport.tsx",
-
-      "@/src/data/radiobiologyData":       "/src/data/radiobiologyData.ts",
-      "@/src/data/namedEffectsData":        "/src/data/namedEffectsData.ts",
-      "@/src/services/oarDataService":     "/src/services/oarDataService.ts",
-      "@/src/services/pwaService":         "/src/services/pwaService.ts",
-      "@/src/context/RadiobiologyContext": "/src/context/RadiobiologyContext.tsx",
-
-      "./components/Header":               "/components/Header.tsx",
-      "./components/PWAInstallPrompt":     "/components/PWAInstallPrompt.tsx",
-      "./ShareButton":                     "/components/ShareButton.tsx",
-      "../App":                            "/App.tsx",
-      "../components/Header":              "/components/Header.tsx",
-      "../components/Footer":              "/components/Footer.tsx",
-      "../components/BottomNav":           "/components/BottomNav.tsx",
-      "../components/PWAInstallPrompt":    "/components/PWAInstallPrompt.tsx",
-      "../components/ShareButton":         "/components/ShareButton.tsx",
-      "../components/Card":                "/components/Card.tsx",
-      "../components/Tooltip":             "/components/Tooltip.tsx",
-      "../components/TumourSelector":      "/components/TumourSelector.tsx",
-      "../components/KeyFactsSidebar":     "/components/KeyFactsSidebar.tsx",
-      "../src/components/AnimatedNumber":  "/src/components/AnimatedNumber.tsx",
-      "../src/components/CalcHistoryPanel": "/src/components/CalcHistoryPanel.tsx",
-      "../src/components/DynamicEffectIcon": "/src/components/DynamicEffectIcon.tsx",
-      "../src/components/NamedEffectIcon":  "/src/components/NamedEffectIcon.tsx",
-      "../src/components/PrintReport":     "/src/components/PrintReport.tsx",
-      "../src/context/RadiobiologyContext": "/src/context/RadiobiologyContext.tsx",
-      "../src/data/radiobiologyData":       "/src/data/radiobiologyData.ts",
-      "../src/data/namedEffectsData":       "/src/data/namedEffectsData.ts",
-      "../src/services/oarDataService":    "/src/services/oarDataService.ts",
-      "../src/services/pwaService":         "/src/services/pwaService.ts",
-      "./context/RadiobiologyContext":     "/src/context/RadiobiologyContext.tsx",
-
-      "./pages/Home":                      "/pages/Home.tsx",
-      "./pages/About":                     "/pages/About.tsx",
-      "./pages/EQD2Page":                  "/pages/EQD2Page.tsx",
-      "./pages/EBRTGapPage":               "/pages/EBRTGapPage.tsx",
-      "./pages/HDRBrachyPage":             "/pages/HDRBrachyPage.tsx",
-      "./pages/BEDtoEQD2Page":             "/pages/BEDtoEQD2Page.tsx",
-      "./pages/FracAdjustPage":            "/pages/FracAdjustPage.tsx",
-      "./pages/TDFPage":                   "/pages/TDFPage.tsx",
-      "./pages/RadiationUnitsPage":        "/pages/RadiationUnitsPage.tsx",
-      "./pages/DoseExposuresPage":         "/pages/DoseExposuresPage.tsx",
-      "./pages/VivaDefinitionsPage":       "/pages/VivaDefinitionsPage.tsx",
-      "./pages/RadiationHistoryPage":      "/pages/RadiationHistoryPage.tsx",
-      "./pages/OARReferencePage":          "/pages/OARReferencePage.tsx",
-      "./pages/ReirradiationCalcPage":     "/pages/ReirradiationCalcPage.tsx",
-      "./pages/ClinicalGuidelinesPage":    "/pages/ClinicalGuidelinesPage.tsx",
-      "./pages/SBRTConstraintsPage":       "/pages/SBRTConstraintsPage.tsx",
-      "./pages/RadioactiveSourcesPage":    "/pages/RadioactiveSourcesPage.tsx",
-      "./pages/RadioiodineI131Page":       "/pages/RadioiodineI131Page.tsx",
-      "./pages/ICRUPage":                  "/pages/ICRUPage.tsx",
-      "./pages/oerletrbe":                 "/pages/oerletrbe.tsx",
-      "./pages/ionizingradiation":         "/pages/ionizingradiation.tsx",
-      "./pages/NamedEffectsPage":          "/pages/NamedEffectsPage.tsx",
-      "./pages/radiationmechanism":        "/pages/radiationmechanism.tsx",
-      "./pages/cellsurvivalcurve":         "/pages/cellsurvivalcurve.tsx",
-      "./pages/PediatricConstraints":      "/pages/PediatricConstraints.tsx",
-      "./pages/ClinicalTrials":            "/pages/ClinicalTrials.tsx",
-      "./pages/ToxicityGrading":           "/pages/ToxicityGrading.tsx",
-      "./pages/DoseRateComparison":        "/pages/DoseRateComparison.tsx",
-      "./pages/CervixBrachytherapy":       "/pages/CervixBrachytherapy.tsx",
-      "./pages/BrachytherapyReference":    "/pages/BrachytherapyReference.tsx",
-      "./pages/AdaptiveRT":                "/pages/AdaptiveRT.tsx",
-      "./pages/ContouringAtlas":           "/pages/ContouringAtlas.tsx",
-
-      "/components/Header":               "/components/Header.tsx",
-      "/components/Footer":               "/components/Footer.tsx",
-      "/components/BottomNav":            "/components/BottomNav.tsx",
-      "/components/PWAInstallPrompt":     "/components/PWAInstallPrompt.tsx",
-      "/components/ShareButton":          "/components/ShareButton.tsx",
-      "/components/Card":                 "/components/Card.tsx",
-      "/components/Tooltip":              "/components/Tooltip.tsx",
-      "/components/TumourSelector":       "/components/TumourSelector.tsx",
-      "/components/KeyFactsSidebar":      "/components/KeyFactsSidebar.tsx",
-
-      "/src/components/AnimatedNumber":   "/src/components/AnimatedNumber.tsx",
-      "/src/components/CalcHistoryPanel": "/src/components/CalcHistoryPanel.tsx",
-      "/src/components/DynamicEffectIcon": "/src/components/DynamicEffectIcon.tsx",
-      "/src/components/NamedEffectIcon":   "/src/components/NamedEffectIcon.tsx",
-      "/src/components/PrintReport":      "/src/components/PrintReport.tsx",
-
-      "/src/data/radiobiologyData":       "/src/data/radiobiologyData.ts",
-      "/src/data/namedEffectsData":        "/src/data/namedEffectsData.ts",
-      "/src/services/oarDataService":     "/src/services/oarDataService.ts",
-      "/src/services/pwaService":         "/src/services/pwaService.ts",
-      "/src/context/RadiobiologyContext": "/src/context/RadiobiologyContext.tsx"
-    }
-  }
-  </script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; }

@@ -873,6 +873,7 @@ const BEDDisplay: React.FC<{ total: number; fx: number; ab?: number }> = ({ tota
 
 const SBRTConstraintsPage: React.FC = () => {
   const [activeSiteId, setActiveSiteId] = useState(SBRT_SITES[0].id);
+  const [expandedIdx, setExpandedIdx] = useState<string | number | null>('site-list');
   const [activeFx, setActiveFx] = useState<FxCount>(5);
   const [quizMode, setQuizMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -1071,26 +1072,38 @@ const SBRTConstraintsPage: React.FC = () => {
             className="space-y-8"
           >
             {/* ── Site Selector ─────────────────────────────────────────── */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              {SBRT_SITES.map(s => (
-                <button
-                  key={s.id}
-                  onClick={() => setActiveSiteId(s.id)}
-                  className={`p-4 rounded-xl border transition-all text-left group ${
-                    activeSiteId === s.id
-                      ? 'bg-teal/10 border-teal/50 shadow-lg shadow-teal/5'
-                      : 'bg-white/5 border-white/5 hover:bg-white/10'
-                  }`}
-                >
-                  <p className={`label-micro mb-1 ${activeSiteId === s.id ? 'text-teal' : 'opacity-40'}`}>
-                    {s.shortName}
-                  </p>
-                  <p className={`text-sm font-bold leading-tight ${activeSiteId === s.id ? 'text-white' : 'text-slate-400'}`}>
-                    {s.name.split(' — ')[0]}
-                  </p>
-                </button>
-              ))}
-            </div>
+            <section className="space-y-4">
+              <button
+                onClick={() => setExpandedIdx(expandedIdx === 'site-list' ? null : 'site-list')}
+                className="w-full flex items-center justify-between text-sm font-bold text-white uppercase tracking-wider"
+              >
+                <h2>Anatomical Sites</h2>
+                {expandedIdx === 'site-list' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+
+              {expandedIdx === 'site-list' && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  {SBRT_SITES.map(s => (
+                    <button
+                      key={s.id}
+                      onClick={() => { setActiveSiteId(s.id); }}
+                      className={`p-4 rounded-xl border transition-all text-left group ${
+                        activeSiteId === s.id
+                          ? 'bg-teal/10 border-teal/50 shadow-lg shadow-teal/5'
+                          : 'bg-white/5 border-white/5 hover:bg-white/10'
+                      }`}
+                    >
+                      <p className={`label-micro mb-1 ${activeSiteId === s.id ? 'text-teal' : 'opacity-40'}`}>
+                        {s.shortName}
+                      </p>
+                      <p className={`text-sm font-bold leading-tight ${activeSiteId === s.id ? 'text-white' : 'text-slate-400'}`}>
+                        {s.name.split(' — ')[0]}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </section>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               {/* ── Left Column: Site Info ──────────────────────────────── */}

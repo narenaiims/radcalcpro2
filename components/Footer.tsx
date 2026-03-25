@@ -35,6 +35,7 @@ const Footer: React.FC = () => {
               { to: '/eqd2',       label: 'BED / EQD2' },
               { to: '/hdr-brachy', label: 'HDR Brachy' },
               { to: '/oar-limits', label: 'OAR Limits' },
+              { to: '/oar-limits-v2', label: 'OAR V2' },
               { to: '/guidelines', label: 'Emergencies' },
               { to: '/reirradiation', label: 'Re-RT Calc' },
             ].map(l => (

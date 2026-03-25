@@ -6,20 +6,20 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#0a0f1e",
+  "background_color": "#1e3a5f",
   "theme_color": "#1e3a5f",
   "lang": "en-IN",
   "categories": ["medical", "education"],
   "icons": [
     {
       "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%231e3a5f'/%3E%3Ccircle cx='256' cy='256' r='28' fill='%2360a5fa'/%3E%3Cline x1='256' y1='228' x2='216' y2='162' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='256' y1='228' x2='296' y2='162' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='232' y1='268' x2='162' y2='308' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='280' y1='268' x2='350' y2='308' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='232' y1='248' x2='162' y2='208' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='280' y1='248' x2='350' y2='208' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='256' r='100' fill='none' stroke='%2360a5fa' stroke-width='14'/%3E%3C/svg%3E",
-      "sizes": "512x512",
+      "sizes": "192x192 512x512",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
       "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='0' fill='%231e3a5f'/%3E%3Ccircle cx='256' cy='256' r='28' fill='%2360a5fa'/%3E%3Cline x1='256' y1='228' x2='216' y2='162' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='256' y1='228' x2='296' y2='162' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='232' y1='268' x2='162' y2='308' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='280' y1='268' x2='350' y2='308' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='232' y1='248' x2='162' y2='208' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='280' y1='248' x2='350' y2='208' stroke='%2360a5fa' stroke-width='22' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='256' r='100' fill='none' stroke='%2360a5fa' stroke-width='14'/%3E%3C/svg%3E",
-      "sizes": "512x512",
+      "sizes": "192x192 512x512",
       "type": "image/svg+xml",
       "purpose": "maskable"
     }

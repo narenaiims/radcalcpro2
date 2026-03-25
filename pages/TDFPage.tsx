@@ -117,12 +117,12 @@ const TDFPage: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const SIDEBAR_DATA: KeyFactSection[] = QUICK_REF_DATA.map(sec => ({
-    title: sec.category || (sec as any).title || 'Reference',
+    title: sec.category || 'Reference',
     emoji: "📌",
     accent: "#00d4ff",
     bg: "rgba(0, 212, 255, 0.1)",
     border: "rgba(0, 212, 255, 0.3)",
-    rows: (sec.items || (sec as any).rows || []).map((item: any) => ({ k: item.label || item.k, v: item.value || item.v }))
+    rows: sec.items.map(item => ({ k: item.label, v: item.value }))
   }));
 
 

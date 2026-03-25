@@ -579,20 +579,14 @@ const HDRBrachyPage: React.FC = () => {
                     <span className="text-slate-400">EBRT {r.ebrtEQD2.toFixed(1)} + Brachy {r.brachyEQD2.toFixed(1)}</span>
                   </div>
                   {/* Progress bar */}
-                  {(() => {
-                    const lim = parseFloat(r.limit.replace(/[^0-9.]/g,'')) || 100;
-                    const pct = Math.min(100, (r.total / lim) * 100);
-                    return (
-                      <div className="mt-1.5 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all ${
-                            r.status === 'pass' ? 'bg-green-500' :
-                            r.status === 'warn' ? 'bg-amber-400' : 'bg-red-500'}`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    );
-                  })()}
+                  <div className="mt-1.5 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        r.status === 'pass' ? 'bg-green-500' :
+                        r.status === 'warn' ? 'bg-amber-400' : 'bg-red-500'}`}
+                      style={{ width: `${Math.min(100, (r.total / (parseFloat(r.limit.replace(/[^0-9.]/g,'')) || 100)) * 100)}%` }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>

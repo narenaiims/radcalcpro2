@@ -219,7 +219,7 @@ const SEVERITY_CONFIG = {
 // ─── COMPONENTS ──────────────────────────────────────────────────────────────
 
 function SeverityBadge({ severity }: { severity: string }) {
-  const cfg = (SEVERITY_CONFIG as any)[severity] || SEVERITY_CONFIG.medium;
+  const cfg = SEVERITY_CONFIG[severity as keyof typeof SEVERITY_CONFIG] || SEVERITY_CONFIG.medium;
   return (
     <span style={{
       fontSize: "9px", fontWeight: 700, letterSpacing: "0.1em",
@@ -239,7 +239,7 @@ function ConstraintRow({ row }: { row: any }) {
       gap: "8px", alignItems: "start",
       padding: "10px 12px", borderRadius: "8px",
       backgroundColor: "rgba(255,255,255,0.03)",
-      borderLeft: `3px solid ${(SEVERITY_CONFIG as any)[row.severity]?.border || "#6B7280"}`,
+      borderLeft: `3px solid ${SEVERITY_CONFIG[row.severity as keyof typeof SEVERITY_CONFIG]?.border || "#6B7280"}`,
       marginBottom: "6px"
     }}>
       <div style={{ fontSize: "11px", color: "#94A3B8", fontFamily: "'JetBrains Mono', monospace", paddingTop: "2px" }}>

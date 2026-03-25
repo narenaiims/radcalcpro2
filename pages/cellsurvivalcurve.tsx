@@ -602,25 +602,17 @@ const SurvivalGraph: React.FC<{
         transform={`rotate(-90,9,${(GH + PAD.t) / 2})`}>log₁₀ SF</text>
 
       {/* α=β crossover dot (for first visible line) */}
-      {showCross && (() => {
-        const cl = CELL_LINES.find(c => visible.has(c.id));
-        if (!cl) return null;
-        const ab = cl.alphaBeta;
-        if (ab > MAX_D) return null;
-        const sfAtCross = sf(ab, cl.alpha, cl.beta);
-        const cx2 = dx(ab), cy2 = dy(sfAtCross);
-        return (
-          <g>
-            <line x1={cx2} y1={PAD.t} x2={cx2} y2={GH - PAD.b}
-              stroke="#fbbf24" strokeWidth="0.8" strokeDasharray="4 3" opacity="0.7" />
-            <circle cx={cx2} cy={cy2} r={5} fill="#fbbf24" opacity="0.25" />
-            <circle cx={cx2} cy={cy2} r={3} fill="#fbbf24" />
-            <text x={cx2 + 6} y={cy2 - 5} fill="#fbbf24" fontSize="7" fontFamily="monospace">
-              α=β ({ab.toFixed(1)} Gy)
-            </text>
-          </g>
-        );
-      })()}
+      {showCross && CELL_LINES.find(c => visible.has(c.id)) && CELL_LINES.find(c => visible.has(c.id))!.alphaBeta <= MAX_D && (
+        <g>
+          <line x1={dx(CELL_LINES.find(c => visible.has(c.id))!.alphaBeta)} y1={PAD.t} x2={dx(CELL_LINES.find(c => visible.has(c.id))!.alphaBeta)} y2={GH - PAD.b}
+            stroke="#fbbf24" strokeWidth="0.8" strokeDasharray="4 3" opacity="0.7" />
+          <circle cx={dx(CELL_LINES.find(c => visible.has(c.id))!.alphaBeta)} cy={dy(sf(CELL_LINES.find(c => visible.has(c.id))!.alphaBeta, CELL_LINES.find(c => visible.has(c.id))!.alpha, CELL_LINES.find(c => visible.has(c.id))!.beta))} r={5} fill="#fbbf24" opacity="0.25" />
+          <circle cx={dx(CELL_LINES.find(c => visible.has(c.id))!.alphaBeta)} cy={dy(sf(CELL_LINES.find(c => visible.has(c.id))!.alphaBeta, CELL_LINES.find(c => visible.has(c.id))!.alpha, CELL_LINES.find(c => visible.has(c.id))!.beta))} r={3} fill="#fbbf24" />
+          <text x={dx(CELL_LINES.find(c => visible.has(c.id))!.alphaBeta) + 6} y={dy(sf(CELL_LINES.find(c => visible.has(c.id))!.alphaBeta, CELL_LINES.find(c => visible.has(c.id))!.alpha, CELL_LINES.find(c => visible.has(c.id))!.beta)) - 5} fill="#fbbf24" fontSize="7" fontFamily="monospace">
+            α=β ({CELL_LINES.find(c => visible.has(c.id))!.alphaBeta.toFixed(1)} Gy)
+          </text>
+        </g>
+      )}
 
       {/* Dose cursor */}
       {cursorDose > 0 && (
@@ -629,20 +621,16 @@ const SurvivalGraph: React.FC<{
       )}
 
       {/* Alpha / Beta component curves for first visible line */}
-      {showComponents && (() => {
-        const cl = CELL_LINES.find(c => visible.has(c.id));
-        if (!cl) return null;
-        return (
-          <>
-            <path d={alphaPath(cl.alpha)} fill="none" stroke="#38bdf8" strokeWidth="1.3"
-              strokeDasharray="5 3" opacity="0.65" />
-            <path d={betaPath(cl.beta)} fill="none" stroke="#a78bfa" strokeWidth="1.3"
-              strokeDasharray="3 2" opacity="0.65" />
-            <text x={dx(9)} y={dy(Math.exp(-cl.alpha * 9)) - 6} fill="#38bdf8" fontSize="6.5" fontFamily="monospace">α·D</text>
-            <text x={dx(7)} y={dy(Math.exp(-cl.beta * 49)) + 9} fill="#a78bfa" fontSize="6.5" fontFamily="monospace">β·D²</text>
-          </>
-        );
-      })()}
+      {showComponents && CELL_LINES.find(c => visible.has(c.id)) && (
+        <>
+          <path d={alphaPath(CELL_LINES.find(c => visible.has(c.id))!.alpha)} fill="none" stroke="#38bdf8" strokeWidth="1.3"
+            strokeDasharray="5 3" opacity="0.65" />
+          <path d={betaPath(CELL_LINES.find(c => visible.has(c.id))!.beta)} fill="none" stroke="#a78bfa" strokeWidth="1.3"
+            strokeDasharray="3 2" opacity="0.65" />
+          <text x={dx(9)} y={dy(Math.exp(-CELL_LINES.find(c => visible.has(c.id))!.alpha * 9)) - 6} fill="#38bdf8" fontSize="6.5" fontFamily="monospace">α·D</text>
+          <text x={dx(7)} y={dy(Math.exp(-CELL_LINES.find(c => visible.has(c.id))!.beta * 49)) + 9} fill="#a78bfa" fontSize="6.5" fontFamily="monospace">β·D²</text>
+        </>
+      )}
 
       {/* Survival curves */}
       {CELL_LINES.map(cl => {
@@ -1227,33 +1215,24 @@ const CellSurvivalPage: React.FC = () => {
                   </div>
                 </div>
                 {/* Comparison cards */}
-                {(() => {
-                  const fxEquiv = Math.round(compDose / 2);
-                  const sfSingle2 = sf(compDose, 0.35, 0.35 / compAB);
-                  const sfFrac2 = sfFrac(2, fxEquiv, 0.35, 0.35 / compAB);
-                  const bedSingle = bed(compDose, compDose, compAB);
-                  const bedFrac = bed(2 * fxEquiv, 2, compAB);
-                  return (
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        { label: `${compDose} Gy × 1 fx`, sf: sfSingle2, bedV: bedSingle, color: '#ef4444', desc: 'Single large dose' },
-                        { label: `2 Gy × ${fxEquiv} fx`, sf: sfFrac2, bedV: bedFrac, color: '#22c55e', desc: 'Equivalent fractionated' },
-                      ].map(({ label, sf: sfv, bedV, color, desc }) => (
-                        <div key={label} className="rounded-xl px-3 py-3 text-center"
-                          style={{ background: `${color}08`, border: `1px solid ${color}30` }}>
-                          <p className="text-[9px] font-bold mb-2" style={{ color }}>{label}</p>
-                          <p className="text-xs text-slate-500 mb-2">{desc}</p>
-                          <p className="text-[8px] text-slate-500 uppercase">Surviving Fraction</p>
-                          <p className="text-lg font-black font-mono mb-1" style={{ color }}>
-                            {sfv < 0.001 ? sfv.toExponential(2) : sfv.toFixed(4)}
-                          </p>
-                          <p className="text-[8px] text-slate-500 uppercase">BED (α/β={compAB})</p>
-                          <p className="text-sm font-black font-mono" style={{ color }}>{bedV.toFixed(1)} Gy</p>
-                        </div>
-                      ))}
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: `${compDose} Gy × 1 fx`, sf: sf(compDose, 0.35, 0.35 / compAB), bedV: bed(compDose, compDose, compAB), color: '#ef4444', desc: 'Single large dose' },
+                    { label: `2 Gy × ${Math.round(compDose / 2)} fx`, sf: sfFrac(2, Math.round(compDose / 2), 0.35, 0.35 / compAB), bedV: bed(2 * Math.round(compDose / 2), 2, compAB), color: '#22c55e', desc: 'Equivalent fractionated' },
+                  ].map(({ label, sf: sfv, bedV, color, desc }) => (
+                    <div key={label} className="rounded-xl px-3 py-3 text-center"
+                      style={{ background: `${color}08`, border: `1px solid ${color}30` }}>
+                      <p className="text-[9px] font-bold mb-2" style={{ color }}>{label}</p>
+                      <p className="text-xs text-slate-500 mb-2">{desc}</p>
+                      <p className="text-[8px] text-slate-500 uppercase">Surviving Fraction</p>
+                      <p className="text-lg font-black font-mono mb-1" style={{ color }}>
+                        {sfv < 0.001 ? sfv.toExponential(2) : sfv.toFixed(4)}
+                      </p>
+                      <p className="text-[8px] text-slate-500 uppercase">BED (α/β={compAB})</p>
+                      <p className="text-sm font-black font-mono" style={{ color }}>{bedV.toFixed(1)} Gy</p>
                     </div>
-                  );
-                })()}
+                  ))}
+                </div>
               </div>
             </div>
 

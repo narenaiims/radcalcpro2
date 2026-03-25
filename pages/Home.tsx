@@ -97,6 +97,7 @@ const ROUTE_HINTS: Record<string, string> = {
   '/reirradiation':    'Cumulative BED with time-recovery (Dale model)',
   '/oerletrbe':        'Oxygen Enhancement Ratio · Linear Energy Transfer · RBE',
   '/oar-limits':       'QUANTEC 2010 · SBRT constraints · DVH metrics',
+  '/oar-limits-v2':    'Clinical Dashboard · Bento Layout · Practical Reference',
   '/pediatric-constraints': 'Age-stratified OAR limits · PENTEC · COG',
   '/clinical-trials':      'Landmark RT trials · RTOG · EORTC · NCI',
   '/toxicity-grading':     'RTOG v2.0 · CTCAE v5.0 · Management ladder',
@@ -128,11 +129,11 @@ const ChevronRight = () => (
 
 // ── Home ──────────────────────────────────────────────────────────────────
 const Home: React.FC = () => {
-  const [recent, setRecent] = useState<RecentItem[]>([]);
-  const [canInstall, setCanInstall] = useState(!!getDeferredPrompt());
-  const [showInstallCard, setShowInstallCard] = useState(true);
+  const [recent, setRecent] = React.useState<RecentItem[]>([]);
+  const [canInstall, setCanInstall] = React.useState(!!getDeferredPrompt());
+  const [showInstallCard, setShowInstallCard] = React.useState(true);
 
-  useEffect(() => {
+  React.useEffect(() => {
     setRecent(getRecentSessions());
     
     const handler = () => setCanInstall(!!getDeferredPrompt());
@@ -181,9 +182,9 @@ const Home: React.FC = () => {
         {/* Stat strip */}
         <div className="mt-3 grid grid-cols-3 gap-2 text-center border-t border-blue-800/60 pt-3">
           {[
-            { val: '7', label: 'Calculators' },
-            { val: '10', label: 'References' },
-            { val: '5', label: 'Education' },
+            { val: '8', label: 'Calculators' },
+            { val: '14', label: 'References' },
+            { val: '10', label: 'Education' },
           ].map(s => (
             <div key={s.label}>
               <p className="text-base font-black num text-white">{s.val}</p>

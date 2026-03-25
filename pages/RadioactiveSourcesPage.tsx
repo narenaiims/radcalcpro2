@@ -1000,7 +1000,7 @@ export default function RadioactiveSourcesPage() {
     accent: "#00d4ff",
     bg: "rgba(0, 212, 255, 0.1)",
     border: "rgba(0, 212, 255, 0.3)",
-    rows: (items as any[]).map((item: any) => ({ k: item.label, v: item.value }))
+    rows: (items as {label: string, value: string}[]).map(item => ({ k: item.label, v: item.value }))
   }));
 
 
@@ -1061,7 +1061,7 @@ export default function RadioactiveSourcesPage() {
         </div>
         <div className="flex gap-1 mb-1.5 overflow-x-auto no-scrollbar">
           {([['detail','📋 Sources'],['compare','⚖️ Compare'],['ideal','🏆 Ideal'],['quiz','❓ Quiz']] as [string,string][]).map(([id,label]) => (
-            <button key={id} onClick={() => setView(id as any)}
+            <button key={id} onClick={() => setView(id as 'detail' | 'compare' | 'ideal' | 'quiz')}
               className={`flex-shrink-0 px-3 py-2 rounded-lg border text-[11px] font-black uppercase tracking-wider transition-all ${
                 view === id ? 'bg-yellow-700 border-yellow-600 text-white' : 'bg-gray-800/60 border-gray-700/40 text-gray-500'}`}>
               {label}
@@ -1163,7 +1163,7 @@ export default function RadioactiveSourcesPage() {
                     ['overview','📊 Overview'],['pros','✅ Pros'],['cons','❌ Cons'],
                     ['clinical','💊 Clinical'],['dosimetry','📐 Dosimetry'],['physics','⚛ Physics'],['pearls','💡 Pearls']
                   ] as [string, string][]).map(([id, label]) => (
-                    <button key={id} onClick={() => setActiveSection(id as any)}
+                    <button key={id} onClick={() => setActiveSection(id as 'overview' | 'pros' | 'cons' | 'clinical' | 'dosimetry' | 'physics' | 'pearls')}
                       className={`flex-shrink-0 px-3 py-2 rounded-lg border text-[11px] font-black uppercase tracking-wider transition-all ${
                         activeSection === id ? `${cm.bg} ${cm.border} ${cm.color}` : 'bg-gray-800/40 border-gray-700/30 text-gray-600'}`}>
                       {label}

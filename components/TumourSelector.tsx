@@ -280,7 +280,7 @@ const TumourSelector: React.FC<TumourSelectorProps> = ({
         )}
         {filteredSubsites.map(entry => (
           <button
-            key={entry.subsite}
+            key={entry.id}
             onClick={() => {
               onSelect(entry);
             }}

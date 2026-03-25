@@ -20,6 +20,7 @@ export const ROUTES = [
   { path: '/oerletrbe',      label: 'OER / LET / RBE',      group: 'Calculators',  short: 'OER/RBE' },
   // ── References
   { path: '/oar-limits',     label: 'OAR Dose Limits',      group: 'Reference',    short: 'OAR' },
+  { path: '/oar-limits-v2',  label: 'OAR Reference V2',     group: 'Reference',    short: 'OAR V2' },
   { path: '/pediatric-constraints', label: 'Pediatric Constraints', group: 'Reference', short: 'Pediatric' },
   { path: '/clinical-trials',      label: 'Clinical Trials Ref',  group: 'Reference', short: 'Trials' },
   { path: '/toxicity-grading',     label: 'RT Toxicity Grading',  group: 'Reference', short: 'Toxicity' },
@@ -313,10 +314,8 @@ const Header: React.FC = () => {
             <Magnetic>
               <button
                 onClick={() => {
-                  if (window.confirm('Clear all saved calculator data and reset app?')) {
-                    localStorage.clear();
-                    window.location.reload();
-                  }
+                  localStorage.clear();
+                  window.location.reload();
                 }}
                 className="group relative flex items-center gap-1.5 px-2 py-1.5 rounded-xl text-blue-200 hover:text-white hover:bg-white/5 transition-all overflow-hidden"
                 title="Master Reset"

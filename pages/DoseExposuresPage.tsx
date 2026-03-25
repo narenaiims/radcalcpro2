@@ -377,7 +377,7 @@ const DoseExposuresPage: React.FC = () => {
     accent: "#00d4ff",
     bg: "rgba(0, 212, 255, 0.1)",
     border: "rgba(0, 212, 255, 0.3)",
-    rows: (items as any[]).map((item: any) => ({ k: item.label, v: item.value }))
+    rows: (items as {label: string, value: string}[]).map(item => ({ k: item.label, v: item.value }))
   }));
 
 
@@ -467,18 +467,21 @@ const DoseExposuresPage: React.FC = () => {
           { id: 'occupational', label: 'Occupational', icon: Briefcase },
           { id: 'quiz', label: 'Quiz', icon: BookOpen },
           { id: 'risk', label: 'Risk Facts', icon: Info },
-        ].map((tab) => (
+        ].map((tab) => {
+          const Icon = tab.icon;
+          return (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
+            onClick={() => setActiveTab(tab.id as 'calculator' | 'pediatric' | 'occupational' | 'quiz' | 'risk')}
             className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-2xl transition-all whitespace-nowrap ${
               activeTab === tab.id ? 'bg-white shadow-sm text-rose-700' : 'text-slate-500 hover:text-slate-700'
             }`}
           >
-            <tab.icon className="w-3.5 h-3.5" />
+            <Icon className="w-3.5 h-3.5" />
             {tab.label}
           </button>
-        ))}
+          );
+        })}
       </div>
 
       <>

@@ -27,7 +27,7 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'hn-larynx', site: 'Head & Neck', subsite: 'Larynx', tumour: 'SCC', alphaBeta: 10 },
   { id: 'hn-naso', site: 'Head & Neck', subsite: 'Nasopharynx', tumour: 'SCC', alphaBeta: 10 },
   { id: 'hn-oro-hpv-neg', site: 'Head & Neck', subsite: 'Oropharynx', tumour: 'SCC HPV-', alphaBeta: 10 },
-  { id: 'hn-oro-hpv-pos', site: 'Head & Neck', subsite: 'Oropharynx', tumour: 'SCC HPV+', alphaBeta: 10 },
+  { id: 'hn-oro-hpv-pos', site: 'Head & Neck', subsite: 'Oropharynx', tumour: 'SCC HPV+', alphaBeta: 10, abSource: 'Ang et al RTOG 0129' },
   { id: 'hn-oral-cavity', site: 'Head & Neck', subsite: 'Oral Cavity', tumour: 'SCC', alphaBeta: 10 },
   { id: 'hn-hypopharynx', site: 'Head & Neck', subsite: 'Hypopharynx', tumour: 'SCC', alphaBeta: 10 },
   { id: 'hn-salivary-adeno', site: 'Head & Neck', subsite: 'Salivary Gland', tumour: 'Adenocarcinoma', alphaBeta: 8 },
@@ -61,7 +61,7 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'gi-anal', site: 'Gastrointestinal', subsite: 'Anal Canal', tumour: 'SCC', alphaBeta: 10 },
   { id: 'gi-colon', site: 'Gastrointestinal', subsite: 'Colon', tumour: 'Adenocarcinoma', alphaBeta: 10 },
   { id: 'gi-small-bowel', site: 'Gastrointestinal', subsite: 'Small Bowel', tumour: 'Adenocarcinoma', alphaBeta: 10 },
-  { id: 'gi-gist', site: 'Gastrointestinal', subsite: 'GIST', tumour: 'Stromal', alphaBeta: 10 },
+  { id: 'gi-gist', site: 'Gastrointestinal', subsite: 'GIST', tumour: 'Stromal', alphaBeta: 3, abLow: 2, abHigh: 4, uncertaintyFlag: true, notes: 'GIST is poorly radiosensitive; α/β estimate based on limited data' },
   { id: 'gi-net', site: 'Gastrointestinal', subsite: 'Neuroendocrine', tumour: 'NET', alphaBeta: 10 },
   { id: 'gi-gallbladder', site: 'Gastrointestinal', subsite: 'Gallbladder', tumour: 'Adenocarcinoma', alphaBeta: 10 },
   { id: 'gi-biliary', site: 'Gastrointestinal', subsite: 'Biliary Tree', tumour: 'Adenocarcinoma', alphaBeta: 10 },
@@ -70,9 +70,9 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'gi-omental', site: 'Gastrointestinal', subsite: 'Omentum', tumour: 'Omental Cake', alphaBeta: 10 },
 
   // ── Genitourinary ──
-  { id: 'gu-pros-low', site: 'Genitourinary', subsite: 'Prostate', tumour: 'Low risk', alphaBeta: 1.5 },
-  { id: 'gu-pros-int', site: 'Genitourinary', subsite: 'Prostate', tumour: 'Intermediate', alphaBeta: 1.5 },
-  { id: 'gu-pros-high', site: 'Genitourinary', subsite: 'Prostate', tumour: 'High risk', alphaBeta: 1.5 },
+  { id: 'gu-pros-low', site: 'Genitourinary', subsite: 'Prostate', tumour: 'Low risk', alphaBeta: 1.5, abLow: 1.0, abHigh: 1.85, uncertaintyFlag: true, abSource: 'Brenner & Hall 1999; Dasu 2007' },
+  { id: 'gu-pros-int', site: 'Genitourinary', subsite: 'Prostate', tumour: 'Intermediate', alphaBeta: 1.5, abLow: 1.0, abHigh: 1.85, uncertaintyFlag: true, abSource: 'Brenner & Hall 1999; Dasu 2007' },
+  { id: 'gu-pros-high', site: 'Genitourinary', subsite: 'Prostate', tumour: 'High risk', alphaBeta: 1.5, abLow: 1.0, abHigh: 1.85, uncertaintyFlag: true, abSource: 'Brenner & Hall 1999; Dasu 2007' },
   { id: 'gu-bladder', site: 'Genitourinary', subsite: 'Bladder', tumour: 'TCC', alphaBeta: 10 },
   { id: 'gu-renal-clear', site: 'Genitourinary', subsite: 'Renal Cell', tumour: 'Clear cell', alphaBeta: 10 },
   { id: 'gu-renal-nonclear', site: 'Genitourinary', subsite: 'Renal Cell', tumour: 'Non-clear', alphaBeta: 10 },
@@ -95,20 +95,21 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'gyn-chorioca', site: 'Gynaecological', subsite: 'Choriocarcinoma', tumour: 'Germ cell', alphaBeta: 10 },
   { id: 'gyn-gtn', site: 'Gynaecological', subsite: 'GTN', tumour: 'Trophoblastic', alphaBeta: 10 },
   { id: 'gyn-bartholin', site: 'Gynaecological', subsite: 'Bartholin Gland', tumour: 'Adeno/SCC', alphaBeta: 10 },
+  { id: 'gyn-uterine-sarc', site: 'Gynaecological', subsite: 'Uterus', tumour: 'LMS/Carcinosarcoma', alphaBeta: 4, uncertaintyFlag: true, notes: 'Sarcomatous uterine tumours; distinct from endometrial adenocarcinoma' },
 
   // ── Breast ──
-  { id: 'breast-whole', site: 'Breast', subsite: 'Whole Breast', tumour: 'Adjuvant', alphaBeta: 4 },
-  { id: 'breast-partial', site: 'Breast', subsite: 'Partial Breast', tumour: 'APBI', alphaBeta: 4 },
-  { id: 'breast-chest-wall', site: 'Breast', subsite: 'Chest Wall', tumour: 'Post-mastectomy', alphaBeta: 4 },
-  { id: 'breast-dcis', site: 'Breast', subsite: 'DCIS', tumour: 'Intraductal', alphaBeta: 4 },
-  { id: 'breast-inflammatory', site: 'Breast', subsite: 'Inflammatory', tumour: 'Adenocarcinoma', alphaBeta: 10 },
-  { id: 'breast-recurrent', site: 'Breast', subsite: 'Recurrent', tumour: 'Adenocarcinoma', alphaBeta: 4 },
-  { id: 'breast-male', site: 'Breast', subsite: 'Male Breast', tumour: 'Adenocarcinoma', alphaBeta: 4 },
-  { id: 'breast-paget', site: 'Breast', subsite: 'Paget Disease', tumour: 'Nipple', alphaBeta: 10 },
-  { id: 'breast-tnbc', site: 'Breast', subsite: 'TNBC', tumour: 'Triple Negative', alphaBeta: 10, notes: 'Behaves more like high-grade rapidly proliferating tumour. Based on START trials and Haviland et al.' },
-  { id: 'breast-her2', site: 'Breast', subsite: 'HER2-enriched', tumour: 'HER2+', alphaBeta: 5, abLow: 4, abHigh: 6, uncertaintyFlag: true, notes: 'Limited direct data. Based on START trials and Haviland et al.' },
-  { id: 'breast-luminal-a', site: 'Breast', subsite: 'Luminal A', tumour: 'Low proliferative', alphaBeta: 3.5, abLow: 3, abHigh: 4, notes: 'Low proliferative. Based on START trials and Haviland et al.' },
-  { id: 'breast-luminal-b', site: 'Breast', subsite: 'Luminal B', tumour: 'Intermediate/High proliferative', alphaBeta: 5, abLow: 4, abHigh: 6, uncertaintyFlag: true, notes: 'Limited direct data. Based on START trials and Haviland et al.' },
+  { id: 'breast-whole', site: 'Breast', subsite: 'Whole Breast', tumour: 'Adjuvant', alphaBeta: 4, abSource: 'START trials/Haviland et al' },
+  { id: 'breast-partial', site: 'Breast', subsite: 'Partial Breast', tumour: 'APBI', alphaBeta: 4, abSource: 'START trials/Haviland et al' },
+  { id: 'breast-chest-wall', site: 'Breast', subsite: 'Chest Wall', tumour: 'Post-mastectomy', alphaBeta: 4, abSource: 'START trials/Haviland et al' },
+  { id: 'breast-dcis', site: 'Breast', subsite: 'DCIS', tumour: 'Intraductal', alphaBeta: 4, abSource: 'START trials/Haviland et al' },
+  { id: 'breast-inflammatory', site: 'Breast', subsite: 'Inflammatory', tumour: 'Adenocarcinoma', alphaBeta: 4, uncertaintyFlag: true, abSource: 'START trials/Haviland et al' },
+  { id: 'breast-recurrent', site: 'Breast', subsite: 'Recurrent', tumour: 'Adenocarcinoma', alphaBeta: 4, abSource: 'START trials/Haviland et al' },
+  { id: 'breast-male', site: 'Breast', subsite: 'Male Breast', tumour: 'Adenocarcinoma', alphaBeta: 4, abSource: 'START trials/Haviland et al' },
+  { id: 'breast-paget', site: 'Breast', subsite: 'Paget Disease', tumour: 'Nipple', alphaBeta: 10, abSource: 'START trials/Haviland et al' },
+  { id: 'breast-tnbc', site: 'Breast', subsite: 'TNBC', tumour: 'Triple Negative', alphaBeta: 10, abSource: 'START trials/Haviland et al', notes: 'Behaves more like high-grade rapidly proliferating tumour. Based on START trials and Haviland et al.' },
+  { id: 'breast-her2', site: 'Breast', subsite: 'HER2-enriched', tumour: 'HER2+', alphaBeta: 5, abLow: 4, abHigh: 6, uncertaintyFlag: true, abSource: 'START trials/Haviland et al', notes: 'Limited direct data. Based on START trials and Haviland et al.' },
+  { id: 'breast-luminal-a', site: 'Breast', subsite: 'Luminal A', tumour: 'Low proliferative', alphaBeta: 3.5, abLow: 3, abHigh: 4, abSource: 'START trials/Haviland et al', notes: 'Low proliferative. Based on START trials and Haviland et al.' },
+  { id: 'breast-luminal-b', site: 'Breast', subsite: 'Luminal B', tumour: 'Intermediate/High proliferative', alphaBeta: 5, abLow: 4, abHigh: 6, uncertaintyFlag: true, abSource: 'START trials/Haviland et al', notes: 'Limited direct data. Based on START trials and Haviland et al.' },
 
   // ── CNS ──
   { id: 'cns-gbm', site: 'CNS', subsite: 'Brain', tumour: 'Glioblastoma', alphaBeta: 10 },
@@ -120,7 +121,7 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'cns-ependymoma', site: 'CNS', subsite: 'Ependymoma', tumour: 'Glial', alphaBeta: 2 },
   { id: 'cns-medullo-adult', site: 'CNS', subsite: 'Medulloblastoma', tumour: 'PNET', alphaBeta: 10 },
   { id: 'cns-pineoblastoma', site: 'CNS', subsite: 'Pineoblastoma', tumour: 'Pineal', alphaBeta: 10 },
-  { id: 'cns-mets', site: 'CNS', subsite: 'Brain Metastasis', tumour: 'Secondary', alphaBeta: 10 },
+  { id: 'cns-mets', site: 'CNS', subsite: 'Brain Metastasis', tumour: 'Secondary', alphaBeta: 10, uncertaintyFlag: true, notes: 'α/β reflects most common histology; varies by primary' },
   { id: 'cns-oligo-2', site: 'CNS', subsite: 'Oligodendroglioma', tumour: 'Grade II', alphaBeta: 2 },
   { id: 'cns-oligo-3', site: 'CNS', subsite: 'Oligodendroglioma', tumour: 'Grade III', alphaBeta: 10 },
   { id: 'cns-pilocytic', site: 'CNS', subsite: 'Astrocytoma', tumour: 'Pilocytic (Gr I)', alphaBeta: 2 },
@@ -130,7 +131,7 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   // ── Skin ──
   { id: 'skin-bcc', site: 'Skin', subsite: 'BCC', tumour: 'Basal Cell', alphaBeta: 10 },
   { id: 'skin-scc', site: 'Skin', subsite: 'SCC', tumour: 'Squamous Cell', alphaBeta: 10 },
-  { id: 'skin-melanoma', site: 'Skin', subsite: 'Melanoma', tumour: 'Malignant', alphaBeta: 2.5 },
+  { id: 'skin-melanoma', site: 'Skin', subsite: 'Melanoma', tumour: 'Malignant', alphaBeta: 2.5, abLow: 0.6, abHigh: 2.5 },
   { id: 'skin-merkel', site: 'Skin', subsite: 'Merkel Cell', tumour: 'Neuroendocrine', alphaBeta: 10 },
   { id: 'skin-mf', site: 'Skin', subsite: 'Mycosis Fungoides', tumour: 'T-cell Lymphoma', alphaBeta: 10 },
   { id: 'skin-kaposi', site: 'Skin', subsite: 'Kaposi Sarcoma', tumour: 'Vascular', alphaBeta: 10 },
@@ -177,6 +178,7 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'bone-osteosarcoma', site: 'Bone', subsite: 'Osteosarcoma', tumour: 'Osteoid', alphaBeta: 4, notes: 'Canonical entry for adult/general cases. For paediatric-specific protocols, see the Paediatric group.', clinicalContext: 'Adult/General context' },
   { id: 'bone-ewing', site: 'Bone', subsite: 'Ewing Sarcoma', tumour: 'Small Blue Cell', alphaBeta: 10, notes: 'Canonical entry for adult/general cases. For paediatric-specific protocols, see the Paediatric group.', clinicalContext: 'Adult/General context' },
   { id: 'bone-giant-cell', site: 'Bone', subsite: 'Giant Cell', tumour: 'Osteoclastoma', alphaBeta: 4 },
+  { id: 'bone-spine-mets', site: 'Bone', subsite: 'Spine', tumour: 'Spinal Metastasis', alphaBeta: 10, notes: 'Generic spinal SBRT target; primary histology determines true α/β' },
 
   // ── Endocrine ──
   { id: 'endo-thyroid-pap', site: 'Endocrine', subsite: 'Thyroid', tumour: 'Papillary', alphaBeta: 10 },
@@ -188,7 +190,7 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   // ── OAR Reference ──
   { id: 'oar-cord', site: 'OAR', subsite: 'Spinal cord', tumour: 'N/A', alphaBeta: 2 },
   { id: 'oar-brain', site: 'OAR', subsite: 'Brain', tumour: 'N/A', alphaBeta: 2 },
-  { id: 'oar-brainstem', site: 'OAR', subsite: 'Brainstem', tumour: 'N/A', alphaBeta: 2.1 },
+  { id: 'oar-brainstem', site: 'OAR', subsite: 'Brainstem', tumour: 'N/A', alphaBeta: 2.0 },
   { id: 'oar-optic', site: 'OAR', subsite: 'Optic chiasm', tumour: 'N/A', alphaBeta: 2 },
   { id: 'oar-cochlea', site: 'OAR', subsite: 'Cochlea', tumour: 'N/A', alphaBeta: 3 },
   { id: 'oar-lens', site: 'OAR', subsite: 'Lens', tumour: 'N/A', alphaBeta: 1.2 },
@@ -206,6 +208,9 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'oar-brachial', site: 'OAR', subsite: 'Brachial plexus', tumour: 'N/A', alphaBeta: 2 },
   { id: 'oar-mandible', site: 'OAR', subsite: 'Mandible', tumour: 'N/A', alphaBeta: 3 },
   { id: 'oar-skin', site: 'OAR', subsite: 'Skin', tumour: 'N/A', alphaBeta: 3 },
+
+  // ── Eye ──
+  { id: 'eye-uveal-melanoma', site: 'Eye', subsite: 'Uveal', tumour: 'Choroidal Melanoma', alphaBeta: 1.26, abLow: 1.0, abHigh: 1.5, uncertaintyFlag: true, abSource: 'Gragoudas et al; proton RT literature', notes: 'Treated primarily with proton therapy or brachytherapy; α/β lower than cutaneous melanoma' },
 ].map(entry => {
   const tumour = entry.tumour.toLowerCase();
   const site = entry.site;
@@ -269,6 +274,24 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
     k = 0.4;
     repopNote = 'Standard Adenocarcinoma repopulation';
   }
+  // Rhabdomyosarcoma
+  else if (tumour.includes('rhabdo')) {
+    tk = 14;
+    k = 0.5;
+    repopNote = 'Rapidly proliferating; treat like aggressive SCC';
+  }
+  // Bladder TCC
+  else if (entry.subsite === 'Bladder') {
+    tk = 21;
+    k = 0.35;
+    repopNote = 'TCC: intermediate repopulation';
+  }
+  // Paediatric Medulloblastoma
+  else if (entry.id === 'peds-medullo') {
+    tk = 21;
+    k = 0.5;
+    repopNote = 'Rapidly proliferating PNET';
+  }
   // Sarcomas
   else if (site === 'Sarcoma') {
     tk = 0;
@@ -279,15 +302,15 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   return {
     ...entry,
     ab: entry.alphaBeta,
-    abLow: Math.max(0.5, entry.alphaBeta - (entry.alphaBeta > 5 ? 2 : 0.5)),
-    abHigh: entry.alphaBeta + (entry.alphaBeta > 5 ? 2 : 0.5),
+    abLow: entry.abLow ?? Math.max(0.5, entry.alphaBeta - (entry.alphaBeta > 5 ? 2 : 0.5)),
+    abHigh: entry.abHigh ?? (entry.alphaBeta + (entry.alphaBeta > 5 ? 2 : 0.5)),
     tk,
     k,
-    uncertaintyFlag: false,
+    uncertaintyFlag: entry.uncertaintyFlag ?? false,
     histology: entry.tumour,
-    abSource: 'Standard Literature (Joiner & van der Kogel)',
+    abSource: entry.abSource ?? 'Standard Literature (Joiner & van der Kogel)',
     repopNote,
-    clinicalContext: `Radiobiological parameters for ${entry.tumour} of the ${entry.subsite}.`
+    clinicalContext: entry.clinicalContext ?? `Radiobiological parameters for ${entry.tumour} of the ${entry.subsite}.`
   };
 });
 

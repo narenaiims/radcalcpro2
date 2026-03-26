@@ -95,7 +95,7 @@ const DEFAULT_RX: RxState = {
   intent: 'Radical',
   ebrt: { totalDose: 0, dosePerFx: 0, fractions: 0 },
   tk: 28,
-  kValue: 0.5,
+  kValue: 0.6,
 };
 
 // ─── Presets ─────────────────────────────────────────────────────────────────
@@ -119,7 +119,7 @@ export const RX_PRESETS: RxPreset[] = [
     label: 'H&N — Conv. (66 Gy / 33 fx)',
     site: 'Head & Neck', subsite: 'HNSCC HPV-',
     tumourAB: 10, oarAB: 3, dosePerFx: 2.0, fractions: 33, intent: 'Radical',
-    tk: 28, kValue: 0.65, source: 'RTOG 9003 / Standard',
+    tk: 28, kValue: 0.60, source: 'RTOG 9003 / Standard',
   },
   {
     label: 'H&N — Hypo (55 Gy / 20 fx)',
@@ -129,7 +129,7 @@ export const RX_PRESETS: RxPreset[] = [
   },
   {
     label: 'Cervix — EBRT (45 Gy / 25 fx)',
-    site: 'Gynecological', subsite: 'Cervix SCC',
+    site: 'Gynaecological', subsite: 'Cervix SCC',
     tumourAB: 10, oarAB: 3, dosePerFx: 1.8, fractions: 25, intent: 'Radical',
     tk: 21, kValue: 0.50, source: 'GEC-ESTRO EMBRACE II',
   },
@@ -149,19 +149,19 @@ export const RX_PRESETS: RxPreset[] = [
     label: 'Breast — FAST-Forward (26 Gy / 5 fx)',
     site: 'Breast', subsite: 'Breast Luminal',
     tumourAB: 4.0, oarAB: 3, dosePerFx: 5.2, fractions: 5, intent: 'Adjuvant',
-    tk: 28, kValue: 0.25, source: 'FAST-Forward (Murray Brunt 2020)',
+    tk: 0, kValue: 0, source: 'FAST-Forward (Murray Brunt 2020)',
   },
   {
     label: 'Breast — START-B (40 Gy / 15 fx)',
     site: 'Breast', subsite: 'Breast Luminal',
     tumourAB: 4.0, oarAB: 3, dosePerFx: 2.67, fractions: 15, intent: 'Adjuvant',
-    tk: 28, kValue: 0.25, source: 'START-B (Haviland 2013)',
+    tk: 0, kValue: 0, source: 'START-B (Haviland 2013)',
   },
   {
     label: 'Lung SBRT (54 Gy / 3 fx)',
     site: 'Thoracic', subsite: 'NSCLC Adenocarcinoma',
     tumourAB: 10, oarAB: 3, dosePerFx: 18, fractions: 3, intent: 'SBRT',
-    tk: 28, kValue: 0.40, source: 'RTOG 0236',
+    tk: 0, kValue: 0.40, source: 'RTOG 0236',
   },
   {
     label: 'Palliative Bone (20 Gy / 5 fx)',
@@ -179,7 +179,7 @@ export const RX_PRESETS: RxPreset[] = [
     label: 'Glioblastoma — Stupp (60 Gy / 30 fx)',
     site: 'CNS', subsite: 'Glioblastoma',
     tumourAB: 10, oarAB: 2, dosePerFx: 2.0, fractions: 30, intent: 'Radical',
-    tk: 0, kValue: 0.30, source: 'Stupp (NEJM 2005)',
+    tk: 0, kValue: 0.40, source: 'Stupp (NEJM 2005)',
   },
 ];
 
@@ -257,6 +257,9 @@ interface RadiobiologyContextValue {
   totalDose: number;
   bed: number;
   eqd2: number;
+  bedRepop: number;
+  eqd2Repop: number;
+  repopPenalty: number;
 
   // Mutations
   setPatientLabel: (label: string) => void;
@@ -318,6 +321,26 @@ export const RadiobiologyProvider: React.FC<{ children: ReactNode }> = ({ childr
     [bed, rx.tumourAB]
   );
 
+  const overallTime = useMemo(
+    () => rx.fractions <= 5 ? rx.fractions : Math.ceil((rx.fractions / 5) * 7),
+    [rx.fractions]
+  );
+
+  const repopPenalty = useMemo(
+    () => overallTime > rx.tk && rx.kValue > 0 ? rx.kValue * (overallTime - rx.tk) : 0,
+    [overallTime, rx.tk, rx.kValue]
+  );
+
+  const bedRepop = useMemo(
+    () => Math.max(0, bed - repopPenalty),
+    [bed, repopPenalty]
+  );
+
+  const eqd2Repop = useMemo(
+    () => rx.tumourAB > 0 ? bedRepop / (1 + 2 / rx.tumourAB) : 0,
+    [bedRepop, rx.tumourAB]
+  );
+
   // ── Mutations ───────────────────────────────────────────────────────────
   const setPatientLabel = useCallback((label: string) => dispatch({ type: 'SET_PATIENT', label }), []);
   const setTumourAB     = useCallback((ab: number)    => dispatch({ type: 'SET_TUMOUR_AB', ab }), []);
@@ -367,12 +390,14 @@ export const RadiobiologyProvider: React.FC<{ children: ReactNode }> = ({ childr
   const value = useMemo<RadiobiologyContextValue>(() => ({
     rx,
     totalDose, bed, eqd2,
+    bedRepop, eqd2Repop, repopPenalty,
     setPatientLabel, setTumourAB, setOarAB, setDosePerFx,
     setFractions, setIntent, setTumourSite, setEBRT, setRepop,
     applyPreset, reset,
     history, logCalculation, clearHistory, removeFromHistory,
   }), [
     rx, totalDose, bed, eqd2,
+    bedRepop, eqd2Repop, repopPenalty,
     setPatientLabel, setTumourAB, setOarAB, setDosePerFx,
     setFractions, setIntent, setTumourSite, setEBRT, setRepop,
     applyPreset, reset,
@@ -398,7 +423,7 @@ export function useRxContext(): RadiobiologyContextValue {
 
 /** Returns only the fields needed for a basic LQ calculation */
 export function useRxLQ() {
-  const { rx, totalDose, bed, eqd2 } = useRxContext();
+  const { rx, totalDose, bed, eqd2, bedRepop, eqd2Repop, repopPenalty } = useRxContext();
   return {
     dosePerFx: rx.dosePerFx,
     fractions:  rx.fractions,
@@ -407,6 +432,9 @@ export function useRxLQ() {
     totalDose,
     bed,
     eqd2,
+    bedRepop,
+    eqd2Repop,
+    repopPenalty,
   };
 }
 

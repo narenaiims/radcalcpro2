@@ -1,3 +1,5 @@
+export const APP_VERSION = '1.0.0'; // Current client version
+
 export const ROUTES = [
   // ── Calculators
   { path: '/eqd2',           label: 'BED / EQD2',          group: 'Calculators',  short: 'BED/EQD2' },

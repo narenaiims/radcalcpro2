@@ -14,8 +14,8 @@
  * without needing a build-time Workbox config.
  */
 
-const APP_VERSION = '2.0.1';
-const CACHE_NAME = `radcalcpro-${APP_VERSION}`;
+const APP_VERSION = '1.0.0';
+const CACHE_NAME = `radoncpro-${APP_VERSION}`;
 const SHELL_ASSETS   = ['/', '/index.html', '/manifest.json'];
 
 // ── Install: pre-cache the app shell ──────────────────────────────────────

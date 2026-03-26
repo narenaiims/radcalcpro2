@@ -2,6 +2,7 @@ import React, { Component, Suspense, lazy } from 'react';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
+import UpdateNotification from './components/UpdateNotification';
 
 // Lazy-load all pages for performance
 const Home                = lazy(() => import('./pages/Home'));
@@ -93,6 +94,7 @@ const Layout: React.FC = () => {
     <div className={`flex flex-col min-h-screen ${isImmersive ? 'bg-slate-950' : 'bg-zinc-50'}`}>
       <Header />
       <PWAInstallPrompt />
+      <UpdateNotification />
       <main className={`flex-grow w-full ${isImmersive ? '' : 'max-w-3xl mx-auto px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10'}`}>
         <ErrorBoundary>
           <Suspense fallback={<PageLoader />}>

@@ -77,8 +77,8 @@ const PRESETS: SitePreset[] = [
     name: 'Prostate Boost (HDR)',
     ab: 1.5, dpf: 15.0, fx: 1,
     ebrtTotal: 46.0, ebrtDpf: 2.0,
-    targetEQD2: 115,
-    protocol: 'ASCENDE-RT · William Beaumont single-fraction',
+    targetEQD2: 117,
+    protocol: 'Demanes 2011 · RTOG 0321 (single-fraction 15 Gy HDR boost)',
     oarConstraints: [
       { name: 'Urethra',    metric: 'D10%', limit: '<105 Gy',  ab: 5,   hard: true  },
       { name: 'Rectum',     metric: 'D2cc', limit: '<65 Gy',    ab: 3,   hard: true  },
@@ -86,7 +86,7 @@ const PRESETS: SitePreset[] = [
       { name: 'Penile bulb',metric: 'D90%', limit: '<50 Gy',    ab: 3,   hard: false },
     ],
     notes: [
-      'ASCENDE-RT: LDR boost superior to EBRT alone for bPFS (Rodda 2017, Lancet Oncol).',
+      'Single-fraction HDR 15 Gy boost: RTOG 0321 showed 3-yr PSA control 97% (Demanes 2011). ASCENDE-RT used LDR, not HDR — do not conflate.',
       'Single HDR 15 Gy (α/β=1.5) → EQD2₁.₅ ≈ 165 Gy (extreme hypo).',
       'Urethra sparing critical — use urethral catheter + optimisation.',
       'Post-implant CT/MRI dosimetry recommended within 24h.',
@@ -298,9 +298,9 @@ const HDRBrachyPage: React.FC = () => {
     const ebrtEQD2_oar = c.ab > 0 && nEbrtDpf > 0
       ? calcEQD2(nEbrtTotal, nEbrtDpf, c.ab) : 0;
       
-    // Use user-input OAR dose per fraction, or default to 70% of target dose
+    // Use user-input OAR dose per fraction, or default to 0
     const oarDpfStr = oarDoses[c.name];
-    const oarDpf = oarDpfStr !== undefined ? parseFloat(oarDpfStr) || 0 : nDpf * 0.7;
+    const oarDpf = oarDpfStr !== undefined ? parseFloat(oarDpfStr) || 0 : 0;
     const oarTotal = oarDpf * nFx;
 
     const brachyEQD2_oar = c.ab > 0 && oarDpf > 0
@@ -315,7 +315,7 @@ const HDRBrachyPage: React.FC = () => {
       total: combinedEQD2_oar,
       status,
       oarDpf: oarDpf,
-      oarDpfStr: oarDpfStr !== undefined ? oarDpfStr : (nDpf * 0.7).toFixed(1)
+      oarDpfStr: oarDpfStr !== undefined ? oarDpfStr : ''
     };
   }), [preset, nEbrtTotal, nEbrtDpf, nDpf, nFx, oarDoses]);
 
@@ -589,21 +589,27 @@ const HDRBrachyPage: React.FC = () => {
                     </div>
                     <span className={STATUS_BADGE[r.status]}>{STATUS_LABEL[r.status]}</span>
                   </div>
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-1">
                     <label className="text-[11px] text-slate-500 uppercase tracking-wider">Brachy {r.metric}/fx (Gy):</label>
                     <input
                       type="number"
                       step="0.1"
                       min="0"
                       value={r.oarDpfStr}
+                      placeholder="Enter from plan (Gy/fx)"
                       onChange={e => setOarDoses(prev => ({ ...prev, [r.name]: e.target.value }))}
-                      className="w-16 px-1.5 py-0.5 text-xs border border-slate-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none num"
+                      className="w-40 px-1.5 py-0.5 text-xs border border-slate-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none num"
                     />
                   </div>
+                  <p className="text-[10px] text-slate-400 italic mb-2">
+                    Enter D2cc (or Dmax) dose-per-fraction from your treatment plan. Leave blank if not yet planned.
+                  </p>
                   <div className="flex items-center gap-4 text-xs">
                     <span className="text-slate-500">Limit: <span className="font-bold num text-slate-700">{r.limit}</span></span>
-                    <span className="text-slate-500">Calc: <span className="font-bold num text-slate-900">{r.total.toFixed(1)} Gy</span></span>
-                    <span className="text-slate-400">EBRT {r.ebrtEQD2.toFixed(1)} + Brachy {r.brachyEQD2.toFixed(1)}</span>
+                    <span className="text-slate-500">Calc: <span className="font-bold num text-slate-900" title={r.total === 0 ? "No dose entered — add measured OAR dose from plan" : undefined}>{r.total === 0 ? '—' : r.total.toFixed(1) + ' Gy'}</span></span>
+                    <span className="text-slate-400">
+                      EBRT {r.ebrtEQD2.toFixed(1)} + Brachy <span title={r.brachyEQD2 === 0 ? "No dose entered — add measured OAR dose from plan" : undefined}>{r.brachyEQD2 === 0 ? '—' : r.brachyEQD2.toFixed(1)}</span>
+                    </span>
                   </div>
                   {/* Progress bar */}
                   <div className="mt-1.5 h-1.5 bg-slate-100 rounded-full overflow-hidden">

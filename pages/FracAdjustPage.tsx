@@ -121,7 +121,6 @@ function roundedFxCorrection(bed: number, newDpf: number, ab: number) {
   const exactFx    = bed / (newDpf * (1 + newDpf / ab));
   const roundedUp  = Math.ceil(exactFx);
   const roundedDn  = Math.floor(exactFx);
-  const dpfUp      = bed / (roundedUp * (1 + newDpf / ab)) / roundedUp;
   // Recalculate dpf to maintain BED with rounded fractions
   // BED = n * d * (1 + d/ab)  → quadratic in d: β·d² + α·d - BED/n = 0
   // d = [-ab + sqrt(ab² + 4·ab·BED/n)] / 2
@@ -145,6 +144,7 @@ function roundedFxCorrection(bed: number, newDpf: number, ab: number) {
 // ── Main component ────────────────────────────────────────────────────────
 const FracAdjustPage: React.FC = () => {
   const [ab,       setAb]      = React.useState('10');
+  const [oarAb,    setOarAb]   = React.useState('3');
   const [origDose, setOrigDose]= React.useState('60');
   const [origDpf,  setOrigDpf] = React.useState('2.0');
   const [newDpf,   setNewDpf]  = React.useState('3.0');
@@ -171,6 +171,7 @@ const FracAdjustPage: React.FC = () => {
       if (s) {
         const p = JSON.parse(s);
         if (p.ab)       setAb(String(p.ab));
+        if (p.oarAb)    setOarAb(String(p.oarAb));
         if (p.origDose) setOrigDose(String(p.origDose));
         if (p.origDpf)  setOrigDpf(String(p.origDpf));
         if (p.newDpf)   setNewDpf(String(p.newDpf));
@@ -179,11 +180,12 @@ const FracAdjustPage: React.FC = () => {
   }, []);
 
   React.useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ab, origDose, origDpf, newDpf }));
-  }, [ab, origDose, origDpf, newDpf]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ab, oarAb, origDose, origDpf, newDpf }));
+  }, [ab, oarAb, origDose, origDpf, newDpf]);
 
   // Numeric values
   const nAb       = parseFloat(ab)       || 0;
+  const nOarAb    = parseFloat(oarAb)    || 3;
   const nOrigDose = parseFloat(origDose) || 0;
   const nOrigDpf  = parseFloat(origDpf)  || 0;
   const nNewDpf   = parseFloat(newDpf)   || 0;
@@ -198,6 +200,15 @@ const FracAdjustPage: React.FC = () => {
   const newFx     = React.useMemo(() =>
     nNewDpf > 0 ? newTotal / nNewDpf : 0,
   [newTotal, nNewDpf]);
+
+  const oarResults = React.useMemo(() => {
+    if (nOarAb <= 0 || nOrigDose <= 0 || nOrigDpf <= 0 || newTotal <= 0) return null;
+    const oarBedOrig = nOrigDose * (1 + nOrigDpf / nOarAb);
+    const oarBedNew = newTotal * (1 + nNewDpf / nOarAb);
+    const oarBedDelta = oarBedNew - oarBedOrig;
+    const oarBedPct = (oarBedDelta / oarBedOrig) * 100;
+    return { oarBedOrig, oarBedNew, oarBedDelta, oarBedPct };
+  }, [nOarAb, nOrigDose, nOrigDpf, newTotal, nNewDpf]);
 
   const rounding  = React.useMemo(() =>
     baseBED > 0 ? roundedFxCorrection(baseBED, nNewDpf, nAb) : null,
@@ -327,6 +338,12 @@ const FracAdjustPage: React.FC = () => {
               </div>
             )}
           </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-500 mb-1">OAR α/β (Gy)</label>
+            <input type="number" step="0.5" value={oarAb}
+              onChange={e => setOarAb(e.target.value)} className="input-clinical num" />
+          </div>
         </div>
       </div>
 
@@ -361,6 +378,51 @@ const FracAdjustPage: React.FC = () => {
               <p className="text-[9px] text-blue-200/50">Gy{nAb}</p>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── OAR Result ────────────────────────────────────────────────── */}
+      {valid && oarResults && (
+        <div className="bg-white rounded-lg border border-slate-200 px-4 py-3">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              OAR BED (α/β={nOarAb})
+            </p>
+            <div className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+              oarResults.oarBedPct > 5 ? 'bg-red-100 text-red-700' :
+              oarResults.oarBedPct > 2 ? 'bg-amber-100 text-amber-700' :
+              'bg-green-100 text-green-700'
+            }`}>
+              {oarResults.oarBedPct >= 0 ? '+' : ''}{oarResults.oarBedPct.toFixed(1)}%
+            </div>
+          </div>
+          <div className="flex justify-between items-end">
+            <div>
+              <p className="text-[9px] text-slate-400 uppercase tracking-tight">Original BED</p>
+              <p className="text-lg font-bold text-slate-600 num">{oarResults.oarBedOrig.toFixed(1)} <span className="text-[10px] font-normal">Gy</span></p>
+            </div>
+            <div className="text-center">
+              <ChevronRight className="w-4 h-4 text-slate-300 mb-1" />
+            </div>
+            <div className="text-right">
+              <p className="text-[9px] text-slate-400 uppercase tracking-tight">New BED</p>
+              <p className={`text-lg font-bold num ${
+                oarResults.oarBedPct > 5 ? 'text-red-600' :
+                oarResults.oarBedPct > 2 ? 'text-amber-600' :
+                'text-green-600'
+              }`}>
+                {oarResults.oarBedNew.toFixed(1)} <span className="text-[10px] font-normal">Gy</span>
+              </p>
+            </div>
+          </div>
+          {oarResults.oarBedPct > 10 && (
+            <div className="mt-3 p-2 bg-red-50 border border-red-100 rounded flex items-center gap-2">
+              <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+              <p className="text-[10px] text-red-800 font-medium">
+                Late-tissue BED increased by {oarResults.oarBedPct.toFixed(1)}% — verify OAR constraints before prescribing.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -483,7 +545,6 @@ const FracAdjustPage: React.FC = () => {
         </div>
         <div className="divide-y divide-slate-50">
           {[
-            { title: 'Late tissue penalty',       body: 'Hypofractionation increases biological effect disproportionately on late-responding tissues (low α/β). Always calculate late-tissue EQD2 (e.g. bowel α/β=3) alongside tumour EQD2. Use the EQD2 page for OAR checks.' },
             { title: 'BED is not EQD2',           body: 'BED includes the extra log-kill term. EQD2 normalises to 2 Gy/fx for clinical comparison. They are related but not identical. Always specify which metric and which α/β.' },
             { title: 'α/β uncertainty',           body: 'Breast α/β=4 (START) and prostate α/β=1.5 (CHHiP) are trial-derived values with confidence intervals. The exact value influences the output significantly — test sensitivity.' },
             { title: 'Inter-fraction interval',   body: 'BID schedules require ≥6h between fractions to allow sublethal damage repair. This is mandatory for accelerated fractionation — not optional.' },

@@ -162,8 +162,10 @@ const calcEQD2 = (total: number, dpf: number, ab: number) =>
 
 function getRecoveryFraction(model: OARModel, months: number): number {
   if (model.recoveryModel === 'none') return 0;
-  if (months < model.recoveryThresholdMonths) return 0;
-  return model.recoveryFraction;
+  const targetRecovery = Math.min(model.maxRecovery, model.recoveryFraction);
+  if (months <= 0) return 0;
+  if (months >= model.recoveryThresholdMonths) return targetRecovery;
+  return (months / model.recoveryThresholdMonths) * targetRecovery;
 }
 
 // ── Status helper ─────────────────────────────────────────────────────────
@@ -381,11 +383,16 @@ const ReirradiationCalcPage: React.FC = () => {
                 </span>
               </div>
               {oar.recoveryModel !== 'none' && (
-                <p className="text-[11px] text-slate-400 mt-1">
-                  Threshold: {oar.recoveryThresholdMonths} months.
-                  Recovery = {(oar.recoveryFraction * 100).toFixed(0)}% after threshold.
-                  Effective BED1 = {calc.effectBed1.toFixed(1)} Gy
-                </p>
+                <div className="mt-1">
+                  <p className="text-[11px] text-slate-400">
+                    Threshold: {oar.recoveryThresholdMonths} months.
+                    Target Recovery = {(Math.min(oar.maxRecovery, oar.recoveryFraction) * 100).toFixed(0)}% after threshold.
+                    Effective BED1 = {calc.effectBed1.toFixed(1)} Gy
+                  </p>
+                  <p className="text-[10px] text-blue-600/70 italic mt-0.5">
+                    Recovery is linearly interpolated to threshold interval; values before threshold represent partial recovery estimates.
+                  </p>
+                </div>
               )}
             </div>
           </div>

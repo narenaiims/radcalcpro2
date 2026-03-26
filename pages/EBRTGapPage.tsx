@@ -88,8 +88,13 @@ const EBRTGapPage: React.FC = () => {
     const eqd2Delivered = calcEQD2(doseDelivered, dpf, ab);
     
     // Repopulation Loss
-    // Loss = K * GapDays
-    const eqd2Loss = k * data.gapDays;
+    const estimatedOverallTime = totalFx <= 5 ? totalFx : Math.ceil((totalFx / 5) * 7);
+    const daysElapsedAtGapStart = totalFx > 0 ? Math.ceil((data.fxCompleted / totalFx) * estimatedOverallTime) : 0;
+    
+    const effectiveRepopDays = Math.max(0, data.gapDays - Math.max(0, tk - daysElapsedAtGapStart));
+    const eqd2Loss = k * effectiveRepopDays;
+    
+    const tkReachedBeforeGap = daysElapsedAtGapStart >= tk;
     
     // Compensation
     // Convert EQD2 loss back to physical dose at current d/fx
@@ -115,7 +120,10 @@ const EBRTGapPage: React.FC = () => {
       newTotalDose,
       newTotalFx,
       interpretation,
-      ab, k, tk
+      ab, k, tk,
+      effectiveRepopDays,
+      daysElapsedAtGapStart,
+      tkReachedBeforeGap
     };
   }, [data, selectedTumour, doseDelivered, totalFx]);
 
@@ -338,6 +346,22 @@ const EBRTGapPage: React.FC = () => {
                     <span className="text-xs text-blue-200">New Total Dose</span>
                     <span className="text-lg font-bold">{results.newTotalDose.toFixed(1)} Gy <span className="text-xs font-normal opacity-70">in {results.newTotalFx} fx</span></span>
                   </div>
+                </div>
+              </div>
+
+              {/* Repopulation Timing Note */}
+              <div className="mb-6 px-4 py-3 bg-blue-50/50 rounded-xl border border-blue-100 flex items-start gap-3">
+                <Activity className="w-4 h-4 text-blue-500 mt-0.5" />
+                <div>
+                  <p className="text-xs font-bold text-blue-900">
+                    {results.tkReachedBeforeGap ? 'Tk reached before gap' : 'Tk not yet reached'}
+                  </p>
+                  <p className="text-[11px] text-blue-700 leading-tight">
+                    Gap started at ~day {results.daysElapsedAtGapStart}. 
+                    {results.effectiveRepopDays < data.gapDays 
+                      ? ` Only ${results.effectiveRepopDays} of ${data.gapDays} days are subject to repopulation (Tk=${results.tk}d).`
+                      : ` All ${data.gapDays} days are subject to repopulation correction.`}
+                  </p>
                 </div>
               </div>
 

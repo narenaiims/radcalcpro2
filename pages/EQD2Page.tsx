@@ -104,10 +104,10 @@ const LEVEL_STYLES = {
 
 // ── Main page ─────────────────────────────────────────────────────────────
 const EQD2Page: React.FC = () => {
+  const { rx, logCalculation, setTumourSite, setTumourAB, setRepop } = useRxContext();
+  const [alphaBeta,  setAlphaBeta]  = React.useState(String(rx.tumourAB ?? 10));
   const [dosePerFx,  setDosePerFx]  = React.useState('2.0');
   const [fractions,  setFractions]  = React.useState('25');
-  const [alphaBeta,  setAlphaBeta]  = React.useState('10');
-  const { rx, logCalculation, setTumourSite } = useRxContext();
   const selectedTumour = rx.selectedTumour;
   const setSelectedTumour = (entry: RadiobiologyData | null) => setTumourSite(entry?.site ?? '', entry?.subsite ?? '', entry);
   const [aiText,     setAiText]     = React.useState('');
@@ -297,6 +297,8 @@ Cover: (1) what tissue this α/β represents, (2) clinical context where this sc
                   onSelect={(entry) => {
                     setSelectedTumour(entry);
                     setAlphaBeta(entry.ab.toString());
+                    setTumourAB(entry.ab);
+                    setRepop(entry.tk, entry.k);
                   }}
                   onClear={() => setSelectedTumour(null)}
                 />
@@ -309,7 +311,9 @@ Cover: (1) what tissue this α/β represents, (2) clinical context where this sc
                     type="number" step="0.1" min="0.5" max="20"
                     value={alphaBeta}
                     onChange={e => {
-                      setAlphaBeta(e.target.value);
+                      const value = e.target.value;
+                      setAlphaBeta(value);
+                      setTumourAB(parseFloat(value) || 10);
                       setSelectedTumour(null);
                     }}
                     className="input-premium"

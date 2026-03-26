@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { BookOpen, ChevronRight } from "lucide-react";
-import KeyFactsSidebar, { KeyFactSection } from "@/components/KeyFactsSidebar";
+import KeyFactsSidebar, { KeyFactSection } from "../components/KeyFactsSidebar";
 
 // ─── COLOUR TOKENS ────────────────────────────────────────────────────────────
 const C = {
@@ -822,7 +822,7 @@ export default function DoseRateComparison() {
       background: "radial-gradient(ellipse at 20% 20%, #0D1B2A 0%, #060B12 60%)",
       fontFamily: "'DM Sans', sans-serif", color: "#F1F5F9"
     }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; } ::-webkit-scrollbar { width: 3px; height: 3px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #1E3A5F; border-radius: 4px; } @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(.9)} } @keyframes slideIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} } @keyframes scanline { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap'); ::-webkit-scrollbar { width: 3px; height: 3px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #1E3A5F; border-radius: 4px; } @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(.9)} } @keyframes slideIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} } @keyframes scanline { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }`}</style>
 
       {/* ── HEADER ── */}
       <div style={{

@@ -7,12 +7,13 @@
  * Used by EQD2Page, EBRTGapPage, FracAdjustPage, and other calculators.
  */
 import React, { useState, useMemo } from 'react';
+import { useRxContext } from '../src/context/RadiobiologyContext';
 import {
   MASTER_RADIOBIOLOGY_TABLE,
   RadiobiologyData,
   uniqueSites,
   getSubsites,
-} from '@/src/data/radiobiologyData';
+} from '../src/data/radiobiologyData';
 
 // ── Site icons (emoji fallback — no external deps) ────────────────────────
 const SITE_ICONS: Record<string, string> = {
@@ -71,15 +72,32 @@ interface TumourSelectorProps {
 
 // ── Component ─────────────────────────────────────────────────────────────
 const TumourSelector: React.FC<TumourSelectorProps> = ({
-  selectedEntry,
-  onSelect,
-  onClear,
+  selectedEntry: propEntry,
+  onSelect: propOnSelect,
+  onClear: propOnClear,
   compact = false,
 }) => {
+  const { rx, setTumourSite } = useRxContext();
+  const selectedEntry = propEntry ?? rx.selectedTumour;
+
   const [step, setStep] = useState<1 | 2>(1);
   const [hoveredSite, setHoveredSite] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSite, setSelectedSite] = useState<string>(selectedEntry?.site ?? '');
+  const [selectedSite, setSelectedSite] = useState<string>(selectedEntry?.site ?? rx.tumourSite);
+
+  React.useEffect(() => {
+    setSelectedSite(selectedEntry?.site ?? rx.tumourSite);
+  }, [selectedEntry, rx.tumourSite]);
+
+  const onSelect = (entry: RadiobiologyData) => {
+    if (propOnSelect) propOnSelect(entry);
+    setTumourSite(entry.site, entry.subsite, entry);
+  };
+
+  const onClear = () => {
+    if (propOnClear) propOnClear();
+    setTumourSite('', '', null);
+  };
 
   // Filtered subsites based on search
   const filteredSubsites = useMemo(() => {

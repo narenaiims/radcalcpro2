@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { BookOpen, ChevronRight } from "lucide-react";
-import KeyFactsSidebar, { KeyFactSection } from "@/components/KeyFactsSidebar";
+import KeyFactsSidebar, { KeyFactSection } from "../components/KeyFactsSidebar";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -470,7 +470,7 @@ export default function PediatricConstraints() {
       background: "linear-gradient(160deg, #080C14 0%, #0D1526 50%, #080C14 100%)"
     }}>
       {/* Import fonts */}
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,900;1,9..40,400&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@700&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; } ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #0D1526; } ::-webkit-scrollbar-thumb { background: #1E3A5F; border-radius: 4px; } @keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.85); } } @keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } } .fade-in { animation: fadeInUp 0.35s ease forwards; }`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,900;1,9..40,400&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@700&display=swap'); ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #0D1526; } ::-webkit-scrollbar-thumb { background: #1E3A5F; border-radius: 4px; } @keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.85); } } @keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } } .fade-in { animation: fadeInUp 0.35s ease forwards; }`}</style>
 
       {/* ── Header ── */}
       <div style={{

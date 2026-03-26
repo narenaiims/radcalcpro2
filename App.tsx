@@ -1,7 +1,7 @@
 import React, { Component, Suspense, lazy } from 'react';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import Header from '@/components/Header';
-import PWAInstallPrompt from '@/components/PWAInstallPrompt';
+import Header from './components/Header';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 
 // Lazy-load all pages for performance
 const Home                = lazy(() => import('./pages/Home'));
@@ -97,7 +97,7 @@ const Layout: React.FC = () => {
         <ErrorBoundary>
           <Suspense fallback={<PageLoader />}>
             <div className="w-full h-full">
-                <Routes location={location} key={location.pathname}>
+                <Routes location={location}>
                   <Route path="/"              element={<Home />} />
                   <Route path="/about"         element={<About />} />
                   <Route path="/eqd2"          element={<EQD2Page />} />

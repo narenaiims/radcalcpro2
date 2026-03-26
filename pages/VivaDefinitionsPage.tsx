@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { BookOpen, ChevronRight, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
+import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 interface VivaDef {

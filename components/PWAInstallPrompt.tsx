@@ -1,13 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Download, X } from 'lucide-react';
-import { setDeferredPrompt, installPWA } from '@/src/services/pwaService';
+import { setDeferredPrompt, installPWA } from '../src/services/pwaService';
 
 // Pure-CSS slide-up — no motion/react dependency needed for a simple toast
 const PWAInstallPrompt: React.FC = () => {
   const [isVisible, setIsVisible] = React.useState(false);
   const [isExiting, setIsExiting] = React.useState(false);
+  const [isRestricted, setIsRestricted] = React.useState(false);
 
   React.useEffect(() => {
+    // Detect if we are in Google AI Studio or an iframe
+    const restricted = window.location.hostname.includes('google') || window.self !== window.top;
+    setIsRestricted(restricted);
+
+    if (restricted) {
+      // In restricted mode, we show the banner once if not dismissed
+      const dismissed = localStorage.getItem('pwa-restricted-dismissed');
+      if (!dismissed) {
+        setIsVisible(true);
+      }
+      return;
+    }
+
     const handler = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -30,10 +44,17 @@ const PWAInstallPrompt: React.FC = () => {
 
   const dismiss = () => {
     setIsExiting(true);
+    if (isRestricted) {
+      localStorage.setItem('pwa-restricted-dismissed', 'true');
+    }
     setTimeout(() => { setIsVisible(false); setIsExiting(false); }, 280);
   };
 
   const handleInstallClick = async () => {
+    if (isRestricted) {
+      window.open(window.location.href, '_blank');
+      return;
+    }
     const success = await installPWA();
     if (success) dismiss();
   };
@@ -58,15 +79,19 @@ const PWAInstallPrompt: React.FC = () => {
           <Download className="w-6 h-6" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-bold text-slate-900 truncate">Install RadOnc Pro</h3>
-          <p className="text-[11px] text-slate-500 leading-tight">Save to home screen for offline access.</p>
+          <h3 className="text-sm font-bold text-slate-900 truncate">
+            {isRestricted ? 'Install RadOnc Pro' : 'Install RadOnc Pro'}
+          </h3>
+          <p className="text-[11px] text-slate-500 leading-tight">
+            {isRestricted ? 'Open in Chrome directly to install app.' : 'Save to home screen for offline access.'}
+          </p>
         </div>
         <div className="flex flex-col gap-2">
           <button
             onClick={handleInstallClick}
             className="bg-blue-600 text-white text-[10px] font-bold px-4 py-2 rounded-lg hover:bg-blue-700 transition uppercase tracking-wider"
           >
-            Install
+            {isRestricted ? 'Open App' : 'Install'}
           </button>
           <button onClick={dismiss} className="text-slate-400 hover:text-slate-600 transition self-center" aria-label="Dismiss">
             <X className="w-4 h-4" />

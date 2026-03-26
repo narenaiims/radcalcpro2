@@ -25,6 +25,7 @@
  * Dr. Narendra Rathore · RNT Medical College · Udaipur
  */
 
+import { RadiobiologyData } from '../data/radiobiologyData';
 import React, {
   createContext,
   useContext,
@@ -47,6 +48,8 @@ export interface RxState {
   tumourSite: string;
   /** Tumour subsite / histology */
   tumourSubsite: string;
+  /** Selected tumour entry */
+  selectedTumour: RadiobiologyData | null;
   /** α/β ratio for tumour (Gy) */
   tumourAB: number;
   /** α/β ratio for critical OAR (Gy) — used in composite calcs */
@@ -84,6 +87,7 @@ const DEFAULT_RX: RxState = {
   patientLabel: '',
   tumourSite: 'Head & Neck',
   tumourSubsite: 'HNSCC HPV-',
+  selectedTumour: null,
   tumourAB: 10,
   oarAB: 3,
   dosePerFx: 2.0,
@@ -188,7 +192,7 @@ type RxAction =
   | { type: 'SET_DOSE_PER_FX'; dose: number }
   | { type: 'SET_FRACTIONS'; n: number }
   | { type: 'SET_INTENT'; intent: TreatmentIntent }
-  | { type: 'SET_TUMOUR_SITE'; site: string; subsite: string }
+  | { type: 'SET_TUMOUR_SITE'; site: string; subsite: string; entry: RadiobiologyData | null }
   | { type: 'SET_EBRT'; ebrt: RxState['ebrt'] }
   | { type: 'SET_REPOP'; tk: number; kValue: number }
   | { type: 'APPLY_PRESET'; preset: RxPreset }
@@ -203,7 +207,7 @@ function rxReducer(state: RxState, action: RxAction): RxState {
     case 'SET_DOSE_PER_FX': return { ...state, dosePerFx: action.dose };
     case 'SET_FRACTIONS': return { ...state, fractions: action.n };
     case 'SET_INTENT':    return { ...state, intent: action.intent };
-    case 'SET_TUMOUR_SITE': return { ...state, tumourSite: action.site, tumourSubsite: action.subsite };
+    case 'SET_TUMOUR_SITE': return { ...state, tumourSite: action.site, tumourSubsite: action.subsite, selectedTumour: action.entry };
     case 'SET_EBRT':      return { ...state, ebrt: action.ebrt };
     case 'SET_REPOP':     return { ...state, tk: action.tk, kValue: action.kValue };
     case 'APPLY_PRESET':  return {
@@ -261,7 +265,7 @@ interface RadiobiologyContextValue {
   setDosePerFx: (dose: number) => void;
   setFractions: (n: number) => void;
   setIntent: (intent: TreatmentIntent) => void;
-  setTumourSite: (site: string, subsite: string) => void;
+  setTumourSite: (site: string, subsite: string, entry: RadiobiologyData | null) => void;
   setEBRT: (ebrt: RxState['ebrt']) => void;
   setRepop: (tk: number, kValue: number) => void;
   applyPreset: (preset: RxPreset) => void;
@@ -321,7 +325,7 @@ export const RadiobiologyProvider: React.FC<{ children: ReactNode }> = ({ childr
   const setDosePerFx    = useCallback((dose: number)  => dispatch({ type: 'SET_DOSE_PER_FX', dose }), []);
   const setFractions    = useCallback((n: number)     => dispatch({ type: 'SET_FRACTIONS', n }), []);
   const setIntent       = useCallback((intent: TreatmentIntent) => dispatch({ type: 'SET_INTENT', intent }), []);
-  const setTumourSite   = useCallback((site: string, subsite: string) => dispatch({ type: 'SET_TUMOUR_SITE', site, subsite }), []);
+  const setTumourSite   = useCallback((site: string, subsite: string, entry: RadiobiologyData | null) => dispatch({ type: 'SET_TUMOUR_SITE', site, subsite, entry }), []);
   const setEBRT         = useCallback((ebrt: RxState['ebrt']) => dispatch({ type: 'SET_EBRT', ebrt }), []);
   const setRepop        = useCallback((tk: number, kValue: number) => dispatch({ type: 'SET_REPOP', tk, kValue }), []);
   const applyPreset     = useCallback((preset: RxPreset) => dispatch({ type: 'APPLY_PRESET', preset }), []);

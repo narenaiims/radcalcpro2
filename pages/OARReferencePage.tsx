@@ -33,7 +33,7 @@ import {
   OAR_QUIZ_QUESTIONS,
   OARQuizQuestion,
   EvidenceLevel,
-} from '@/src/services/oarDataService';
+} from '../src/services/oarDataService';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 type TabType = 'Practice' | 'Checker' | 'Pearls' | 'Quiz' | 'ReRT';

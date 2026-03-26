@@ -23,7 +23,8 @@ import {
   BookOpen, GraduationCap
 } from 'lucide-react';
 import { RadiobiologyData } from '@/src/data/radiobiologyData';
-import TumourSelector from '@/components/TumourSelector';
+import { useRxContext } from '../src/context/RadiobiologyContext';
+import TumourSelector from '../components/TumourSelector';
 
 const STORAGE_KEY = 'radonco_frac_adjust_state_v2';
 
@@ -147,7 +148,9 @@ const FracAdjustPage: React.FC = () => {
   const [origDose, setOrigDose]= React.useState('60');
   const [origDpf,  setOrigDpf] = React.useState('2.0');
   const [newDpf,   setNewDpf]  = React.useState('3.0');
-  const [selectedTumour, setSelectedTumour] = React.useState<RadiobiologyData | null>(null);
+  const { rx, setTumourSite } = useRxContext();
+  const selectedTumour = rx.selectedTumour;
+  const setSelectedTumour = (entry: RadiobiologyData | null) => setTumourSite(entry?.site ?? '', entry?.subsite ?? '', entry);
   const [showFormula, setShowFormula] = React.useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 

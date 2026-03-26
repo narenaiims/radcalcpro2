@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
+import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import { 
   BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, 
   Tooltip as RechartsTooltip, ResponsiveContainer, Cell, Legend,
@@ -13,7 +13,7 @@ import {
   XCircle, AlertTriangle, ArrowRight, Activity,
   Shield, RefreshCw, Layers, Target, TrendingUp
 } from 'lucide-react';
-import Tooltip, { InfoIcon } from '@/components/Tooltip';
+import Tooltip, { InfoIcon } from '../components/Tooltip';
 
 const STORAGE_KEY = 'radonco_units_state_v2';
 

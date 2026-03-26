@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { BookOpen, ChevronRight } from "lucide-react";
-import KeyFactsSidebar, { KeyFactSection } from "@/components/KeyFactsSidebar";
+import KeyFactsSidebar, { KeyFactSection } from "../components/KeyFactsSidebar";
 
 // ─── GRADE CONFIG ─────────────────────────────────────────────────────────────
 const GRADE: Record<number, { label: string; desc: string; color: string; text: string; dot: string }> = {
@@ -1010,7 +1010,7 @@ export default function ToxicityGrading() {
       background: "linear-gradient(160deg, #070C17 0%, #0B1220 55%, #070C17 100%)",
       fontFamily: "'DM Sans', sans-serif", color: "#F1F5F9"
     }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@700;800;900&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; } ::-webkit-scrollbar { width: 3px; height: 3px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #1E3A5F; border-radius: 4px; } @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } } .tox-card { animation: fadeUp 0.38s ease both; } .site-scroll { -ms-overflow-style:none; scrollbar-width:none; } .site-scroll::-webkit-scrollbar { display:none; }`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@700;800;900&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap'); ::-webkit-scrollbar { width: 3px; height: 3px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #1E3A5F; border-radius: 4px; } @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } } .tox-card { animation: fadeUp 0.38s ease both; } .site-scroll { -ms-overflow-style:none; scrollbar-width:none; } .site-scroll::-webkit-scrollbar { display:none; }`}</style>
 
       {/* ── HEADER ── */}
       <div style={{

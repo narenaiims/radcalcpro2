@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
+import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, 
   Tooltip as RechartsTooltip, ResponsiveContainer, Cell, 

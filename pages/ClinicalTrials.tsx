@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { BookOpen, ChevronRight } from "lucide-react";
-import KeyFactsSidebar, { KeyFactSection } from "@/components/KeyFactsSidebar";
+import KeyFactsSidebar, { KeyFactSection } from "../components/KeyFactsSidebar";
 
 // ─── TRIAL DATABASE ──────────────────────────────────────────────────────────
 
@@ -118,7 +118,7 @@ const TRIALS = [
     arms: ["Active surveillance", "Radical prostatectomy", "RT 74 Gy + 3–6m ADT"],
     result: "No OS difference at 10y. RT and surgery equivalently reduce metastases vs AS. Side effect profiles differ.",
     impact: "Supported shared decision-making; RT and surgery equivalent oncologically.",
-    keyNumber: "99%", keyLabel: "10y OS all three arms",
+    keyNumber: "~90%", keyLabel: "10y OS all three arms",
     pmid: "27626136", tags: ["localised", "surveillance", "equivalence"]
   },
   {
@@ -143,13 +143,13 @@ const TRIALS = [
   },
   {
     id: "p4", site: "Prostate", subsite: "Oligometastatic",
-    name: "STAMPEDE RT Arm (James)", sponsor: "MRC STAMPEDE", year: 2016,
+    name: "STAMPEDE RT Arm (Parker)", sponsor: "MRC STAMPEDE", year: 2018,
     question: "Does prostate RT improve OS in newly diagnosed metastatic prostate cancer?",
     arms: ["Standard systemic therapy", "Standard systemic therapy + prostate RT"],
     result: "RT benefit in low metastatic burden (≤4 mets): 3y failure-free survival 32% vs 23%.",
     impact: "Established prostate RT benefit in low-burden metastatic disease — practice-changing.",
     keyNumber: "32% vs 23%", keyLabel: "3y FFS (RT vs no RT, low burden)",
-    pmid: "27747434", tags: ["metastatic", "oligometastatic", "primary-RT"]
+    pmid: "30355464", tags: ["metastatic", "oligometastatic", "primary-RT"]
   },
 
   // ── HEAD & NECK ──
@@ -695,7 +695,7 @@ export default function ClinicalTrials() {
       background: "linear-gradient(175deg, #060B14 0%, #0A1322 60%, #060B14 100%)",
       fontFamily: "'DM Sans', sans-serif", color: "#F1F5F9"
     }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; } ::-webkit-scrollbar { height: 3px; width: 3px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #1E3A5F; border-radius: 4px; } @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } } .trial-card { animation: fadeUp 0.4s ease both; } .chip-scroll { -ms-overflow-style: none; scrollbar-width: none; } .chip-scroll::-webkit-scrollbar { display: none; }`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap'); ::-webkit-scrollbar { height: 3px; width: 3px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #1E3A5F; border-radius: 4px; } @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } } .trial-card { animation: fadeUp 0.4s ease both; } .chip-scroll { -ms-overflow-style: none; scrollbar-width: none; } .chip-scroll::-webkit-scrollbar { display: none; }`}</style>
 
       {/* ── HEADER ── */}
       <div style={{

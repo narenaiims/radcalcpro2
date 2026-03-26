@@ -21,7 +21,7 @@ import {
   GraduationCap, Activity, Zap, RefreshCw,
   BarChart2, Info, Target
 } from 'lucide-react';
-import KeyFactsSidebar from '@/components/KeyFactsSidebar';
+import KeyFactsSidebar from '../components/KeyFactsSidebar';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, ChevronRight, GraduationCap, Calculator, Activity, AlertTriangle, Printer } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
-import { RadiobiologyData } from '@/src/data/radiobiologyData';
+import { RadiobiologyData } from '../src/data/radiobiologyData';
 import TumourSelector from '@/components/TumourSelector';
 import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
 import { AnimatedNumber } from "@/src/components/AnimatedNumber";
@@ -107,15 +107,15 @@ const EQD2Page: React.FC = () => {
   const [dosePerFx,  setDosePerFx]  = React.useState('2.0');
   const [fractions,  setFractions]  = React.useState('25');
   const [alphaBeta,  setAlphaBeta]  = React.useState('10');
-  const [selectedTumour, setSelectedTumour] = React.useState<RadiobiologyData | null>(null);
+  const { rx, logCalculation, setTumourSite } = useRxContext();
+  const selectedTumour = rx.selectedTumour;
+  const setSelectedTumour = (entry: RadiobiologyData | null) => setTumourSite(entry?.site ?? '', entry?.subsite ?? '', entry);
   const [aiText,     setAiText]     = React.useState('');
   const [aiLoading,  setAiLoading]  = React.useState(false);
   const [showFormula, setShowFormula] = React.useState(false);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const contentRef = React.useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
-
-  const { logCalculation } = useRxContext();
 
   // ── Persistence ───────────────────────────────────────────────────────
   React.useEffect(() => {

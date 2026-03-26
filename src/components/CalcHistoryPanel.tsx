@@ -1,7 +1,7 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, Ghost } from 'lucide-react';
-import { useRxContext, HistoryEntry } from '@/src/context/RadiobiologyContext';
+import { useRxContext, HistoryEntry } from '../context/RadiobiologyContext';
 
 interface CalcHistoryPanelProps {
   open: boolean;

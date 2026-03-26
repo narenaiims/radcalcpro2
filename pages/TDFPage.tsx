@@ -18,9 +18,10 @@
 import React, { useState, useMemo } from 'react';
 import { BookOpen, ChevronRight, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
-import TumourSelector from '@/components/TumourSelector';
-import { RadiobiologyData } from '@/src/data/radiobiologyData';
+import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
+import TumourSelector from '../components/TumourSelector';
+import { RadiobiologyData } from '../src/data/radiobiologyData';
+import { useRxContext } from '../src/context/RadiobiologyContext';
 
 // ── Constants & Presets ───────────────────────────────────────────────────────
 const QUICK_REF_DATA = [
@@ -54,7 +55,9 @@ const QUICK_REF_DATA = [
 // ── TDF formula (Orton-Ellis) ─────────────────────────────────────────────
 const calcTDF = (n: number, d: number, T: number): number => {
   if (n <= 0 || d <= 0 || T <= 0) return 0;
-  return n * Math.pow(d, 1.538) * Math.pow(T / n, -0.169) * 0.001;
+  // Orton-Ellis formula requires dose per fraction in rads (cGy)
+  const d_cGy = d * 100;
+  return n * Math.pow(d_cGy, 1.538) * Math.pow(T / n, -0.169) * 0.001;
 };
 
 // ── BED helper for comparison ─────────────────────────────────────────────
@@ -111,7 +114,9 @@ const TDFPage: React.FC = () => {
   const [fx,       setFx]       = useState('30');
   const [days,     setDays]     = useState('42');
   const [alphaBeta, setAlphaBeta] = useState('10');
-  const [selectedTumour, setSelectedTumour] = useState<RadiobiologyData | null>(null);
+  const { rx, setTumourSite } = useRxContext();
+  const selectedTumour = rx.selectedTumour;
+  const setSelectedTumour = (entry: RadiobiologyData | null) => setTumourSite(entry?.site ?? '', entry?.subsite ?? '', entry);
   const [showViva, setShowViva] = useState(false);
   const [openViva, setOpenViva] = useState<number | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

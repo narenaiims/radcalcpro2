@@ -9,11 +9,11 @@
  *   Emami B et al. IJROBP 1991                       — TD5/5 reference
  *   Dale RG. Br J Radiol 1985                        — BED additivity
  */
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { BookOpen, ChevronRight, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
-import { RadiobiologyData } from '@/src/data/radiobiologyData';
+import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
+import { RadiobiologyData } from '../src/data/radiobiologyData';
 
 const STORAGE_KEY = 'radonco_reRT_state_v1';
 
@@ -78,7 +78,7 @@ const OAR_MODELS: OARModel[] = [
     id: 'cord_sbrt',
     name: 'Spinal Cord (SBRT re-RT)',
     ab: 2,
-    bedLimit: 70,
+    bedLimit: 50,
     eqd2Limit: 25,
     recoveryModel: 'sahgal',
     recoveryThresholdMonths: 5,
@@ -91,13 +91,13 @@ const OAR_MODELS: OARModel[] = [
     id: 'brainstem',
     name: 'Brainstem',
     ab: 2.1,
-    bedLimit: 100,
+    bedLimit: 105.4,
     eqd2Limit: 54,
     recoveryModel: 'none',
     recoveryThresholdMonths: 999,
     recoveryFraction: 0,
     maxRecovery: 0,
-    notes: 'No validated recovery model. Cumulative BED₂ <100 Gy₂ typically used. Re-RT highly individualised — multidisciplinary decision required.',
+    notes: 'No validated recovery model. Cumulative BED₂ <105.4 Gy₂ (54 Gy EQD2) typically used. Re-RT highly individualised — multidisciplinary decision required.',
     references: ['QUANTEC 2010', 'Mayo et al. IJROBP 2010'],
   },
   {
@@ -192,21 +192,30 @@ const ReirradiationCalcPage: React.FC = () => {
     rows: sec.items.map(item => ({ k: item.label, v: item.value }))
   }));
 
-  const [oarId,    setOarId]    = useState('cord_conventional');
-  const [d1Total,  setD1Total]  = useState('45');
-  const [d1Fx,     setD1Fx]     = useState('25');
-  const [months,   setMonths]   = useState('12');
-  const [d2Total,  setD2Total]  = useState('30');
-  const [d2Fx,     setD2Fx]     = useState('10');
-  const [customAb, setCustomAb] = useState('3');
-  const [customLim,setCustomLim]= useState('120');
-  const [tumourAb, setTumourAb] = useState('10');
+  const [oarId,    setOarId]    = useState(() => localStorage.getItem('reirrad_oarId') || 'cord_conventional');
+  const [d1Total,  setD1Total]  = useState(() => localStorage.getItem('reirrad_d1Total') || '45');
+  const [d1Fx,     setD1Fx]     = useState(() => localStorage.getItem('reirrad_d1Fx') || '25');
+  const [months,   setMonths]   = useState(() => localStorage.getItem('reirrad_months') || '12');
+  const [d2Total,  setD2Total]  = useState(() => localStorage.getItem('reirrad_d2Total') || '30');
+  const [d2Fx,     setD2Fx]     = useState(() => localStorage.getItem('reirrad_d2Fx') || '10');
+  const [customAb, setCustomAb] = useState(() => localStorage.getItem('reirrad_customAb') || '3');
+  const [customLim,setCustomLim]= useState(() => localStorage.getItem('reirrad_customLim') || '120');
   const [tab,      setTab]      = useState<'calc'|'scenarios'|'guidance'>('calc');
+
+  useEffect(() => {
+    localStorage.setItem('reirrad_oarId', oarId);
+    localStorage.setItem('reirrad_d1Total', d1Total);
+    localStorage.setItem('reirrad_d1Fx', d1Fx);
+    localStorage.setItem('reirrad_months', months);
+    localStorage.setItem('reirrad_d2Total', d2Total);
+    localStorage.setItem('reirrad_d2Fx', d2Fx);
+    localStorage.setItem('reirrad_customAb', customAb);
+    localStorage.setItem('reirrad_customLim', customLim);
+  }, [oarId, d1Total, d1Fx, months, d2Total, d2Fx, customAb, customLim]);
 
   const oar = OAR_MODELS.find(o => o.id === oarId) ?? OAR_MODELS[0];
   const ab  = oarId === 'custom' ? (parseFloat(customAb) || 3) : oar.ab;
   const bedLimit = oarId === 'custom' ? (parseFloat(customLim) || 120) : oar.bedLimit;
-  const tAb = parseFloat(tumourAb) || 10;
 
   // Numeric values
   const n1 = parseFloat(d1Total) || 0;
@@ -232,11 +241,6 @@ const ReirradiationCalcPage: React.FC = () => {
     const status = bedStatus(cumBED, bedLimit);
     const headroom = Math.max(0, bedLimit - cumBED);
 
-    // Tumour BED (no recovery for tumour)
-    const tBed1 = calcBED(n1, dpf1, tAb);
-    const tBed2 = calcBED(n2, dpf2, tAb);
-    const tCumBED = tBed1 + tBed2;
-
     // Maximum safe re-RT dose (solve: effectBed1 + bed2_max = bedLimit)
     // bed2_max = (bedLimit - effectBed1)
     // n2_max * (1 + dpf2/ab) = bedLimit - effectBed1
@@ -248,8 +252,7 @@ const ReirradiationCalcPage: React.FC = () => {
       bed1, eqd1, bed2, eqd2: eqd2v,
       recFrac, effectBed1,
       cumBED, cumEQD2,
-      status, headroom, maxSafeTotal,
-      tBed1, tBed2, tCumBED
+      status, headroom, maxSafeTotal
     };
   }, [n1, f1, n2, f2, dpf1, dpf2, ab, oar, mo, bedLimit]);
 
@@ -342,7 +345,7 @@ const ReirradiationCalcPage: React.FC = () => {
             </div>
             <div className="px-3 py-3 grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">Total Dose (Gy)</label>
+                <label className="block text-xs font-semibold text-slate-500 mb-1">OAR Dose (Gy)</label>
                 <input type="number" step="0.5" value={d1Total}
                   onChange={e => setD1Total(e.target.value)} className="input-clinical num" />
               </div>
@@ -393,7 +396,7 @@ const ReirradiationCalcPage: React.FC = () => {
             </div>
             <div className="px-3 py-3 grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">Total Dose (Gy)</label>
+                <label className="block text-xs font-semibold text-slate-500 mb-1">OAR Dose (Gy)</label>
                 <input type="number" step="0.5" value={d2Total}
                   onChange={e => setD2Total(e.target.value)} className="input-clinical num" />
               </div>
@@ -407,22 +410,6 @@ const ReirradiationCalcPage: React.FC = () => {
                 BED{ab} = {calc.bed2.toFixed(1)} Gy &nbsp;|&nbsp;
                 EQD2 = {calc.eqd2.toFixed(1)} Gy
               </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
-              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Tumour α/β (for Tumour BED)</p>
-            </div>
-            <div className="px-3 py-3">
-              <label className="block text-xs font-semibold text-slate-500 mb-1">
-                Tumour α/β Ratio (Gy)
-              </label>
-              <input
-                type="number" step="0.5" value={tumourAb}
-                onChange={e => setTumourAb(e.target.value)}
-                className="input-clinical num w-20"
-              />
             </div>
           </div>
 
@@ -480,28 +467,6 @@ const ReirradiationCalcPage: React.FC = () => {
               <span>0</span>
               <span>{bedLimit} Gy (limit)</span>
             </div>
-          </div>
-
-          {/* Tumour BED Result */}
-          <div className="bg-slate-900 rounded-lg text-white px-4 py-3">
-            <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">Tumour BED Summary (α/β={tAb})</p>
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div>
-                <p className="text-[11px] uppercase tracking-wider text-slate-500">Course 1 BED</p>
-                <p className="text-lg font-black num">{calc.tBed1.toFixed(1)}</p>
-              </div>
-              <div>
-                <p className="text-[11px] uppercase tracking-wider text-slate-500">Course 2 BED</p>
-                <p className="text-lg font-black num">{calc.tBed2.toFixed(1)}</p>
-              </div>
-              <div>
-                <p className="text-[11px] uppercase tracking-wider text-emerald-400">Cumulative BED</p>
-                <p className="text-2xl font-black num text-emerald-400">{calc.tCumBED.toFixed(1)}</p>
-              </div>
-            </div>
-            <p className="text-[11px] text-slate-500 mt-2 italic text-center">
-              Note: Tumour BED assumes no recovery between courses.
-            </p>
           </div>
         </div>
       )}

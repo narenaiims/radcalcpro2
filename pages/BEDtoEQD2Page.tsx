@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
+import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import { RadiobiologyData } from '@/src/data/radiobiologyData';
 import TumourSelector from '@/components/TumourSelector';
 import { BookOpen, ChevronRight, GraduationCap, Printer } from 'lucide-react';
@@ -44,7 +44,7 @@ const CLINICAL_REF = [
   { label: 'Lung SABR (48/4)',            bed10: 105.6, eqd2_10: 88.0,  eqd2_3: null,  note: 'Common peripheral SBRT' },
   { label: 'Lung SABR (60/5)',            bed10: 132.0, eqd2_10: 110.0, eqd2_3: null,  note: 'Stereotactic (12 Gy/fx)' },
   { label: 'Bone palliation (8/1)',       bed10: 14.4,  eqd2_10: 12.0,  eqd2_3: null,  note: 'Single fraction' },
-  { label: 'Spinal cord limit (45/25)',   bed2:  90.0,  eqd2_2:  45.0,  eqd2_3: null,  note: 'TD5/5 Conventional' },
+  { label: 'Spinal cord limit (45/25)',   bed2:  85.5,  eqd2_2:  42.75, eqd2_3: null,  note: 'TD5/5 Conventional' },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────

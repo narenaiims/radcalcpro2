@@ -17,7 +17,7 @@
  */
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
+import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import {
   Book, Layers, Target, Zap, CheckCircle2, AlertCircle,
   ChevronRight, ChevronDown, ChevronUp, BookOpen,

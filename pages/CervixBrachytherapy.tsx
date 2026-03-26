@@ -714,7 +714,7 @@ export default function CervixBrachytherapy() {
       fontFamily:"'DM Sans', sans-serif",
       color: COL.text
     }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;700&display=swap'); * { box-sizing:border-box; margin:0; padding:0; } ::-webkit-scrollbar { width:3px; height:3px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:#1E3A5F; border-radius:4px; } @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} } @keyframes pulseGlow { 0%,100%{opacity:1} 50%{opacity:0.5} } .fade-up { animation: fadeUp 0.4s ease both; } .chip-scroll { -ms-overflow-style:none; scrollbar-width:none; } .chip-scroll::-webkit-scrollbar { display:none; }`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;700&display=swap'); ::-webkit-scrollbar { width:3px; height:3px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:#1E3A5F; border-radius:4px; } @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} } @keyframes pulseGlow { 0%,100%{opacity:1} 50%{opacity:0.5} } .fade-up { animation: fadeUp 0.4s ease both; } .chip-scroll { -ms-overflow-style:none; scrollbar-width:none; } .chip-scroll::-webkit-scrollbar { display:none; }`}</style>
 
       {/* ── STICKY HEADER ── */}
       <div style={{

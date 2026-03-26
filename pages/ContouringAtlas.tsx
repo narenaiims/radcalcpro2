@@ -6,7 +6,7 @@ import {
   Calendar, CheckCircle2, XCircle, ChevronRight, Shield,
   Activity, Zap, BarChart2
 } from 'lucide-react';
-import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
+import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface Station {

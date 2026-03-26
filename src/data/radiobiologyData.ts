@@ -81,7 +81,6 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'gu-penile', site: 'Genitourinary', subsite: 'Penile', tumour: 'SCC', alphaBeta: 10 },
   { id: 'gu-ureter', site: 'Genitourinary', subsite: 'Ureter', tumour: 'TCC', alphaBeta: 10 },
   { id: 'gu-urethra', site: 'Genitourinary', subsite: 'Urethra', tumour: 'SCC', alphaBeta: 10 },
-  { id: 'gu-adrenal', site: 'Genitourinary', subsite: 'Adrenal', tumour: 'Cortical Ca', alphaBeta: 10 },
 
   // ── Gynaecological ──
   { id: 'gyn-cervix-scc', site: 'Gynaecological', subsite: 'Cervix', tumour: 'SCC', alphaBeta: 10 },
@@ -106,6 +105,10 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'breast-recurrent', site: 'Breast', subsite: 'Recurrent', tumour: 'Adenocarcinoma', alphaBeta: 4 },
   { id: 'breast-male', site: 'Breast', subsite: 'Male Breast', tumour: 'Adenocarcinoma', alphaBeta: 4 },
   { id: 'breast-paget', site: 'Breast', subsite: 'Paget Disease', tumour: 'Nipple', alphaBeta: 10 },
+  { id: 'breast-tnbc', site: 'Breast', subsite: 'TNBC', tumour: 'Triple Negative', alphaBeta: 10, notes: 'Behaves more like high-grade rapidly proliferating tumour. Based on START trials and Haviland et al.' },
+  { id: 'breast-her2', site: 'Breast', subsite: 'HER2-enriched', tumour: 'HER2+', alphaBeta: 5, abLow: 4, abHigh: 6, uncertaintyFlag: true, notes: 'Limited direct data. Based on START trials and Haviland et al.' },
+  { id: 'breast-luminal-a', site: 'Breast', subsite: 'Luminal A', tumour: 'Low proliferative', alphaBeta: 3.5, abLow: 3, abHigh: 4, notes: 'Low proliferative. Based on START trials and Haviland et al.' },
+  { id: 'breast-luminal-b', site: 'Breast', subsite: 'Luminal B', tumour: 'Intermediate/High proliferative', alphaBeta: 5, abLow: 4, abHigh: 6, uncertaintyFlag: true, notes: 'Limited direct data. Based on START trials and Haviland et al.' },
 
   // ── CNS ──
   { id: 'cns-gbm', site: 'CNS', subsite: 'Brain', tumour: 'Glioblastoma', alphaBeta: 10 },
@@ -114,8 +117,6 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'cns-meningioma-1', site: 'CNS', subsite: 'Meningioma', tumour: 'Grade I', alphaBeta: 2 },
   { id: 'cns-meningioma-2', site: 'CNS', subsite: 'Meningioma', tumour: 'Grade II/III', alphaBeta: 10 },
   { id: 'cns-acoustic', site: 'CNS', subsite: 'Acoustic Neuroma', tumour: 'Schwannoma', alphaBeta: 2 },
-  { id: 'cns-pituitary', site: 'CNS', subsite: 'Pituitary', tumour: 'Adenoma', alphaBeta: 2 },
-  { id: 'cns-cranio', site: 'CNS', subsite: 'Craniopharyngioma', tumour: 'Epithelial', alphaBeta: 2 },
   { id: 'cns-ependymoma', site: 'CNS', subsite: 'Ependymoma', tumour: 'Glial', alphaBeta: 2 },
   { id: 'cns-medullo-adult', site: 'CNS', subsite: 'Medulloblastoma', tumour: 'PNET', alphaBeta: 10 },
   { id: 'cns-pineoblastoma', site: 'CNS', subsite: 'Pineoblastoma', tumour: 'Pineal', alphaBeta: 10 },
@@ -124,7 +125,7 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'cns-oligo-3', site: 'CNS', subsite: 'Oligodendroglioma', tumour: 'Grade III', alphaBeta: 10 },
   { id: 'cns-pilocytic', site: 'CNS', subsite: 'Astrocytoma', tumour: 'Pilocytic (Gr I)', alphaBeta: 2 },
   { id: 'cns-hemangio', site: 'CNS', subsite: 'Hemangioblastoma', tumour: 'Vascular', alphaBeta: 2 },
-  { id: 'cns-craniopharyngioma', site: 'CNS', subsite: 'Craniopharyngioma', tumour: 'Adamantinomatous', alphaBeta: 2 },
+  { id: 'cns-craniopharyngioma', site: 'CNS', subsite: 'Craniopharyngioma', tumour: 'Craniopharyngioma', alphaBeta: 2, notes: 'Two histological subtypes: Adamantinomatous (commonest, children) and Papillary (adults). Both α/β ≈ 2 Gy.' },
 
   // ── Skin ──
   { id: 'skin-bcc', site: 'Skin', subsite: 'BCC', tumour: 'Basal Cell', alphaBeta: 10 },
@@ -139,9 +140,6 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   // ── Sarcoma ──
   { id: 'sarc-sts-high', site: 'Sarcoma', subsite: 'Soft Tissue', tumour: 'High grade', alphaBeta: 4 },
   { id: 'sarc-sts-low', site: 'Sarcoma', subsite: 'Soft Tissue', tumour: 'Low grade', alphaBeta: 4 },
-  { id: 'sarc-osteo', site: 'Sarcoma', subsite: 'Osteosarcoma', tumour: 'Bone', alphaBeta: 4 },
-  { id: 'sarc-ewing', site: 'Sarcoma', subsite: 'Ewing Sarcoma', tumour: 'Bone/ST', alphaBeta: 10 },
-  { id: 'sarc-chondro', site: 'Sarcoma', subsite: 'Chondrosarcoma', tumour: 'Cartilage', alphaBeta: 2 },
   { id: 'sarc-lipo-well', site: 'Sarcoma', subsite: 'Liposarcoma', tumour: 'Well-diff', alphaBeta: 2 },
   { id: 'sarc-lipo-pleo', site: 'Sarcoma', subsite: 'Liposarcoma', tumour: 'Pleomorphic', alphaBeta: 4 },
   { id: 'sarc-angio', site: 'Sarcoma', subsite: 'Angiosarcoma', tumour: 'Vascular', alphaBeta: 4 },
@@ -167,24 +165,24 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'peds-neuro', site: 'Paediatric', subsite: 'Neuroblastoma', tumour: 'Sympathetic', alphaBeta: 10 },
   { id: 'peds-rhabdo', site: 'Paediatric', subsite: 'Rhabdomyosarcoma', tumour: 'Soft Tissue', alphaBeta: 10 },
   { id: 'peds-retino', site: 'Paediatric', subsite: 'Retinoblastoma', tumour: 'Ocular', alphaBeta: 10 },
-  { id: 'peds-osteo', site: 'Paediatric', subsite: 'Osteosarcoma', tumour: 'Bone', alphaBeta: 4 },
-  { id: 'peds-ewing', site: 'Paediatric', subsite: 'Ewing Sarcoma', tumour: 'Bone/ST', alphaBeta: 10 },
+  { id: 'peds-osteo', site: 'Paediatric', subsite: 'Osteosarcoma', tumour: 'Bone', alphaBeta: 4, clinicalContext: 'Paediatric-specific protocols and age-dependent constraints.' },
+  { id: 'peds-ewing', site: 'Paediatric', subsite: 'Ewing Sarcoma', tumour: 'Bone/ST', alphaBeta: 10, clinicalContext: 'Paediatric-specific protocols and age-dependent constraints.' },
   { id: 'peds-germ', site: 'Paediatric', subsite: 'Germ Cell', tumour: 'GCT', alphaBeta: 10 },
   { id: 'peds-cranio', site: 'Paediatric', subsite: 'Craniopharyngioma', tumour: 'Epithelial', alphaBeta: 2 },
   { id: 'peds-dipg', site: 'Paediatric', subsite: 'Brainstem Glioma', tumour: 'DIPG', alphaBeta: 10 },
 
   // ── Bone ──
   { id: 'bone-chordoma', site: 'Bone', subsite: 'Chordoma', tumour: 'Notochordal', alphaBeta: 2 },
-  { id: 'bone-chondrosarcoma', site: 'Bone', subsite: 'Chondrosarcoma', tumour: 'Cartilage', alphaBeta: 2 },
-  { id: 'bone-osteosarcoma', site: 'Bone', subsite: 'Osteosarcoma', tumour: 'Osteoid', alphaBeta: 4 },
-  { id: 'bone-ewing', site: 'Bone', subsite: 'Ewing Sarcoma', tumour: 'Small Blue Cell', alphaBeta: 10 },
+  { id: 'bone-chondrosarcoma', site: 'Bone', subsite: 'Chondrosarcoma', tumour: 'Cartilage', alphaBeta: 2, notes: 'Canonical entry for adult/general cases. For paediatric-specific protocols, see the Paediatric group.', clinicalContext: 'Adult/General context' },
+  { id: 'bone-osteosarcoma', site: 'Bone', subsite: 'Osteosarcoma', tumour: 'Osteoid', alphaBeta: 4, notes: 'Canonical entry for adult/general cases. For paediatric-specific protocols, see the Paediatric group.', clinicalContext: 'Adult/General context' },
+  { id: 'bone-ewing', site: 'Bone', subsite: 'Ewing Sarcoma', tumour: 'Small Blue Cell', alphaBeta: 10, notes: 'Canonical entry for adult/general cases. For paediatric-specific protocols, see the Paediatric group.', clinicalContext: 'Adult/General context' },
   { id: 'bone-giant-cell', site: 'Bone', subsite: 'Giant Cell', tumour: 'Osteoclastoma', alphaBeta: 4 },
 
   // ── Endocrine ──
   { id: 'endo-thyroid-pap', site: 'Endocrine', subsite: 'Thyroid', tumour: 'Papillary', alphaBeta: 10 },
   { id: 'endo-thyroid-fol', site: 'Endocrine', subsite: 'Thyroid', tumour: 'Follicular', alphaBeta: 10 },
   { id: 'endo-adrenal-cort', site: 'Endocrine', subsite: 'Adrenal', tumour: 'Cortical', alphaBeta: 10 },
-  { id: 'endo-pituitary-non', site: 'Endocrine', subsite: 'Pituitary', tumour: 'Non-functioning', alphaBeta: 2 },
+  { id: 'endo-pituitary-non', site: 'Endocrine', subsite: 'Pituitary', tumour: 'Adenoma', alphaBeta: 2, notes: 'Covers both functioning and non-functioning adenomas' },
   { id: 'endo-parathyroid', site: 'Endocrine', subsite: 'Parathyroid', tumour: 'Adenoma', alphaBeta: 10 },
 
   // ── OAR Reference ──

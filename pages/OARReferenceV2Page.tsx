@@ -21,7 +21,7 @@ import {
   Constraint, 
   OARData,
   FractionationRegime
-} from '@/src/services/oarDataService';
+} from '../src/services/oarDataService';
 
 // --- Types & Constants ---
 const REGIONS: { id: Region | 'All'; label: string }[] = [

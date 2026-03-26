@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { BookOpen, ChevronRight, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
-import { RadiobiologyData } from '@/src/data/radiobiologyData';
+import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
+import { RadiobiologyData } from '../src/data/radiobiologyData';
 
 const STORAGE_KEY = 'radonco_brachy_state_v3';
 
@@ -80,10 +80,10 @@ const PRESETS: SitePreset[] = [
     targetEQD2: 115,
     protocol: 'ASCENDE-RT · William Beaumont single-fraction',
     oarConstraints: [
-      { name: 'Urethra',    metric: 'D10%', limit: '<120% Rx',  ab: 5,   hard: true  },
+      { name: 'Urethra',    metric: 'D10%', limit: '<105 Gy',  ab: 5,   hard: true  },
       { name: 'Rectum',     metric: 'D2cc', limit: '<65 Gy',    ab: 3,   hard: true  },
       { name: 'Bladder',    metric: 'D2cc', limit: '<75 Gy',    ab: 5,   hard: false },
-      { name: 'Penile bulb',metric: 'D90%', limit: '<50% Rx',   ab: 3,   hard: false },
+      { name: 'Penile bulb',metric: 'D90%', limit: '<50 Gy',    ab: 3,   hard: false },
     ],
     notes: [
       'ASCENDE-RT: LDR boost superior to EBRT alone for bPFS (Rodda 2017, Lancet Oncol).',
@@ -121,7 +121,6 @@ const PRESETS: SitePreset[] = [
     oarConstraints: [
       { name: 'Skin',       metric: 'D1cc', limit: '<32 Gy',  ab: 10, hard: true  },
       { name: 'Rib/chest',  metric: 'D1cc', limit: '<40 Gy',  ab: 3,  hard: false },
-      { name: 'Lung (ipsi)',metric: 'V20',  limit: '<10%',    ab: 3,  hard: false },
     ],
     notes: [
       'BID fractionation: ≥6h inter-fraction interval mandatory.',
@@ -233,6 +232,7 @@ const HDRBrachyPage: React.FC = () => {
   const [ebrtDpf,   setEbrtDpf]   = useState('1.8');
   const [targetEQD2,setTargetEQD2]= useState('85');
   const [tab,       setTab]       = useState<'calc'|'oar'|'notes'>('calc');
+  const [oarDoses,  setOarDoses]  = useState<Record<string, string>>({});
 
   const preset = useMemo(() => PRESETS.find(p => p.id === presetId) ?? PRESETS[0], [presetId]);
 
@@ -249,13 +249,14 @@ const HDRBrachyPage: React.FC = () => {
         if (p.ebrtTotal)  setEbrtTotal(String(p.ebrtTotal));
         if (p.ebrtDpf)    setEbrtDpf(String(p.ebrtDpf));
         if (p.targetEQD2) setTargetEQD2(String(p.targetEQD2));
+        if (p.oarDoses)   setOarDoses(p.oarDoses);
       }
     } catch { /* ignore */ }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ presetId, dpf, fx, ab, ebrtTotal, ebrtDpf, targetEQD2 }));
-  }, [presetId, dpf, fx, ab, ebrtTotal, ebrtDpf, targetEQD2]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ presetId, dpf, fx, ab, ebrtTotal, ebrtDpf, targetEQD2, oarDoses }));
+  }, [presetId, dpf, fx, ab, ebrtTotal, ebrtDpf, targetEQD2, oarDoses]);
 
   const applyPreset = (p: SitePreset) => {
     setPresetId(p.id);
@@ -265,6 +266,7 @@ const HDRBrachyPage: React.FC = () => {
     setEbrtTotal(String(p.ebrtTotal));
     setEbrtDpf(String(p.ebrtDpf));
     setTargetEQD2(String(p.targetEQD2));
+    setOarDoses({});
   };
 
   // ── Numeric values ────────────────────────────────────────────────────
@@ -292,16 +294,30 @@ const HDRBrachyPage: React.FC = () => {
   // ── OAR calculations (α/β=3 for late tissues) ────────────────────────
   const oarRows = useMemo(() => preset.oarConstraints.map(c => {
     // Calculate D2cc EQD2 for each OAR using its own ab
-    // Approx: EBRT contributes ebrtDpf at OAR, brachy contributes typical OAR fraction
-    // For simplicity: use same schedule but ab=c.ab
+    // Approx: EBRT contributes ebrtDpf at OAR, brachy contributes OAR-specific fraction
     const ebrtEQD2_oar = c.ab > 0 && nEbrtDpf > 0
       ? calcEQD2(nEbrtTotal, nEbrtDpf, c.ab) : 0;
-    const brachyEQD2_oar = c.ab > 0 && nDpf > 0
-      ? calcEQD2(brachyTotal, nDpf, c.ab) : 0;
+      
+    // Use user-input OAR dose per fraction, or default to 70% of target dose
+    const oarDpfStr = oarDoses[c.name];
+    const oarDpf = oarDpfStr !== undefined ? parseFloat(oarDpfStr) || 0 : nDpf * 0.7;
+    const oarTotal = oarDpf * nFx;
+
+    const brachyEQD2_oar = c.ab > 0 && oarDpf > 0
+      ? calcEQD2(oarTotal, oarDpf, c.ab) : 0;
     const combinedEQD2_oar = ebrtEQD2_oar + brachyEQD2_oar;
     const status = oarStatus(combinedEQD2_oar, c.limit);
-    return { ...c, ebrtEQD2: ebrtEQD2_oar, brachyEQD2: brachyEQD2_oar, total: combinedEQD2_oar, status };
-  }), [preset, nEbrtTotal, nEbrtDpf, nDpf, brachyTotal]);
+    
+    return {
+      ...c,
+      ebrtEQD2: ebrtEQD2_oar,
+      brachyEQD2: brachyEQD2_oar,
+      total: combinedEQD2_oar,
+      status,
+      oarDpf: oarDpf,
+      oarDpfStr: oarDpfStr !== undefined ? oarDpfStr : (nDpf * 0.7).toFixed(1)
+    };
+  }), [preset, nEbrtTotal, nEbrtDpf, nDpf, nFx, oarDoses]);
 
   const valid = nDpf > 0 && nFx > 0 && nAb > 0;
 
@@ -572,6 +588,17 @@ const HDRBrachyPage: React.FC = () => {
                       {r.hard && <span className="text-[11px] font-black text-red-600 uppercase">Hard</span>}
                     </div>
                     <span className={STATUS_BADGE[r.status]}>{STATUS_LABEL[r.status]}</span>
+                  </div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <label className="text-[11px] text-slate-500 uppercase tracking-wider">Brachy {r.metric}/fx (Gy):</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={r.oarDpfStr}
+                      onChange={e => setOarDoses(prev => ({ ...prev, [r.name]: e.target.value }))}
+                      className="w-16 px-1.5 py-0.5 text-xs border border-slate-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none num"
+                    />
                   </div>
                   <div className="flex items-center gap-4 text-xs">
                     <span className="text-slate-500">Limit: <span className="font-bold num text-slate-700">{r.limit}</span></span>

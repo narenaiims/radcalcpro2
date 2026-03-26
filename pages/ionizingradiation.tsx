@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
+import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import {
   Activity, Zap, Shield, BookOpen, ChevronDown, ChevronUp,
   Info, AlertTriangle, CheckCircle, XCircle, GraduationCap,

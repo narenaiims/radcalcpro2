@@ -16,7 +16,7 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
+import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import {
   Activity, Zap, Shield, BookOpen, ChevronDown, ChevronUp,
   Info, AlertTriangle, RefreshCw, BarChart2, GraduationCap,

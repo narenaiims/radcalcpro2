@@ -93,7 +93,7 @@ const SBRT_SITES: SBRTSite[] = [
     textColor: 'text-sky-600',
     accentColor: '#0284c7',
     rxDose: [
-      { fx: 3, dose: 54, isodose: 80, protocol: 'RTOG 0236 (3×18 Gy)' },
+      { fx: 3, dose: 54, isodose: 80, protocol: 'RTOG 0236 (3×18 Gy) — Rx to 80% isodose (GTV-based). UK practice often uses 100%/95% isodose to PTV. BED₁₀ = 151.2 Gy at prescription point (54 Gy). Dmax = 67.5 Gy if Rx at 80%.' },
       { fx: 5, dose: 50, isodose: 80, protocol: 'RTOG 0813 (5×10 Gy)' },
       { fx: 5, dose: 55, isodose: 80, protocol: 'RTOG 0915 (5×11 Gy)' },
     ],
@@ -101,11 +101,11 @@ const SBRT_SITES: SBRTSite[] = [
       {
         organ: 'Spinal Cord', type: 'Serial',
         metric: 'Dmax (point)', metricType: 'Dmax',
-        limit_3fx: 22, limit_5fx: 30,
+        limit_1fx: 14, limit_3fx: 18, limit_5fx: 21.9,
         unit: 'Gy', priority: 'Absolute', evidence: '3',
         endpoint: 'Myelopathy', grade: 'G4',
         source: ['RTOG 0236', 'TG-101'], ab: 2.0,
-        notes: 'Apply to thecal sac PRV. BED₂(3fx): 22×(1+22/3/2) ≈ 102 Gy'
+        notes: 'TG-101 Dmax limits. Apply to thecal sac PRV. BED₂(3fx,18Gy) ≈ 72 Gy; BED₂(5fx,21.9Gy) ≈ 69.8 Gy. If using D0.35cc metric, see Thecal Sac entry.'
       },
       {
         organ: 'Esophagus', type: 'Serial',
@@ -249,6 +249,15 @@ const SBRT_SITES: SBRTSite[] = [
         endpoint: 'Myelopathy', grade: 'G4',
         source: ['RTOG 0631', 'Sahgal 2013', 'TG-101'], ab: 2.0,
         notes: 'RTOG 0631: D0.35cc ≤14 Gy (1fx). Sahgal 4/5 rule: cord Dmax:PTV Dmax ratio determines myelopathy risk. EQD2₂(1fx,14Gy) = 14×16/4 = 56 Gy.'
+      },
+      {
+        organ: 'Spinal Cord (Thecal Sac) — Re-RT', type: 'Serial',
+        metric: 'Dmax', metricType: 'Dmax',
+        limit_3fx: 14, limit_5fx: 21.9,
+        unit: 'Gy', priority: 'Absolute', evidence: '3',
+        endpoint: 'Myelopathy', grade: 'G4',
+        source: ['Sahgal 2012'], ab: 2.0,
+        notes: 'Sahgal 2012 re-irradiation rule: Dmax ≤ 14 Gy for 3fx, ≤ 21.9 Gy for 5fx. Re-RT requires multidisciplinary review and physics peer review.'
       },
       {
         organ: 'Cauda Equina', type: 'Serial',
@@ -663,10 +672,11 @@ const SBRT_SITES: SBRTSite[] = [
       {
         organ: 'Spinal Cord', type: 'Serial',
         metric: 'Dmax', metricType: 'Dmax',
-        limit_1fx: 14, limit_3fx: 22, limit_5fx: 30,
+        limit_1fx: 14, limit_3fx: 18, limit_5fx: 21.9,
         unit: 'Gy', priority: 'Absolute', evidence: '3',
         endpoint: 'Myelopathy', grade: 'G4',
         source: ['TG-101'], ab: 2.0,
+        notes: 'TG-101 Dmax limits. Apply to thecal sac PRV. BED₂(3fx,18Gy) ≈ 72 Gy; BED₂(5fx,21.9Gy) ≈ 69.8 Gy. If using D0.35cc metric, see Thecal Sac entry.'
       },
       {
         organ: 'Kidney (ipsilateral)', type: 'Parallel',

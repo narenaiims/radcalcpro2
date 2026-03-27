@@ -22,6 +22,9 @@ import {
   TrendingUp, AlertTriangle, CheckCircle2,
   BookOpen, GraduationCap
 } from 'lucide-react';
+import { 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot 
+} from 'recharts';
 import { RadiobiologyData } from '@/src/data/radiobiologyData';
 import { useRxContext } from '../src/context/RadiobiologyContext';
 import TumourSelector from '../components/TumourSelector';
@@ -228,6 +231,16 @@ const FracAdjustPage: React.FC = () => {
       return { d, newD, fx, isCur: Math.abs(d - nNewDpf) < 0.01 };
     });
   }, [baseBED, nAb, nNewDpf]);
+
+  // Chart data
+  const chartData = React.useMemo(() => {
+    if (baseBED === 0 || nAb === 0) return [];
+    const points = [];
+    for (let d = 1; d <= 20; d += 0.5) {
+      points.push({ d, D: baseBED / (1 + d / nAb) });
+    }
+    return points;
+  }, [baseBED, nAb]);
 
   const valid = nAb > 0 && nOrigDose > 0 && nOrigDpf > 0 && nNewDpf > 0;
 

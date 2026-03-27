@@ -95,10 +95,16 @@ const ROUTE_HINTS: Record<string, string> = {
   '/ebrt-gap':         'LQ repopulation model  Tk=28d, Tp=3d',
   '/tdf':              'Time-Dose-Fractionation (Orton & Ellis)',
   '/reirradiation':    'Cumulative BED with time-recovery (Dale model)',
+  '/ntcp':             'Normal Tissue Complication Probability (LKB model)',
+  '/tcp':              'Tumour Control Probability (Poisson model)',
+  '/ldr-brachy':       'LDR Brachytherapy BED with repair kinetics',
+  '/isoeffect-chart':  'Interactive fractionation isoeffect visualiser',
+  '/repair-kinetics':  'Sublethal damage repair kinetics visualiser',
   '/oerletrbe':        'Oxygen Enhancement Ratio · Linear Energy Transfer · RBE',
   '/oar-limits':       'QUANTEC 2010 · SBRT constraints · DVH metrics',
-  '/oar-limits-v2':    'Clinical Dashboard · Bento Layout · Practical Reference',
   '/pediatric-constraints': 'Age-stratified OAR limits · PENTEC · COG',
+  '/pediatric-scaling':     'BSA · Weight · Age-based pediatric dose scaling',
+  '/cervix-dosimeter':      'Combined EBRT + Brachytherapy EQD2 tracker',
   '/clinical-trials':      'Landmark RT trials · RTOG · EORTC · NCI',
   '/toxicity-grading':     'RTOG v2.0 · CTCAE v5.0 · Management ladder',
   '/dose-rate-comparison': 'LDR · HDR · PDR · Radiobiology · BED Calc',
@@ -116,6 +122,7 @@ const ROUTE_HINTS: Record<string, string> = {
   '/ionizing-radiation': 'Deterministic & Stochastic effects · 5 Rs of Radiobiology · Modifiers',
   '/radiation-mechanism': 'Photoelectric · Compton · Pair Production · DNA Damage',
   '/cell-survival':       'LQ Model · 5 Rs · Fractionation · Alpha/Beta',
+  '/proton-therapy':      'Bragg Peak · RBE 1.1 · SOBP · Range Uncertainty',
   '/radiation-history':'Röntgen 1895 → IMRT → MRgRT → AI-adaptive',
   '/about':            'Developer info · ecosystem · feedback',
 };
@@ -182,9 +189,9 @@ const Home: React.FC = () => {
         {/* Stat strip */}
         <div className="mt-3 grid grid-cols-3 gap-2 text-center border-t border-blue-800/60 pt-3">
           {[
-            { val: '8', label: 'Calculators' },
-            { val: '14', label: 'References' },
-            { val: '10', label: 'Education' },
+            { val: '14', label: 'Calculators' },
+            { val: '15', label: 'References' },
+            { val: '11', label: 'Education' },
           ].map(s => (
             <div key={s.label}>
               <p className="text-base font-black num text-white">{s.val}</p>

@@ -34,6 +34,9 @@ interface GapState {
   dosePerFx: number;
   fxCompleted: number;
   gapDays: number;
+  isBID: boolean;
+  bidDosePerFx: number;
+  bidInterval: number;
 }
 
 const INITIAL_STATE: GapState = {
@@ -41,6 +44,9 @@ const INITIAL_STATE: GapState = {
   dosePerFx: 2.0,
   fxCompleted: 15,
   gapDays: 0,
+  isBID: false,
+  bidDosePerFx: 1.5,
+  bidInterval: 6,
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -77,7 +83,8 @@ const EBRTGapPage: React.FC = () => {
   const results = useMemo(() => {
     if (!selectedTumour) return null;
 
-    const { ab, k, tk } = selectedTumour;
+    const { k, tk } = selectedTumour;
+    const ab = selectedTumour.ab ?? selectedTumour.alphaBeta ?? 10;
     const dpf = data.dosePerFx;
     
     // EQD2/BED of planned treatment
@@ -107,6 +114,18 @@ const EBRTGapPage: React.FC = () => {
     const newTotalDose = data.totalDose + (extraFx * dpf);
     const newTotalFx = totalFx + extraFx;
 
+    // BID Compensation
+    let bidExtraDays = 0;
+    let bidLateEQD2 = 0;
+    if (data.isBID) {
+      const bidDosePerFx = data.bidDosePerFx;
+      const bidEQD2PerFx = bidDosePerFx * (1 + bidDosePerFx / ab) / (1 + 2 / ab);
+      bidExtraDays = Math.ceil(eqd2Loss / (bidEQD2PerFx * 2)); // Assuming 2 fx per day
+      
+      // Late tissue EQD2 (ab=3)
+      bidLateEQD2 = (data.fxCompleted * dpf * (1 + dpf/3) / (1 + 2/3)) + (bidExtraDays * 2 * bidDosePerFx * (1 + bidDosePerFx/3) / (1 + 2/3));
+    }
+
     const interpretation = getInterpretation(k);
 
     return {
@@ -123,7 +142,9 @@ const EBRTGapPage: React.FC = () => {
       ab, k, tk,
       effectiveRepopDays,
       daysElapsedAtGapStart,
-      tkReachedBeforeGap
+      tkReachedBeforeGap,
+      bidExtraDays,
+      bidLateEQD2
     };
   }, [data, selectedTumour, doseDelivered, totalFx]);
 
@@ -287,6 +308,25 @@ const EBRTGapPage: React.FC = () => {
                     Include weekends and holidays if they extended the gap.
                   </p>
                 </div>
+
+                <div className="pt-4 border-t border-slate-200">
+                  <label className="flex items-center gap-2 cursor-pointer mb-3">
+                    <input type="checkbox" checked={data.isBID} onChange={e => updateData('isBID', e.target.checked)} className="accent-blue-600" />
+                    <span className="text-sm font-bold text-slate-800">Use BID (Twice Daily) Compensation</span>
+                  </label>
+                  {data.isBID && (
+                    <div className="grid grid-cols-2 gap-4 animate-in fade-in duration-300">
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">BID Dose/Fx (Gy)</label>
+                        <input type="number" step="0.1" value={data.bidDosePerFx} onChange={e => updateData('bidDosePerFx', parseFloat(e.target.value))} className="w-full p-2 rounded-lg border border-slate-300 text-sm font-mono" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Interval (hours)</label>
+                        <input type="number" step="1" min="6" value={data.bidInterval} onChange={e => updateData('bidInterval', parseFloat(e.target.value))} className="w-full p-2 rounded-lg border border-slate-300 text-sm font-mono" />
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="mt-8 flex justify-between">
@@ -346,6 +386,13 @@ const EBRTGapPage: React.FC = () => {
                     <span className="text-xs text-blue-200">New Total Dose</span>
                     <span className="text-lg font-bold">{results.newTotalDose.toFixed(1)} Gy <span className="text-xs font-normal opacity-70">in {results.newTotalFx} fx</span></span>
                   </div>
+                  {data.isBID && (
+                    <div className="mt-4 pt-4 border-t border-white/10">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-300 mb-1">BID Compensation</p>
+                      <p className="text-xl font-bold">+{results.bidExtraDays} days</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Late Tissue EQD2₃: {results.bidLateEQD2.toFixed(1)} Gy {results.bidLateEQD2 > 60 && <span className="text-red-400 font-bold">⚠️ Exceeds limit</span>}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 

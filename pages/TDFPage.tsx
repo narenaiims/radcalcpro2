@@ -134,7 +134,7 @@ const TDFPage: React.FC = () => {
   const n = parseFloat(fx)   || 0;
   const d = parseFloat(dpf)  || 0;
   const T = parseFloat(days) || 0;
-  const ab = parseFloat(alphaBeta) || 10;
+  const ab = selectedTumour?.ab ?? selectedTumour?.alphaBeta ?? 10;
   const D = n * d;
 
   const tdf  = useMemo(() => calcTDF(n, d, T), [n, d, T]);
@@ -195,8 +195,9 @@ const TDFPage: React.FC = () => {
       {/* ── Formula display ──────────────────────────────────────────── */}
       <div className="bg-slate-900 rounded-lg px-3 py-2.5 font-mono text-xs text-slate-200 space-y-1">
         <p className="text-[11px] text-slate-500 font-sans font-black uppercase tracking-widest mb-1">Orton-Ellis Formula</p>
-        <p><span className="text-amber-300">TDF</span> = n × d<sup>1.538</sup> × (T/n)<sup>−0.169</sup> × 10<sup>−3</sup></p>
-        <p className="text-slate-500 text-[11px]">n = fractions · d = dose/fx (Gy) · T = overall time (days)</p>
+        <p className="text-amber-300">TDF = n × d(cGy)<sup>1.538</sup> × (T/n)<sup>−0.169</sup> × 10<sup>−3</sup></p>
+        <p className="text-slate-400 text-[10px]">= n × [d(Gy)×100]<sup>1.538</sup> × (T/n)<sup>−0.169</sup> × 10<sup>−3</sup></p>
+        <p className="text-slate-500 text-[11px]">n = fractions · d = dose/fx · T = overall time (days)</p>
       </div>
 
       {/* ── Inputs ───────────────────────────────────────────────────── */}

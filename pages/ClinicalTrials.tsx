@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { BookOpen, ChevronRight } from "lucide-react";
+import { BookOpen, ChevronRight, BarChart3, Info, Calculator, ArrowRightLeft } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import KeyFactsSidebar, { KeyFactSection } from "../components/KeyFactsSidebar";
 
 // ─── TRIAL DATABASE ──────────────────────────────────────────────────────────
@@ -335,6 +336,15 @@ const TRIALS = [
   },
 ];
 
+const REFERENCE_ARMS = [
+  { id: "ff", name: "FAST-Forward", arm: "26 Gy / 5#", dose: 26, fractions: 5, abTumour: 4.0, abLate: 3.0, site: "Breast" },
+  { id: "chhip", name: "CHHiP", arm: "60 Gy / 20#", dose: 60, fractions: 20, abTumour: 1.5, abLate: 3.0, site: "Prostate" },
+  { id: "rtog0617", name: "RTOG 0617", arm: "60 Gy / 30#", dose: 60, fractions: 30, abTumour: 10.0, abLate: 3.0, site: "Lung" },
+  { id: "startb", name: "START-B", arm: "40 Gy / 15#", dose: 40, fractions: 15, abTumour: 4.0, abLate: 3.0, site: "Breast" },
+  { id: "sabr3", name: "RTOG 0236 (SABR)", arm: "54 Gy / 3#", dose: 54, fractions: 3, abTumour: 10.0, abLate: 3.0, site: "Lung" },
+  { id: "stupp", name: "Stupp Protocol", arm: "60 Gy / 30#", dose: 60, fractions: 30, abTumour: 10.0, abLate: 3.0, site: "CNS" },
+];
+
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 
 const SITES = ["All", ...Array.from(new Set(TRIALS.map(t => t.site)))];
@@ -664,10 +674,48 @@ const SIDEBAR_DATA: KeyFactSection[] = [
 ];
 
 export default function ClinicalTrials() {
+  const [view, setView] = useState<"database" | "comparison">("database");
   const [activeSite, setActiveSite] = useState("All");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("year");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Comparison Tool State
+  const [selectedRefId, setSelectedRefId] = useState(REFERENCE_ARMS[0].id);
+  const [customDose, setCustomDose] = useState(50);
+  const [customFracs, setCustomFracs] = useState(25);
+  const [customABTumour, setCustomABTumour] = useState(10.0);
+  const [customABLate, setCustomABLate] = useState(3.0);
+
+  const selectedRef = useMemo(() => 
+    REFERENCE_ARMS.find(a => a.id === selectedRefId) || REFERENCE_ARMS[0],
+  [selectedRefId]);
+
+  const comparisonData = useMemo(() => {
+    const ref = selectedRef;
+    const dRef = ref.dose / ref.fractions;
+    const bedTumourRef = ref.dose * (1 + dRef / ref.abTumour);
+    const bedLateRef = ref.dose * (1 + dRef / ref.abLate);
+
+    const dCust = customDose / customFracs;
+    const bedTumourCust = customDose * (1 + dCust / customABTumour);
+    const bedLateCust = customDose * (1 + dCust / customABLate);
+
+    return [
+      {
+        name: 'Tumour BED',
+        Reference: parseFloat(bedTumourRef.toFixed(1)),
+        Custom: parseFloat(bedTumourCust.toFixed(1)),
+        unit: 'Gy₁₀'
+      },
+      {
+        name: 'Late Tissue BED',
+        Reference: parseFloat(bedLateRef.toFixed(1)),
+        Custom: parseFloat(bedLateCust.toFixed(1)),
+        unit: 'Gy₃'
+      }
+    ];
+  }, [selectedRef, customDose, customFracs, customABTumour, customABLate]);
 
   const filtered = useMemo(() => {
     let t = TRIALS;
@@ -721,21 +769,39 @@ export default function ClinicalTrials() {
                 fontFamily: "'JetBrains Mono', monospace"
               }}>Landmark RT trials · RTOG · EORTC · NCI · {TRIALS.length} studies</div>
             </div>
-            <div style={{
-              padding: "4px 10px", borderRadius: "20px",
-              backgroundColor: "rgba(245,158,11,0.1)",
-              border: "1px solid rgba(245,158,11,0.3)",
-              fontSize: "9px", color: "#F59E0B",
-              fontFamily: "'JetBrains Mono', monospace", fontWeight: 700
-            }}>EVIDENCE DB</div>
+            <div style={{ display: "flex", gap: "4px" }}>
+              <button 
+                onClick={() => setView("database")}
+                style={{
+                  padding: "6px 10px", borderRadius: "8px",
+                  backgroundColor: view === "database" ? "#F59E0B" : "rgba(255,255,255,0.04)",
+                  border: `1px solid ${view === "database" ? "#F59E0B" : "rgba(255,255,255,0.08)"}`,
+                  color: view === "database" ? "#0A0F1A" : "#64748B",
+                  fontSize: "9px", fontWeight: 700, cursor: "pointer",
+                  fontFamily: "'JetBrains Mono', monospace", transition: "all 0.2s"
+                }}
+              >DATABASE</button>
+              <button 
+                onClick={() => setView("comparison")}
+                style={{
+                  padding: "6px 10px", borderRadius: "8px",
+                  backgroundColor: view === "comparison" ? "#F59E0B" : "rgba(255,255,255,0.04)",
+                  border: `1px solid ${view === "comparison" ? "#F59E0B" : "rgba(255,255,255,0.08)"}`,
+                  color: view === "comparison" ? "#0A0F1A" : "#64748B",
+                  fontSize: "9px", fontWeight: 700, cursor: "pointer",
+                  fontFamily: "'JetBrains Mono', monospace", transition: "all 0.2s"
+                }}
+              >COMPARE</button>
+            </div>
           </div>
         </div>
       </div>
 
       <div style={{ maxWidth: "680px", margin: "0 auto", padding: "16px" }}>
-
-        {/* ── SEARCH ── */}
-        <div style={{ position: "relative", marginBottom: "14px" }}>
+        {view === "database" ? (
+          <>
+            {/* ── SEARCH ── */}
+            <div style={{ position: "relative", marginBottom: "14px" }}>
           <span style={{
             position: "absolute", left: "14px", top: "50%",
             transform: "translateY(-50%)", fontSize: "14px",
@@ -807,6 +873,145 @@ export default function ClinicalTrials() {
           </div>
         ) : (
           filtered.map((trial, i) => <TrialCard key={trial.id} trial={trial} index={i} />)
+        )}
+      </>
+    ) : (
+      <div className="space-y-6">
+            {/* Reference Arm Selector */}
+            <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-4">
+                <ArrowRightLeft className="w-4 h-4 text-amber-500" />
+                <h2 className="text-sm font-black uppercase tracking-widest text-slate-400">Dose Comparison Tool</h2>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1.5">Select Reference Trial Arm</label>
+                  <select 
+                    value={selectedRefId} 
+                    onChange={e => setSelectedRefId(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:border-amber-500 outline-none transition-colors"
+                  >
+                    {REFERENCE_ARMS.map(arm => (
+                      <option key={arm.id} value={arm.id}>{arm.name} ({arm.arm})</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="bg-slate-950/50 border border-slate-800/50 rounded-lg p-3">
+                  <p className="text-[9px] text-slate-500 uppercase mb-1">Reference Parameters</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[11px] text-slate-300">{selectedRef.site} Protocol</span>
+                    <span className="text-[11px] font-mono text-amber-400">α/β: {selectedRef.abTumour}/{selectedRef.abLate}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Custom Schedule Inputs */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Calculator className="w-4 h-4 text-cyan-500" />
+                  <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400">Custom Schedule</h3>
+                </div>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Total Dose (Gy)</label>
+                      <input type="number" value={customDose} onChange={e => setCustomDose(parseFloat(e.target.value) || 0)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-cyan-400" />
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Fractions</label>
+                      <input type="number" value={customFracs} onChange={e => setCustomFracs(parseFloat(e.target.value) || 1)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-cyan-400" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">α/β Tumour</label>
+                      <input type="number" value={customABTumour} onChange={e => setCustomABTumour(parseFloat(e.target.value) || 0.1)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-emerald-400" />
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">α/β Late</label>
+                      <input type="number" value={customABLate} onChange={e => setCustomABLate(parseFloat(e.target.value) || 0.1)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-rose-400" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bio-equivalence Summary */}
+              <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 flex flex-col justify-center">
+                <div className="text-center space-y-2">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase">Bio-equivalence (Tumour BED)</p>
+                  {(() => {
+                    const refBED = comparisonData[0].Reference;
+                    const custBED = comparisonData[0].Custom;
+                    const ratio = (custBED / refBED) * 100;
+                    const diff = ratio - 100;
+                    return (
+                      <>
+                        <div className="text-4xl font-black text-white font-mono tracking-tighter">
+                          {ratio.toFixed(1)}%
+                        </div>
+                        <div className={`text-[11px] font-bold ${diff > 0 ? 'text-rose-400' : diff < 0 ? 'text-cyan-400' : 'text-slate-500'}`}>
+                          {diff > 0 ? `+${diff.toFixed(1)}% higher dose` : diff < 0 ? `${diff.toFixed(1)}% lower dose` : 'Identical dose'}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+
+            {/* Comparison Chart */}
+            <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-4">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-amber-500" />
+                  <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400">BED Comparison (Gy)</h3>
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-slate-600" />
+                    <span className="text-[9px] text-slate-500 uppercase font-bold">Reference</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-amber-500" />
+                    <span className="text-[9px] text-slate-500 uppercase font-bold">Custom</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={comparisonData} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                    <XAxis dataKey="name" stroke="#475569" fontSize={10} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#475569" fontSize={10} tickLine={false} axisLine={false} />
+                    <Tooltip 
+                      contentStyle={{ background: '#0f172a', border: '1px solid #1e3a5f', borderRadius: '12px', fontSize: '11px' }}
+                      itemStyle={{ padding: '2px 0' }}
+                    />
+                    <Bar dataKey="Reference" fill="#475569" radius={[4, 4, 0, 0]} barSize={40} />
+                    <Bar dataKey="Custom" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={40} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="mt-4 bg-slate-950/50 border border-slate-800/50 rounded-xl p-3">
+                <div className="flex gap-3">
+                  <Info className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" />
+                  <div className="text-[10px] text-slate-400 leading-relaxed">
+                    <p className="font-bold text-slate-300 mb-1">Interpretation</p>
+                    Compare the <span className="text-amber-400">Custom</span> schedule against the <span className="text-slate-300">Reference</span> trial arm. Ensure the Late Tissue BED does not significantly exceed the reference to avoid increased toxicity. Bio-equivalence is calculated based on the Tumour α/β.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* ── FOOTER NOTE ── */}

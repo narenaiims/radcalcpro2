@@ -75,24 +75,34 @@ const FormulaBlock: React.FC<{ ab: number }> = ({ ab }) => (
 // ── Clinical interpretation ───────────────────────────────────────────────
 function interpretEQD2(eqd2: number, ab: number): { text: string; level: 'pass' | 'warn' | 'fail' | 'info' } {
   if (ab >= 8) {
-    // Tumour tissue
+    // Tumour (H&N, lung, GI) — α/β ≥8 Gy
     if (eqd2 < 40)  return { text: 'Sub-therapeutic for most solid tumours', level: 'fail' };
     if (eqd2 < 60)  return { text: 'Palliative range — adequate for symptom control', level: 'warn' };
-    if (eqd2 < 74)  return { text: 'Standard radical range (head & neck, lung)', level: 'pass' };
-    if (eqd2 < 90)  return { text: 'High-dose radical — prostate / cervix boost range', level: 'pass' };
-    return           { text: 'Escalated — SBRT/SRS or brachytherapy boost territory', level: 'info' };
-  } else if (ab <= 2) {
-    // CNS / prostate
-    if (eqd2 < 60)  return { text: 'Below curative threshold for prostate cancer', level: 'fail' };
-    if (eqd2 < 76)  return { text: 'Conventional-equivalent prostate dose', level: 'pass' };
-    if (eqd2 < 90)  return { text: 'Dose-escalated prostate (≥76 Gy EQD2)', level: 'pass' };
-    return           { text: 'High EQD2 — verify OAR constraints carefully', level: 'warn' };
-  } else {
-    // Late tissue (ab 3–4)
-    if (eqd2 > 72)  return { text: 'Exceeds typical spinal cord tolerance (EQD2 > 50 Gy α/β3)', level: 'fail' };
-    if (eqd2 > 50)  return { text: 'Late-tissue threshold range — check OAR constraints', level: 'warn' };
-    return           { text: 'Within typical late-tissue tolerance', level: 'pass' };
+    if (eqd2 < 74)  return { text: 'Standard radical range (H&N, lung)', level: 'pass' };
+    if (eqd2 < 90)  return { text: 'High-dose radical — prostate/cervix boost territory', level: 'pass' };
+    return           { text: 'Escalated dose — SBRT/SRS or brachytherapy boost', level: 'info' };
   }
+  if (ab >= 4 && ab < 8) {
+    // Breast, sarcoma, non-prostate tumours
+    if (eqd2 < 40)  return { text: 'Below curative/adjuvant threshold for most indications', level: 'fail' };
+    if (eqd2 < 50)  return { text: 'Standard adjuvant breast/sarcoma range', level: 'pass' };
+    if (eqd2 < 66)  return { text: 'High adjuvant dose — hypofractionated or boost', level: 'pass' };
+    return           { text: 'Very high dose — verify OAR constraints', level: 'warn' };
+  }
+  if (ab > 2 && ab < 4) {
+    // Late-reacting tissue (bowel, bladder, lung late)
+    if (eqd2 > 50)  return { text: 'Approaching late-tissue tolerance limit — check OAR constraints', level: 'warn' };
+    if (eqd2 > 60)  return { text: 'Exceeds standard late-tissue tolerance (α/β≈3)', level: 'fail' };
+    return           { text: 'Within typical late-tissue tolerance range', level: 'pass' };
+  }
+  if (ab <= 2) {
+    // CNS, spinal cord, prostate (low α/β)
+    if (eqd2 < 60)  return { text: 'Below curative threshold for prostate cancer', level: 'fail' };
+    if (eqd2 < 76)  return { text: 'Conventional-equivalent prostate dose (≥74 Gy EQD2₁.₅)', level: 'pass' };
+    if (eqd2 < 90)  return { text: 'Dose-escalated prostate — trial-supported', level: 'pass' };
+    return           { text: 'Very high EQD2 — verify late OAR constraints carefully', level: 'warn' };
+  }
+  return { text: 'Enter valid α/β ratio', level: 'info' };
 }
 
 const LEVEL_STYLES = {
@@ -139,9 +149,23 @@ const EQD2Page: React.FC = () => {
   const n   = React.useMemo(() => parseFloat(fractions)  || 0, [fractions]);
   const ab  = React.useMemo(() => parseFloat(alphaBeta)  || 0, [alphaBeta]);
 
+  const [useRepop, setUseRepop] = React.useState(false);
+  const [tk, setTk] = React.useState(selectedTumour?.tk ?? 28);
+  const [tp, setTp] = React.useState(selectedTumour?.k ?? 3.5);
+
+  React.useEffect(() => {
+    if (selectedTumour) {
+      setTk(selectedTumour.tk ?? 28);
+      setTp(selectedTumour.k ?? 3.5);
+    }
+  }, [selectedTumour]);
+
   const totalDose = React.useMemo(() => dpf * n,                                       [dpf, n]);
   const bed       = React.useMemo(() => ab > 0 ? totalDose * (1 + dpf / ab) : 0,      [totalDose, dpf, ab]);
   const eqd2      = React.useMemo(() => ab > 0 ? bed / (1 + 2 / ab) : 0,              [bed, ab]);
+
+  const T = n * (7/5);
+  const bedRep = useRepop && T > tk ? bed - (Math.log(2) / tp) * (T - tk) : bed;
 
   const interp    = React.useMemo(() => ab > 0 && eqd2 > 0 ? interpretEQD2(eqd2, ab) : null, [eqd2, ab]);
 
@@ -169,11 +193,15 @@ const EQD2Page: React.FC = () => {
   }, [dpf, n, ab, totalDose]);
 
   // ── AI explanation ───────────────────────────────────────────────────
+  const generateClinicalSummary = useCallback(() => {
+    return `This fractionation schedule delivers a total dose of ${totalDose.toFixed(1)} Gy in ${n} fractions of ${dpf.toFixed(2)} Gy. With an α/β ratio of ${ab} Gy, the calculated BED is ${bed.toFixed(2)} Gy and the EQD2 is ${eqd2.toFixed(2)} Gy. This schedule is typical for ${ab >= 8 ? 'tumour' : ab >= 4 ? 'breast/sarcoma' : ab > 2 ? 'late-tissue' : 'CNS/prostate'} indications. Ensure OAR constraints are verified based on the total EQD2 dose.`;
+  }, [totalDose, n, dpf, ab, bed, eqd2]);
+
   const fetchAI = async () => {
     if (aiLoading || ab === 0) return;
     
     if (!import.meta.env.VITE_GEMINI_API_KEY) {
-      setAiText('AI explanation requires API key configuration');
+      setAiText(generateClinicalSummary());
       return;
     }
 
@@ -191,7 +219,7 @@ EQD2${ab}: ${eqd2.toFixed(2)} Gy
 Cover: (1) what tissue this α/β represents, (2) clinical context where this schedule is used, (3) key OAR consideration if relevant, (4) comparison with standard 2 Gy/fx fractionation. Be concise — 4–6 sentences max. No markdown headers.`;
  
       const resp = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-2.0-flash',
         contents: prompt,
       });
       setAiText(resp.text ?? 'No response returned.');
@@ -201,10 +229,16 @@ Cover: (1) what tissue this α/β represents, (2) clinical context where this sc
         { dosePerFx: dpf, fractions: n, alphaBeta: ab, totalDose, bed, eqd2 }
       );
     } catch {
-      setAiText('AI insight unavailable. Check API key or network.');
+      setAiText(generateClinicalSummary());
     } finally {
       setAiLoading(false);
     }
+  };
+
+  const copyToClipboard = () => {
+    const text = `Schedule: ${n} fractions × ${dpf} Gy = ${totalDose.toFixed(1)} Gy total\nα/β ratio: ${ab} Gy\nBED: ${bed.toFixed(2)} Gy\nEQD2: ${eqd2.toFixed(2)} Gy\n\nInterpretation: ${aiText || generateClinicalSummary()}`;
+    navigator.clipboard.writeText(text);
+    alert('Copied to clipboard!');
   };
 
   const valid = dpf > 0 && n > 0 && ab > 0;
@@ -386,6 +420,35 @@ Cover: (1) what tissue this α/β represents, (2) clinical context where this sc
                   </div>
                 </div>
 
+                {/* Repopulation correction */}
+                <div className="card-premium p-4 space-y-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={useRepop} onChange={e => setUseRepop(e.target.checked)} className="accent-teal" />
+                    <span className="label-micro">Repopulation correction (BEDrep)</span>
+                  </label>
+                  {useRepop && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="label-micro">Tk (days)</label>
+                        <input type="number" value={tk} onChange={e => setTk(parseFloat(e.target.value))} className="input-premium" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="label-micro">Tp (days)</label>
+                        <input type="number" value={tp} onChange={e => setTp(parseFloat(e.target.value))} className="input-premium" />
+                      </div>
+                    </div>
+                  )}
+                  {useRepop && (
+                    <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                      <p className="label-micro opacity-60">BED<sub>rep</sub></p>
+                      <p className={`text-xl font-bold ${T < tk ? 'text-amber-500' : 'text-white'}`}>
+                        {bedRep.toFixed(2)} Gy
+                        {T < tk && <span className="ml-2 text-xs">⚠️ Repopulation not yet active</span>}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
                 {interp && (
                   <div className={`card-premium p-4 flex items-start gap-3 border-l-4 ${
                     interp.level === 'pass' ? 'border-l-emerald-500 bg-emerald-500/5' :
@@ -439,13 +502,23 @@ Cover: (1) what tissue this α/β represents, (2) clinical context where this sc
               <section className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="label-micro opacity-40">AI Clinical Insight</h2>
-                  <button
-                    onClick={fetchAI}
-                    disabled={aiLoading}
-                    className="btn-premium btn-primary py-1.5 px-4 text-[10px]"
-                  >
-                    {aiLoading ? 'Analyzing...' : 'Generate Analysis'}
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={fetchAI}
+                      disabled={aiLoading}
+                      className="btn-premium btn-primary py-1.5 px-4 text-[10px]"
+                    >
+                      {aiLoading ? 'Analyzing...' : 'Generate Analysis'}
+                    </button>
+                    {aiText && (
+                      <button
+                        onClick={copyToClipboard}
+                        className="btn-premium btn-outline py-1.5 px-4 text-[10px]"
+                      >
+                        Copy Result
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="card-premium p-6">
                   {aiText ? (

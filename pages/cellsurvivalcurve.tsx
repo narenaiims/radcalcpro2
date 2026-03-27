@@ -21,11 +21,14 @@ import {
   GraduationCap, Activity, Zap, RefreshCw,
   BarChart2, Info, Target
 } from 'lucide-react';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot, AreaChart, Area
+} from 'recharts';
 import KeyFactsSidebar from '../components/KeyFactsSidebar';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type TabType = 'Curves' | 'LQ Model' | 'Shoulder' | 'Fractionation' | 'Clinical' | 'Quiz';
+type TabType = 'Curves' | 'LQ Model' | 'Shoulder' | 'Fractionation' | 'Clinical' | 'Repair Kinetics' | 'Quiz';
 
 interface CellLine {
   id: string;
@@ -695,6 +698,12 @@ const CellSurvivalPage: React.FC = () => {
   const [qScore, setQScore] = useState(0);
   const [qDone, setQDone] = useState(false);
 
+  // Repair Kinetics state
+  const [repairT12, setRepairT12] = useState(1.5); // hours
+  const [repairTime, setRepairTime] = useState(1.0); // hours
+  const [repairDose, setRepairDose] = useState(10); // Gy
+  const [repairAB, setRepairAB] = useState(2.0); // Gy
+
   const filteredQ = useMemo(() =>
     qDiff === 'all' ? QUIZ : QUIZ.filter(q => q.difficulty === qDiff), [qDiff]);
   const curQ = filteredQ[qIdx];
@@ -810,7 +819,7 @@ const CellSurvivalPage: React.FC = () => {
       {/* ── TAB BAR ───────────────────────────────────────────────── */}
       <div className="relative z-10 flex overflow-x-auto no-scrollbar"
         style={{ background: '#060c18', borderBottom: '1px solid #1e293b' }}>
-        {(['Curves', 'LQ Model', 'Shoulder', 'Fractionation', 'Clinical', 'Quiz'] as TabType[]).map(t => (
+        {(['Curves', 'LQ Model', 'Shoulder', 'Fractionation', 'Clinical', 'Repair Kinetics', 'Quiz'] as TabType[]).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className="flex-shrink-0 px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider border-b-2 transition-all"
             style={{
@@ -1433,6 +1442,147 @@ const CellSurvivalPage: React.FC = () => {
                 ))}
               </div>
               <p className="text-[9px] text-slate-600 mt-2 italic">SF₂ = surviving fraction at 2 Gy. Clinical predictive value limited by tumour heterogeneity and technical challenges of the assay.</p>
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════
+            TAB: REPAIR KINETICS
+        ══════════════════════════════════════════════════════════ */}
+        {tab === 'Repair Kinetics' && (
+          <div className="space-y-4">
+            {/* Lea-Catcheside G-function Visualiser */}
+            <div className="rounded-2xl overflow-hidden"
+              style={{ background: '#0d1929', border: '1px solid #1e3a5f' }}>
+              <div className="px-3 py-2 border-b border-slate-800 flex items-center justify-between">
+                <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">
+                  Lea-Catcheside G-Function (Sublethal Damage Repair)
+                </p>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[8px] text-slate-500">T½ = {repairT12}h</span>
+                </div>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                  <div>
+                    <label className="text-[8px] text-cyan-400 uppercase font-bold block mb-1">Repair T½ (h)</label>
+                    <input type="number" step="0.1" value={repairT12} onChange={e => setRepairT12(parseFloat(e.target.value) || 0.1)}
+                      className="w-full bg-[#060c18] border border-cyan-900/50 rounded px-2 py-1 text-xs font-mono" />
+                  </div>
+                  <div>
+                    <label className="text-[8px] text-cyan-400 uppercase font-bold block mb-1">Exposure T (h)</label>
+                    <input type="number" step="0.1" value={repairTime} onChange={e => setRepairTime(parseFloat(e.target.value) || 0.1)}
+                      className="w-full bg-[#060c18] border border-cyan-900/50 rounded px-2 py-1 text-xs font-mono" />
+                  </div>
+                  <div>
+                    <label className="text-[8px] text-cyan-400 uppercase font-bold block mb-1">Total Dose (Gy)</label>
+                    <input type="number" step="1" value={repairDose} onChange={e => setRepairDose(parseFloat(e.target.value) || 0)}
+                      className="w-full bg-[#060c18] border border-cyan-900/50 rounded px-2 py-1 text-xs font-mono" />
+                  </div>
+                  <div>
+                    <label className="text-[8px] text-cyan-400 uppercase font-bold block mb-1">α/β Ratio (Gy)</label>
+                    <input type="number" step="0.1" value={repairAB} onChange={e => setRepairAB(parseFloat(e.target.value) || 0.1)}
+                      className="w-full bg-[#060c18] border border-cyan-900/50 rounded px-2 py-1 text-xs font-mono" />
+                  </div>
+                </div>
+
+                {/* G-function calculation */}
+                {(() => {
+                  const mu = Math.log(2) / repairT12;
+                  const x = mu * repairTime;
+                  const G = (2 / (x * x)) * (x - 1 + Math.exp(-x));
+                  const bedNoRepair = repairDose * (1 + repairDose / repairAB);
+                  const bedWithRepair = repairDose * (1 + (G * repairDose) / repairAB);
+                  const sparingFactor = ((bedNoRepair - bedWithRepair) / bedNoRepair) * 100;
+
+                  // Chart data for G(T) vs T
+                  const gData = [];
+                  for (let t = 0.1; t <= 10; t += 0.2) {
+                    const xt = mu * t;
+                    const gt = (2 / (xt * xt)) * (xt - 1 + Math.exp(-xt));
+                    gData.push({ t: t.toFixed(1), G: gt });
+                  }
+
+                  return (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-3">
+                          <p className="text-[8px] text-slate-500 uppercase mb-1">Lea-Catcheside G-Factor</p>
+                          <p className="text-2xl font-black text-cyan-400 font-mono">{G.toFixed(4)}</p>
+                          <p className="text-[9px] text-slate-600 mt-1">G=1: Acute (no repair) · G→0: Infinite repair</p>
+                        </div>
+                        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-3">
+                          <p className="text-[8px] text-slate-500 uppercase mb-1">Dose Sparing Effect</p>
+                          <p className="text-2xl font-black text-emerald-400 font-mono">-{sparingFactor.toFixed(1)}%</p>
+                          <p className="text-[9px] text-slate-600 mt-1">Reduction in quadratic cell kill</p>
+                        </div>
+                      </div>
+
+                      <div className="h-48 w-full bg-slate-950/50 rounded-xl border border-slate-800/50 p-2">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={gData}>
+                            <defs>
+                              <linearGradient id="colorG" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#22d3ee" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                            <XAxis dataKey="t" fontSize={8} stroke="#475569" label={{ value: 'Exposure Time (h)', position: 'insideBottom', offset: -2, fontSize: 8, fill: '#475569' }} />
+                            <YAxis domain={[0, 1]} fontSize={8} stroke="#475569" label={{ value: 'G-Factor', angle: -90, position: 'insideLeft', fontSize: 8, fill: '#475569' }} />
+                            <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #1e3a5f', fontSize: '10px' }} />
+                            <Area type="monotone" dataKey="G" stroke="#22d3ee" fillOpacity={1} fill="url(#colorG)" />
+                            <ReferenceDot x={repairTime.toFixed(1)} y={G} r={4} fill="#fbbf24" stroke="#fff" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      <div className="bg-amber-950/10 border border-amber-900/30 rounded-xl p-3">
+                        <div className="flex gap-2">
+                          <Info className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                          <div className="text-[10px] text-amber-200/70 leading-relaxed">
+                            <p className="font-bold text-amber-400 mb-1">Clinical Significance</p>
+                            The G-function corrects the quadratic (β) term for continuous or pulsed delivery. As exposure time increases relative to repair T½, G decreases from 1.0 (acute) toward 0. This explains why LDR brachytherapy spares late-responding tissues (low α/β) more than HDR.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* Repair Kinetics Theory */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-3">
+                <p className="text-[9px] font-black text-cyan-400 uppercase mb-2">The Lea-Catcheside G-Function</p>
+                <div className="font-mono text-[10px] bg-black/30 p-2 rounded mb-2 text-cyan-300/80">
+                  G(T) = (2/x²) × (x - 1 + e⁻ˣ)<br/>
+                  where x = μT and μ = ln(2)/T½
+                </div>
+                <p className="text-[10px] text-slate-400 leading-relaxed">
+                  Developed in 1942 to describe chromosomal aberrations. It represents the probability that two sublethal hits, separated in time, can still interact to form a lethal lesion before the first hit is repaired.
+                </p>
+              </div>
+              <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-3">
+                <p className="text-[9px] font-black text-emerald-400 uppercase mb-2">Repair Half-Times (T½)</p>
+                <div className="space-y-1.5">
+                  {[
+                    { label: 'Oral Mucosa', val: '0.5 – 1.0 h' },
+                    { label: 'Skin / Early Tissue', val: '0.5 – 1.5 h' },
+                    { label: 'Spinal Cord', val: '1.5 – 2.0 h' },
+                    { label: 'Brain / BS', val: '2.0 – 2.5 h' },
+                  ].map(r => (
+                    <div key={r.label} className="flex justify-between text-[10px]">
+                      <span className="text-slate-400">{r.label}</span>
+                      <span className="text-emerald-400 font-mono">{r.val}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[9px] text-slate-500 mt-2 italic">
+                  Late-responding tissues generally have slower repair kinetics than early-responding tissues or tumours.
+                </p>
+              </div>
             </div>
           </div>
         )}

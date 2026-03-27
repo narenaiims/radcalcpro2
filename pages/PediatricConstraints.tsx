@@ -102,6 +102,14 @@ const PEDIATRIC_DATA = {
         ],
         note: "Late stricture risk increased in young children with high max doses."
       },
+      {
+        name: "Breast / Chest Wall (female)",
+        ageGroups: [
+          { age: "< 13 yrs (female)", constraint: "Minimise dose; D_mean < 3 Gy (breast bud)", metric: "D_mean", risk: "Breast aplasia / asymmetry / secondary BC at 20–30 yrs", severity: "high" },
+          { age: "13–18 yrs (female)", constraint: "D_mean < 5 Gy", metric: "D_mean", risk: "Secondary BC risk", severity: "medium" },
+        ],
+        note: "Breast bud sensitivity is extreme in pre-pubertal females. Minimise dose to chest wall."
+      },
     ]
   },
   Abdomen: {
@@ -177,8 +185,8 @@ const PEDIATRIC_DATA = {
       {
         name: "Thyroid Gland",
         ageGroups: [
-          { age: "All pediatric", constraint: "D_mean < 20 Gy to prevent hypothyroidism", metric: "D_mean", risk: "Hypothyroidism, thyroid cancer", severity: "high" },
-          { age: "< 10 yrs", constraint: "D_mean < 15 Gy preferred; > 25 Gy: near-certain dysfunction", metric: "D_mean", risk: "Secondary thyroid malignancy", severity: "high" },
+          { age: "< 10 yrs", constraint: "D_mean < 20 Gy (SIOP); < 10 Gy preferred", metric: "D_mean", risk: "Hypothyroidism, growth failure", severity: "high" },
+          { age: "10–18 yrs", constraint: "D_mean < 30 Gy", metric: "D_mean", risk: "Hypothyroidism, secondary thyroid cancer", severity: "high" },
         ],
         note: "TSH surveillance q6–12 months lifelong. Risk of secondary thyroid cancer even at low doses."
       },

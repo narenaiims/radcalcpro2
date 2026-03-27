@@ -18,7 +18,6 @@ const DoseExposuresPage   = lazy(() => import('./pages/DoseExposuresPage'));
 const VivaDefinitionsPage = lazy(() => import('./pages/VivaDefinitionsPage'));
 const RadiationHistoryPage= lazy(() => import('./pages/RadiationHistoryPage'));
 const OARReferencePage    = lazy(() => import('./pages/OARReferencePage'));
-const OARReferenceV2Page  = lazy(() => import('./pages/OARReferenceV2Page'));
 const ReirradiationCalcPage = lazy(() => import('./pages/ReirradiationCalcPage'));
 const ClinicalGuidelinesPage = lazy(() => import('./pages/ClinicalGuidelinesPage'));
 const SBRTConstraintsPage   = lazy(() => import('./pages/SBRTConstraintsPage'));
@@ -31,6 +30,8 @@ const NamedEffectsPage       = lazy(() => import('./pages/NamedEffectsPage'));
 const RadiationMechanismPage     = lazy(() => import('./pages/radiationmechanism'));
 const CellSurvivalPage           = lazy(() => import('./pages/cellsurvivalcurve'));
 const PediatricConstraints     = lazy(() => import('./pages/PediatricConstraints'));
+const PediatricScalingPage     = lazy(() => import('./pages/PediatricScalingPage'));
+const CervixDosimeterPage      = lazy(() => import('./pages/CervixDosimeterPage'));
 const ClinicalTrials           = lazy(() => import('./pages/ClinicalTrials'));
 const ToxicityGrading          = lazy(() => import('./pages/ToxicityGrading'));
 const DoseRateComparison       = lazy(() => import('./pages/DoseRateComparison'));
@@ -38,6 +39,12 @@ const CervixBrachytherapy      = lazy(() => import('./pages/CervixBrachytherapy'
 const BrachytherapyReference     = lazy(() => import('./pages/BrachytherapyReference'));
 const AdaptiveRT                 = lazy(() => import('./pages/AdaptiveRT'));
 const ContouringAtlas            = lazy(() => import('./pages/ContouringAtlas'));
+const NTCPPage                   = lazy(() => import('./pages/NTCPPage'));
+const TCPPage                   = lazy(() => import('./pages/TCPPage'));
+const LDRBrachyPage              = lazy(() => import('./pages/LDRBrachyPage'));
+const IsoeffectChartPage         = lazy(() => import('./pages/IsoeffectChartPage'));
+const RepairKineticsPage         = lazy(() => import('./pages/RepairKineticsPage'));
+const ProtonTherapyPage          = lazy(() => import('./pages/ProtonTherapyPage'));
 
 // ── Minimal inline spinner — no external deps ─────────────────────────────
 const PageLoader: React.FC = () => (
@@ -88,7 +95,7 @@ class ErrorBoundary extends Component<{ children: React.ReactNode }, ErrState> {
 // ── App ───────────────────────────────────────────────────────────────────
 const Layout: React.FC = () => {
   const location = useLocation();
-  const isImmersive = ['/radiation-mechanism', '/cell-survival', '/eqd2', '/pediatric-constraints', '/clinical-trials', '/toxicity-grading', '/dose-rate-comparison', '/cervix-brachytherapy', '/brachytherapy-reference', '/adaptive-rt', '/oar-limits', '/oar-limits-v2', '/sbrt'].includes(location.pathname);
+  const isImmersive = ['/radiation-mechanism', '/cell-survival', '/eqd2', '/pediatric-constraints', '/pediatric-scaling', '/clinical-trials', '/toxicity-grading', '/dose-rate-comparison', '/cervix-brachytherapy', '/brachytherapy-reference', '/adaptive-rt', '/oar-limits', '/sbrt', '/ntcp', '/tcp', '/ldr-brachy', '/hdr-brachy', '/isoeffect-chart', '/repair-kinetics', '/proton-therapy', '/cervix-dosimeter', '/oerletrbe'].includes(location.pathname);
 
   return (
     <div className={`flex flex-col min-h-screen ${isImmersive ? 'bg-slate-950' : 'bg-zinc-50'}`}>
@@ -113,7 +120,6 @@ const Layout: React.FC = () => {
                   <Route path="/viva-definitions" element={<VivaDefinitionsPage />} />
                   <Route path="/radiation-history" element={<RadiationHistoryPage />} />
                   <Route path="/oar-limits"    element={<OARReferencePage />} />
-                  <Route path="/oar-limits-v2" element={<OARReferenceV2Page />} />
                   <Route path="/reirradiation" element={<ReirradiationCalcPage />} />
                   <Route path="/guidelines"    element={<ClinicalGuidelinesPage />} />
                   <Route path="/sbrt"          element={<SBRTConstraintsPage />} />
@@ -126,6 +132,8 @@ const Layout: React.FC = () => {
                   <Route path="/radiation-mechanism" element={<RadiationMechanismPage />} />
                   <Route path="/cell-survival"       element={<CellSurvivalPage />} />
                   <Route path="/pediatric-constraints" element={<PediatricConstraints />} />
+                  <Route path="/pediatric-scaling"     element={<PediatricScalingPage />} />
+                  <Route path="/cervix-dosimeter"      element={<CervixDosimeterPage />} />
                   <Route path="/clinical-trials"       element={<ClinicalTrials />} />
                   <Route path="/toxicity-grading"      element={<ToxicityGrading />} />
                   <Route path="/dose-rate-comparison"  element={<DoseRateComparison />} />
@@ -133,6 +141,12 @@ const Layout: React.FC = () => {
                   <Route path="/brachytherapy-reference" element={<BrachytherapyReference />} />
                   <Route path="/adaptive-rt"           element={<AdaptiveRT />} />
                   <Route path="/contouring-atlas"      element={<ContouringAtlas />} />
+                  <Route path="/ntcp"                  element={<NTCPPage />} />
+                  <Route path="/tcp"                   element={<TCPPage />} />
+                  <Route path="/ldr-brachy"            element={<LDRBrachyPage />} />
+                  <Route path="/isoeffect-chart"       element={<IsoeffectChartPage />} />
+                  <Route path="/repair-kinetics"       element={<RepairKineticsPage />} />
+                  <Route path="/proton-therapy"        element={<ProtonTherapyPage />} />
                 </Routes>
             </div>
           </Suspense>

@@ -90,14 +90,14 @@ const OAR_MODELS: OARModel[] = [
   {
     id: 'brainstem',
     name: 'Brainstem',
-    ab: 2.1,
-    bedLimit: 105.4,
+    ab: 2.0,
+    bedLimit: 108,
     eqd2Limit: 54,
     recoveryModel: 'none',
     recoveryThresholdMonths: 999,
     recoveryFraction: 0,
     maxRecovery: 0,
-    notes: 'No validated recovery model. Cumulative BED₂ <105.4 Gy₂ (54 Gy EQD2) typically used. Re-RT highly individualised — multidisciplinary decision required.',
+    notes: 'Standard QUANTEC (Mayo 2010) uses α/β = 2–3 Gy. Cumulative BED₂ <108 Gy₂ (54 Gy EQD2) typically used. Re-RT highly individualised — multidisciplinary decision required.',
     references: ['QUANTEC 2010', 'Mayo et al. IJROBP 2010'],
   },
   {

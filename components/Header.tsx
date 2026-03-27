@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import ShareButton from './ShareButton';
 import { CalcHistoryPanel } from '../src/components/CalcHistoryPanel';
 import { useRxContext } from '../src/context/RadiobiologyContext';
@@ -17,11 +17,17 @@ export const ROUTES = [
   { path: '/ebrt-gap',       label: 'EBRT Gap (LQ)',        group: 'Calculators',  short: 'Gap LQ' },
   { path: '/tdf',            label: 'TDF Factor',           group: 'Calculators',  short: 'TDF' },
   { path: '/reirradiation',  label: 'Re-irradiation Calc',  group: 'Calculators',  short: 'Re-RT' },
+  { path: '/ntcp',           label: 'NTCP Calculator',      group: 'Calculators',  short: 'NTCP' },
+  { path: '/tcp',            label: 'TCP Calculator',       group: 'Calculators',  short: 'TCP' },
+  { path: '/ldr-brachy',     label: 'LDR Brachytherapy',    group: 'Calculators',  short: 'LDR' },
+  { path: '/cervix-dosimeter', label: 'Cervix Dosimeter',    group: 'Calculators',  short: 'Cervix EQD2' },
+  { path: '/isoeffect-chart',label: 'Isoeffect Chart',      group: 'Calculators',  short: 'Isoeffect' },
+  { path: '/repair-kinetics',label: 'Repair Kinetics',      group: 'Calculators',  short: 'Repair' },
   { path: '/oerletrbe',      label: 'OER / LET / RBE',      group: 'Calculators',  short: 'OER/RBE' },
   // ── References
   { path: '/oar-limits',     label: 'OAR Dose Limits',      group: 'Reference',    short: 'OAR' },
-  { path: '/oar-limits-v2',  label: 'OAR Reference V2',     group: 'Reference',    short: 'OAR V2' },
   { path: '/pediatric-constraints', label: 'Pediatric Constraints', group: 'Reference', short: 'Pediatric' },
+  { path: '/pediatric-scaling',     label: 'Pediatric Dose Scaling', group: 'Reference', short: 'Scaling' },
   { path: '/clinical-trials',      label: 'Clinical Trials Ref',  group: 'Reference', short: 'Trials' },
   { path: '/toxicity-grading',     label: 'RT Toxicity Grading',  group: 'Reference', short: 'Toxicity' },
   { path: '/dose-rate-comparison', label: 'Brachy Dose Rates',    group: 'Reference', short: 'Brachy' },
@@ -40,6 +46,7 @@ export const ROUTES = [
   { path: '/named-effects',  label: 'Named Effects',       group: 'Education', short: 'Effects' },
   { path: '/ionizing-radiation', label: 'Ionizing Radiation Effects', group: 'Education', short: 'Radiation' },
   { path: '/radiation-mechanism', label: 'Radiation Mechanisms', group: 'Education', short: 'Mechanisms' },
+  { path: '/proton-therapy',     label: 'Proton Therapy Ref',  group: 'Education', short: 'Protons' },
   { path: '/cell-survival',      label: 'Cell Survival Curves', group: 'Education', short: 'Survival' },
   { path: '/viva-definitions',label: 'Viva Definitions',    group: 'Education',    short: 'Viva' },
   { path: '/radiation-history',label: 'History of Oncology',group: 'Education',   short: 'History' },

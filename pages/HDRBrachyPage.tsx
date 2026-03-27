@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { BookOpen, ChevronRight, GraduationCap } from 'lucide-react';
+import { BookOpen, ChevronRight, GraduationCap, Info, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import { RadiobiologyData } from '../src/data/radiobiologyData';
@@ -58,9 +58,9 @@ const PRESETS: SitePreset[] = [
     targetEQD2: 85,
     protocol: 'GEC-ESTRO EMBRACE I/II · ICRU 89',
     oarConstraints: [
-      { name: 'Rectum',  metric: 'D2cc', limit: '<70 Gy', ab: 3, hard: true  },
-      { name: 'Sigmoid', metric: 'D2cc', limit: '<70 Gy', ab: 3, hard: true  },
-      { name: 'Bladder', metric: 'D2cc', limit: '<90 Gy', ab: 3, hard: true  },
+      { name: 'Rectum',  metric: 'D2cc', limit: '<65 Gy EQD2₃', ab: 3, hard: true  },
+      { name: 'Sigmoid', metric: 'D2cc', limit: '<75 Gy EQD2₃', ab: 3, hard: true  },
+      { name: 'Bladder', metric: 'D2cc', limit: '<80 Gy (Goal) / <90 Gy (Limit)', ab: 3, hard: true  },
       { name: 'Vagina',  metric: 'D2cc', limit: '<65 Gy', ab: 3, hard: false },
       { name: 'Bowel',   metric: 'D2cc', limit: '<70 Gy', ab: 3, hard: false },
     ],
@@ -77,7 +77,7 @@ const PRESETS: SitePreset[] = [
     name: 'Prostate Boost (HDR)',
     ab: 1.5, dpf: 15.0, fx: 1,
     ebrtTotal: 46.0, ebrtDpf: 2.0,
-    targetEQD2: 117,
+    targetEQD2: 116.7,
     protocol: 'Demanes 2011 · RTOG 0321 (single-fraction 15 Gy HDR boost)',
     oarConstraints: [
       { name: 'Urethra',    metric: 'D10%', limit: '<105 Gy',  ab: 5,   hard: true  },
@@ -87,7 +87,7 @@ const PRESETS: SitePreset[] = [
     ],
     notes: [
       'Single-fraction HDR 15 Gy boost: RTOG 0321 showed 3-yr PSA control 97% (Demanes 2011). ASCENDE-RT used LDR, not HDR — do not conflate.',
-      'Single HDR 15 Gy (α/β=1.5) → EQD2₁.₅ ≈ 165 Gy (extreme hypo).',
+      'Single HDR 15 Gy (α/β=1.5) → EQD2₁.₅ = 70.7 Gy. Combined with 46 Gy EBRT = ~116.7 Gy total EQD2₁.₅.',
       'Urethra sparing critical — use urethral catheter + optimisation.',
       'Post-implant CT/MRI dosimetry recommended within 24h.',
     ],
@@ -106,7 +106,7 @@ const PRESETS: SitePreset[] = [
     ],
     notes: [
       'PORTEC-2: VBT non-inferior to EBRT for vaginal recurrence (Nout 2010, Lancet).',
-      'Typically 7 Gy × 3 to 5mm depth from applicator surface.',
+      '7 Gy × 3 prescribed to vaginal mucosa (applicator surface). Depth dose at 5mm ≈ 60–70% = ~4.2–4.9 Gy. Confirm reference point with TPS. (GEC-ESTRO 2016; Nout et al.)',
       'Alternatively: 5.5 Gy × 4 or 6 Gy × 5 (institutional variation).',
       'Cylinder size: maximise contact — typically 30–40mm diameter.',
     ],
@@ -124,7 +124,7 @@ const PRESETS: SitePreset[] = [
     ],
     notes: [
       'BID fractionation: ≥6h inter-fraction interval mandatory.',
-      '34 Gy / 10 fx BID ≡ EQD2₄ ≈ 38.3 Gy (breast tissue).',
+      '34 Gy / 10 fx BID: EQD2₄ = 34 × (3.4+4)/(2+4) = 41.9 Gy (breast α/β=4). ≡ EQD2₁₀ ≈ 3',
       'Eligibility: T1-2 (≤3cm), N0, ≥50y, unicentric, clear margins.',
       'GEC-ESTRO favours multicatheter over single-entry balloon.',
     ],
@@ -293,12 +293,9 @@ const HDRBrachyPage: React.FC = () => {
 
   // ── OAR calculations (α/β=3 for late tissues) ────────────────────────
   const oarRows = useMemo(() => preset.oarConstraints.map(c => {
-    // Calculate D2cc EQD2 for each OAR using its own ab
-    // Approx: EBRT contributes ebrtDpf at OAR, brachy contributes OAR-specific fraction
     const ebrtEQD2_oar = c.ab > 0 && nEbrtDpf > 0
       ? calcEQD2(nEbrtTotal, nEbrtDpf, c.ab) : 0;
       
-    // Use user-input OAR dose per fraction, or default to 0
     const oarDpfStr = oarDoses[c.name];
     const oarDpf = oarDpfStr !== undefined ? parseFloat(oarDpfStr) || 0 : 0;
     const oarTotal = oarDpf * nFx;
@@ -322,59 +319,61 @@ const HDRBrachyPage: React.FC = () => {
   const valid = nDpf > 0 && nFx > 0 && nAb > 0;
 
   return (
-    <div className="space-y-4 fade-in pb-2 relative">
+    <div className="space-y-4 fade-in pb-20 relative text-slate-200 px-4 pt-6">
       <KeyFactsSidebar 
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)} 
         onOpen={() => setIsSidebarOpen(true)} 
         data={SIDEBAR_DATA} 
       >
-        <div className="mt-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700/50">
-          <p className="text-xs text-gray-500 leading-relaxed italic">
+        <div className="mt-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
+          <p className="text-xs text-slate-500 leading-relaxed italic">
             "HDR brachytherapy provides an unparalleled biological advantage through extreme dose escalation and rapid fall-off. Always verify combined EQD2 with EBRT components."
           </p>
         </div>
       </KeyFactsSidebar>
 
       {/* ── Header ───────────────────────────────────────────────────── */}
-      <div>
-        <h1 className="text-base font-extrabold text-slate-900 tracking-tight">HDR Brachytherapy Solver</h1>
-        <p className="text-sm text-slate-500">GEC-ESTRO · ABS · IAEA integrated planning</p>
+      <div className="mb-6">
+        <h1 className="text-2xl font-black text-white tracking-tight">HDR Brachytherapy</h1>
+        <p className="text-sm text-slate-400">GEC-ESTRO · ABS · IAEA integrated planning</p>
       </div>
 
       {/* ── Site presets ─────────────────────────────────────────────── */}
-      <div>
-        <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-1.5">Clinical Site</p>
-        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-4">
+        <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3">Clinical Site Presets</p>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
           {PRESETS.map(p => (
             <button
               key={p.id}
               onClick={() => applyPreset(p)}
-              className={`text-left px-2.5 py-2 rounded-lg border text-sm font-semibold transition leading-tight
+              className={`text-left px-3 py-2.5 rounded-xl border text-sm font-semibold transition leading-tight
                 ${presetId === p.id
-                  ? 'bg-[#1e3a5f] text-white border-[#1e3a5f]'
-                  : 'bg-white text-slate-700 border-slate-200 hover:border-blue-300 hover:bg-blue-50'}`}
+                  ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50 shadow-lg shadow-cyan-500/10'
+                  : 'bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700 hover:bg-slate-900'}`}
             >
               <span className="block truncate">{p.name.split('(')[0].trim()}</span>
-              <span className={`text-[11px] font-normal ${presetId === p.id ? 'text-blue-200' : 'text-slate-400'}`}>
-                α/β={p.ab} · Target {p.targetEQD2} Gy
+              <span className={`text-[10px] font-normal ${presetId === p.id ? 'text-cyan-300/70' : 'text-slate-600'}`}>
+                α/β={p.ab} · {p.targetEQD2} Gy
               </span>
             </button>
           ))}
         </div>
-        <p className="text-[11px] text-slate-400 mt-1.5 italic">{preset.protocol}</p>
+        <p className="text-[10px] text-slate-500 mt-3 italic flex items-center gap-1.5">
+          <Info className="w-3 h-3" /> {preset.protocol}
+        </p>
       </div>
 
       {/* ── Tabs ─────────────────────────────────────────────────────── */}
-      <div className="flex border-b border-slate-200 gap-0">
+      <div className="flex border-b border-slate-800 gap-0">
         {(['calc','oar','notes'] as const).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-3 py-2 text-sm font-bold uppercase tracking-wider border-b-2 transition
+            className={`px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition
               ${tab === t
-                ? 'border-blue-700 text-blue-700'
-                : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                ? 'border-cyan-500 text-cyan-400'
+                : 'border-transparent text-slate-500 hover:text-slate-300'}`}
           >
             {t === 'calc' ? 'Calculator' : t === 'oar' ? 'OAR Check' : 'Protocol Notes'}
           </button>
@@ -385,152 +384,111 @@ const HDRBrachyPage: React.FC = () => {
           TAB: Calculator
       ════════════════════════════════════════════════════════════════ */}
       {tab === 'calc' && (
-        <div className="space-y-3">
+        <div className="space-y-4">
 
-          {/* EBRT inputs */}
-          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
-              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">EBRT Component</p>
-            </div>
-            <div className="px-3 py-3 grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">Total EBRT (Gy)</label>
-                <input type="number" step="0.5" value={ebrtTotal}
-                  onChange={e => setEbrtTotal(e.target.value)}
-                  className="input-clinical num" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* EBRT inputs */}
+            <div className="bg-slate-900/50 rounded-2xl border border-slate-800 overflow-hidden">
+              <div className="px-4 py-3 bg-slate-800/30 border-b border-slate-800">
+                <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">EBRT Component</p>
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">EBRT Dose/Fx (Gy)</label>
-                <input type="number" step="0.1" value={ebrtDpf}
-                  onChange={e => setEbrtDpf(e.target.value)}
-                  className="input-clinical num" />
+              <div className="p-4 grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Total Dose (Gy)</label>
+                  <input type="number" step="0.5" value={ebrtTotal}
+                    onChange={e => setEbrtTotal(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-lg font-mono text-white focus:border-cyan-500/50 outline-none transition" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Dose/Fx (Gy)</label>
+                  <input type="number" step="0.1" value={ebrtDpf}
+                    onChange={e => setEbrtDpf(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-lg font-mono text-white focus:border-cyan-500/50 outline-none transition" />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* HDR inputs */}
-          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">HDR Component</p>
-              <span className="text-[11px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">α/β = {ab} Gy</span>
-            </div>
-            <div className="px-3 py-3 space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Dose/Fx (Gy)</label>
+            {/* HDR inputs */}
+            <div className="bg-slate-900/50 rounded-2xl border border-slate-800 overflow-hidden">
+              <div className="px-4 py-3 bg-slate-800/30 border-b border-slate-800 flex items-center justify-between">
+                <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">HDR Component</p>
+                <span className="text-[10px] font-bold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">α/β = {ab} Gy</span>
+              </div>
+              <div className="p-4 grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Dose/Fx (Gy)</label>
                   <input type="number" step="0.1" value={dpf}
                     onChange={e => setDpf(e.target.value)}
-                    className="input-clinical num" />
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-lg font-mono text-white focus:border-cyan-500/50 outline-none transition" />
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Fractions</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Fractions</label>
                   <input type="number" step="1" value={fx}
                     onChange={e => setFx(e.target.value)}
-                    className="input-clinical num" />
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-lg font-mono text-white focus:border-cyan-500/50 outline-none transition" />
                 </div>
               </div>
-
-              {/* Tumour Alpha/Beta Input */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">
-                  Tumour α/β Ratio (Gy)
-                </label>
-                <input
-                  type="number" step="0.5" value={ab}
-                  onChange={e => setAb(e.target.value)}
-                  className="input-clinical num"
-                />
-              </div>
             </div>
           </div>
 
-          {/* Target */}
-          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
-              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Target EQD2 (Gy)</p>
-            </div>
-            <div className="px-3 py-3">
-              <input type="number" step="1" value={targetEQD2}
-                onChange={e => setTargetEQD2(e.target.value)}
-                className="input-clinical num w-40" />
-              <p className="text-[11px] text-slate-400 mt-1">
-                {preset.name}: recommended ≥{preset.targetEQD2} Gy EQD2 ({preset.protocol})
-              </p>
-            </div>
-          </div>
-
-          {/* Results */}
+          {/* Results Summary */}
           {valid && (
-            <div className="bg-[#1e3a5f] rounded-lg text-white px-4 py-3 space-y-3">
-              <p className="text-[11px] font-black uppercase tracking-widest text-blue-200/70">Combined Plan Summary</p>
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl shadow-cyan-500/5">
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Combined EQD2</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-5xl font-black text-white num">{totalEQD2.toFixed(1)}</span>
+                      <span className="text-lg font-bold text-slate-600">Gy</span>
+                    </div>
+                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider mt-2
+                      ${targetMet ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
+                      {targetMet ? <CheckCircle2 className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
+                      {targetMet ? 'Target Met' : 'Below Target'}
+                    </div>
+                  </div>
 
-              {/* Component breakdown */}
-              <div className="grid grid-cols-3 gap-2 text-center border-b border-blue-800/40 pb-3">
-                <div>
-                  <p className="text-[11px] uppercase tracking-wider text-blue-200/60">EBRT EQD2</p>
-                  <p className="text-lg font-black num">{ebrtEQD2.toFixed(1)}</p>
-                  <p className="text-[11px] text-blue-200/40">Gy</p>
+                  <div className="md:col-span-2 grid grid-cols-2 gap-4">
+                    <div className="bg-slate-950/50 rounded-xl p-4 border border-slate-800">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-1">EBRT Contribution</p>
+                      <p className="text-2xl font-black text-slate-300 num">{ebrtEQD2.toFixed(1)} <span className="text-xs font-normal text-slate-600">Gy</span></p>
+                      <div className="w-full bg-slate-800 h-1 rounded-full mt-2 overflow-hidden">
+                        <div className="bg-slate-500 h-full" style={{ width: `${(ebrtEQD2 / totalEQD2) * 100}%` }} />
+                      </div>
+                    </div>
+                    <div className="bg-slate-950/50 rounded-xl p-4 border border-slate-800">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-1">Brachy Contribution</p>
+                      <p className="text-2xl font-black text-cyan-400 num">{brachyEQD2.toFixed(1)} <span className="text-xs font-normal text-slate-600">Gy</span></p>
+                      <div className="w-full bg-slate-800 h-1 rounded-full mt-2 overflow-hidden">
+                        <div className="bg-cyan-500 h-full" style={{ width: `${(brachyEQD2 / totalEQD2) * 100}%` }} />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="border-x border-blue-800/40">
-                  <p className="text-[11px] uppercase tracking-wider text-blue-200/60">Brachy EQD2</p>
-                  <p className="text-lg font-black num text-emerald-300">{brachyEQD2.toFixed(1)}</p>
-                  <p className="text-[11px] text-blue-200/40">Gy</p>
-                </div>
-                <div>
-                  <p className="text-[11px] uppercase tracking-wider text-blue-200/60">Total EQD2</p>
-                  <p className="text-2xl font-black num text-white">{totalEQD2.toFixed(1)}</p>
-                  <p className="text-[11px] text-blue-200/40">Gy</p>
-                </div>
-              </div>
-
-              {/* Brachy BED */}
-              <div className="flex justify-between text-xs">
-                <span className="text-blue-200/60">Brachy BED{nAb}</span>
-                <span className="num font-bold">{brachyBED.toFixed(1)} Gy</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-blue-200/60">Brachy total dose</span>
-                <span className="num font-bold">{brachyTotal.toFixed(1)} Gy ({nFx} × {nDpf} Gy)</span>
-              </div>
-
-              {/* Target assessment */}
-              <div className={`rounded px-3 py-2 mt-1 flex items-center justify-between
-                ${targetMet
-                  ? 'bg-green-900/40 border border-green-700/40'
-                  : 'bg-amber-900/40 border border-amber-600/40'}`}>
-                <div>
-                  <p className="text-sm font-bold">{targetMet ? '✓ Target achieved' : '✗ Below target'}</p>
-                  <p className="text-[11px] text-blue-200/60">
-                    Goal: ≥{nTarget} Gy EQD2
-                    {!targetMet && ` · Deficit: ${deficit.toFixed(1)} Gy`}
-                  </p>
-                </div>
-                <span className={`text-lg font-black num ${targetMet ? 'text-green-400' : 'text-amber-400'}`}>
-                  {((totalEQD2 / nTarget) * 100).toFixed(0)}%
-                </span>
               </div>
             </div>
           )}
 
-          {/* Dose escalation table */}
+          {/* Sensitivity Table */}
           {valid && (
-            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-              <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
-                <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">
-                  Brachy Dose/Fx Sensitivity ({nFx} fx · α/β={nAb})
+            <div className="bg-slate-900/50 rounded-2xl border border-slate-800 overflow-hidden">
+              <div className="px-4 py-3 bg-slate-800/30 border-b border-slate-800">
+                <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">
+                  Brachy Dose Sensitivity ({nFx} fx · α/β={nAb})
                 </p>
               </div>
-              <div className="scroll-x">
+              <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-[11px] text-slate-400 uppercase border-b border-slate-100">
-                      <th className="px-3 py-2 text-left">HDR d (Gy)</th>
-                      <th className="px-3 py-2 text-right">Brachy EQD2</th>
-                      <th className="px-3 py-2 text-right">Total EQD2</th>
-                      <th className="px-3 py-2 text-right">vs Target</th>
+                    <tr className="text-[10px] text-slate-500 uppercase tracking-wider border-b border-slate-800">
+                      <th className="px-4 py-3 text-left">HDR d (Gy)</th>
+                      <th className="px-4 py-3 text-right">Brachy EQD2</th>
+                      <th className="px-4 py-3 text-right">Total EQD2</th>
+                      <th className="px-4 py-3 text-right">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
+                  <tbody className="divide-y divide-slate-800/50">
                     {[-1.0, -0.5, 0, 0.5, 1.0].map(delta => {
                       const d = parseFloat((nDpf + delta).toFixed(1));
                       if (d <= 0) return null;
@@ -541,12 +499,13 @@ const HDRBrachyPage: React.FC = () => {
                       const met    = tEQD2 >= nTarget;
                       const isBase = delta === 0;
                       return (
-                        <tr key={d} className={isBase ? 'bg-blue-50 font-bold text-blue-800' : 'text-slate-700'}>
-                          <td className="px-3 py-2 num">{d.toFixed(1)}{isBase && ' ←'}</td>
-                          <td className="px-3 py-2 text-right num">{bEQD2.toFixed(1)}</td>
-                          <td className="px-3 py-2 text-right num">{tEQD2.toFixed(1)}</td>
-                          <td className="px-3 py-2 text-right">
-                            <span className={`result-badge ${met ? 'pass' : 'fail'}`}>
+                        <tr key={d} className={isBase ? 'bg-cyan-500/5 font-bold' : 'text-slate-400'}>
+                          <td className="px-4 py-3 num text-slate-300">{d.toFixed(1)}{isBase && ' (Current)'}</td>
+                          <td className="px-4 py-3 text-right num">{bEQD2.toFixed(1)}</td>
+                          <td className="px-4 py-3 text-right num text-white">{tEQD2.toFixed(1)}</td>
+                          <td className="px-4 py-3 text-right">
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase
+                              ${met ? 'text-emerald-400 bg-emerald-400/10' : 'text-rose-400 bg-rose-400/10'}`}>
                               {met ? '✓' : `−${(nTarget - tEQD2).toFixed(1)}`}
                             </span>
                           </td>
@@ -565,91 +524,75 @@ const HDRBrachyPage: React.FC = () => {
           TAB: OAR Check
       ════════════════════════════════════════════════════════════════ */}
       {tab === 'oar' && (
-        <div className="space-y-3">
-          <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-800">
-            <strong>Note:</strong> OAR EQD2 shown uses tumour α/β ({ab} Gy) for combined dose — in clinical practice
-            OAR constraints use tissue-specific α/β (e.g. α/β=3 for late bowel/rectum).
-            Values below use each OAR's specified α/β.
+        <div className="space-y-4">
+          <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-2xl p-4 flex gap-3">
+            <Info className="w-5 h-5 text-cyan-400 flex-shrink-0" />
+            <p className="text-xs text-cyan-300/80 leading-relaxed">
+              OAR constraints use tissue-specific α/β (typically α/β=3 for late bowel/rectum). 
+              Enter the measured D2cc or Dmax dose-per-fraction from your plan below.
+            </p>
           </div>
 
-          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
-              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">
-                {preset.name} — OAR Constraints
-              </p>
-            </div>
-            <div className="divide-y divide-slate-100">
-              {oarRows.map(r => (
-                <div key={r.name} className="px-3 py-2.5">
-                  <div className="flex items-center justify-between mb-1">
+          <div className="grid grid-cols-1 gap-4">
+            {oarRows.map(r => (
+              <div key={r.name} className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-slate-800">{r.name}</span>
-                      <span className="text-[11px] text-slate-400">{r.metric} · α/β={r.ab}</span>
-                      {r.hard && <span className="text-[11px] font-black text-red-600 uppercase">Hard</span>}
+                      <h3 className="text-lg font-bold text-white">{r.name}</h3>
+                      {r.hard && <span className="text-[10px] font-black text-rose-500 bg-rose-500/10 px-1.5 py-0.5 rounded uppercase border border-rose-500/20">Hard Limit</span>}
                     </div>
-                    <span className={STATUS_BADGE[r.status]}>{STATUS_LABEL[r.status]}</span>
+                    <p className="text-xs text-slate-500">{r.metric} · α/β={r.ab} Gy</p>
                   </div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <label className="text-[11px] text-slate-500 uppercase tracking-wider">Brachy {r.metric}/fx (Gy):</label>
+                  <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border
+                    ${r.status === 'pass' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
+                      r.status === 'warn' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 
+                      'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>
+                    {STATUS_LABEL[r.status]}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-end">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Brachy {r.metric}/fx (Gy)</label>
                     <input
                       type="number"
                       step="0.1"
                       min="0"
                       value={r.oarDpfStr}
-                      placeholder="Enter from plan (Gy/fx)"
+                      placeholder="Enter Gy/fx"
                       onChange={e => setOarDoses(prev => ({ ...prev, [r.name]: e.target.value }))}
-                      className="w-40 px-1.5 py-0.5 text-xs border border-slate-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none num"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-lg font-mono text-white focus:border-cyan-500/50 outline-none transition"
                     />
                   </div>
-                  <p className="text-[10px] text-slate-400 italic mb-2">
-                    Enter D2cc (or Dmax) dose-per-fraction from your treatment plan. Leave blank if not yet planned.
-                  </p>
-                  <div className="flex items-center gap-4 text-xs">
-                    <span className="text-slate-500">Limit: <span className="font-bold num text-slate-700">{r.limit}</span></span>
-                    <span className="text-slate-500">Calc: <span className="font-bold num text-slate-900" title={r.total === 0 ? "No dose entered — add measured OAR dose from plan" : undefined}>{r.total === 0 ? '—' : r.total.toFixed(1) + ' Gy'}</span></span>
-                    <span className="text-slate-400">
-                      EBRT {r.ebrtEQD2.toFixed(1)} + Brachy <span title={r.brachyEQD2 === 0 ? "No dose entered — add measured OAR dose from plan" : undefined}>{r.brachyEQD2 === 0 ? '—' : r.brachyEQD2.toFixed(1)}</span>
-                    </span>
-                  </div>
-                  {/* Progress bar */}
-                  <div className="mt-1.5 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all ${
-                        r.status === 'pass' ? 'bg-green-500' :
-                        r.status === 'warn' ? 'bg-amber-400' : 'bg-red-500'}`}
-                      style={{ width: `${Math.min(100, (r.total / (parseFloat(r.limit.replace(/[^0-9.]/g,'')) || 100)) * 100)}%` }}
-                    />
+
+                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800 grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-1">Limit</p>
+                      <p className="text-lg font-black text-slate-400 num">{r.limit.split(' ')[0]}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-1">Combined</p>
+                      <p className={`text-lg font-black num ${r.total === 0 ? 'text-slate-700' : 'text-white'}`}>
+                        {r.total === 0 ? '—' : r.total.toFixed(1)}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          {/* GEC-ESTRO reference (Cervix) */}
-          {presetId === 'cervix' && (
-            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-              <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                  GEC-ESTRO EMBRACE — Dose–Response (EQD2₃)
-                </p>
+                {/* Progress bar */}
+                <div className="mt-6 h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, (r.total / (parseFloat(r.limit.replace(/[^0-9.]/g,'')) || 100)) * 100)}%` }}
+                    className={`h-full rounded-full transition-all ${
+                      r.status === 'pass' ? 'bg-emerald-500' :
+                      r.status === 'warn' ? 'bg-amber-400' : 'bg-rose-500'}`}
+                  />
+                </div>
               </div>
-              <div className="px-3 py-3 space-y-1.5 text-[11px]">
-                {[
-                  { oar: 'Rectum D2cc',  d50: '~65 Gy', td55: '>75 Gy', note: 'G3+ bleeding' },
-                  { oar: 'Sigmoid D2cc', d50: '~70 Gy', td55: '>75 Gy', note: 'G3+ obstruction' },
-                  { oar: 'Bladder D2cc', d50: '~85 Gy', td55: '>90 Gy', note: 'G3+ haematuria' },
-                ].map(r => (
-                  <div key={r.oar} className="flex items-center justify-between gap-2">
-                    <span className="font-semibold text-slate-700 w-28 flex-shrink-0">{r.oar}</span>
-                    <span className="text-slate-500">D₅₀: <span className="num font-bold">{r.d50}</span></span>
-                    <span className="text-red-700">Hard: <span className="num font-bold">{r.td55}</span></span>
-                    <span className="text-[10px] text-slate-400 hidden sm:block">{r.note}</span>
-                  </div>
-                ))}
-                <p className="text-[10px] text-slate-400 pt-1">Source: Tanderup et al., Radiother Oncol 2016 (EMBRACE I)</p>
-              </div>
-            </div>
-          )}
+            ))}
+          </div>
         </div>
       )}
 
@@ -657,53 +600,36 @@ const HDRBrachyPage: React.FC = () => {
           TAB: Protocol Notes
       ════════════════════════════════════════════════════════════════ */}
       {tab === 'notes' && (
-        <div className="space-y-3">
-          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                {preset.name} — Protocol Notes
+        <div className="space-y-4">
+          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
+            <div className="px-4 py-3 bg-slate-800/30 border-b border-slate-800">
+              <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">
+                {preset.name} — Clinical Guidance
               </p>
             </div>
-            <ul className="divide-y divide-slate-50">
+            <div className="p-2">
               {preset.notes.map((note, i) => (
-                <li key={i} className="px-3 py-2.5 flex items-start gap-2.5">
-                  <span className="text-[10px] font-black text-blue-600 mt-0.5 flex-shrink-0">{i + 1}</span>
-                  <p className="text-[12px] text-slate-700 leading-relaxed">{note}</p>
-                </li>
+                <div key={i} className="px-4 py-3 flex items-start gap-4 hover:bg-slate-800/20 rounded-xl transition">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-[10px] font-black text-cyan-400">
+                    {i + 1}
+                  </span>
+                  <p className="text-sm text-slate-400 leading-relaxed">{note}</p>
+                </div>
               ))}
-            </ul>
-          </div>
-
-          {/* Radiobiology principles */}
-          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Radiobiology Principles</p>
-            </div>
-            <div className="px-3 py-3 space-y-3 text-[12px] text-slate-700 leading-relaxed">
-              <div>
-                <p className="font-bold text-slate-800 text-[11px] uppercase tracking-wide mb-0.5">Inverse Square Law Advantage</p>
-                <p>HDR enables steep dose gradients — D(r) ∝ 1/r². Moving source 1mm from target halves dose to adjacent OAR — impossible with EBRT.</p>
-              </div>
-              <div>
-                <p className="font-bold text-slate-800 text-[11px] uppercase tracking-wide mb-0.5">High Dose/Fraction Effect</p>
-                <p>Large HDR fractions (≥5 Gy) exploit the quadratic component of LQ: effect = α·d + β·d². Late-responding tissues (low α/β) are disproportionately damaged — mandating strict OAR tracking.</p>
-              </div>
-              <div>
-                <p className="font-bold text-slate-800 text-[11px] uppercase tracking-wide mb-0.5">BED Additivity</p>
-                <p>Combined EBRT + brachy BED (and EQD2) is additive only when fractions are well-separated (&gt;6h). Same α/β must be used throughout. Reference: Dale RG, Br J Radiol 1985.</p>
-              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Reference ────────────────────────────────────────────────── */}
-      <p className="text-[11px] text-slate-400 px-1">
-        Ref: Pötter R et al. EMBRACE I. Radiother Oncol 2021. Tanderup K et al. Radiother Oncol 2016.
-        Dale RG. Br J Radiol 1985. ABS/GEC-ESTRO brachytherapy guidelines.
-      </p>
+      {/* ── Footer ────────────────────────────────────────────────── */}
+      <div className="mt-8 pt-6 border-t border-slate-800 text-center">
+        <p className="text-[10px] text-slate-600 uppercase tracking-widest">
+          Ref: EMBRACE I/II · GEC-ESTRO · ABS · ICRU 89
+        </p>
+      </div>
     </div>
   );
 };
+
 
 export default HDRBrachyPage;

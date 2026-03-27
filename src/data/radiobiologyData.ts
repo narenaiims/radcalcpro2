@@ -70,9 +70,9 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'gi-omental', site: 'Gastrointestinal', subsite: 'Omentum', tumour: 'Omental Cake', alphaBeta: 10 },
 
   // ── Genitourinary ──
-  { id: 'gu-pros-low', site: 'Genitourinary', subsite: 'Prostate', tumour: 'Low risk', alphaBeta: 1.5, abLow: 1.0, abHigh: 1.85, uncertaintyFlag: true, abSource: 'Brenner & Hall 1999; Dasu 2007' },
-  { id: 'gu-pros-int', site: 'Genitourinary', subsite: 'Prostate', tumour: 'Intermediate', alphaBeta: 1.5, abLow: 1.0, abHigh: 1.85, uncertaintyFlag: true, abSource: 'Brenner & Hall 1999; Dasu 2007' },
-  { id: 'gu-pros-high', site: 'Genitourinary', subsite: 'Prostate', tumour: 'High risk', alphaBeta: 1.5, abLow: 1.0, abHigh: 1.85, uncertaintyFlag: true, abSource: 'Brenner & Hall 1999; Dasu 2007' },
+  { id: 'gu-pros-low', site: 'Genitourinary', subsite: 'Prostate', tumour: 'Low risk', alphaBeta: 1.5, abLow: 1.0, abHigh: 1.85, uncertaintyFlag: true, abSource: 'Brenner & Hall IJROBP 1999; Fowler et al Radiother Oncol 2001; CHHiP (Dearnaley, Lancet Oncol 2016); PACE-B (Brand, Lancet Oncol 2019)' },
+  { id: 'gu-pros-int', site: 'Genitourinary', subsite: 'Prostate', tumour: 'Intermediate', alphaBeta: 1.5, abLow: 1.0, abHigh: 1.85, uncertaintyFlag: true, abSource: 'Brenner & Hall IJROBP 1999; Fowler et al Radiother Oncol 2001; CHHiP (Dearnaley, Lancet Oncol 2016); PACE-B (Brand, Lancet Oncol 2019)' },
+  { id: 'gu-pros-high', site: 'Genitourinary', subsite: 'Prostate', tumour: 'High risk', alphaBeta: 1.5, abLow: 1.0, abHigh: 1.85, uncertaintyFlag: true, abSource: 'Brenner & Hall IJROBP 1999; Fowler et al Radiother Oncol 2001; CHHiP (Dearnaley, Lancet Oncol 2016); PACE-B (Brand, Lancet Oncol 2019)' },
   { id: 'gu-bladder', site: 'Genitourinary', subsite: 'Bladder', tumour: 'TCC', alphaBeta: 10 },
   { id: 'gu-renal-clear', site: 'Genitourinary', subsite: 'Renal Cell', tumour: 'Clear cell', alphaBeta: 10 },
   { id: 'gu-renal-nonclear', site: 'Genitourinary', subsite: 'Renal Cell', tumour: 'Non-clear', alphaBeta: 10 },
@@ -114,7 +114,7 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   // ── CNS ──
   { id: 'cns-gbm', site: 'CNS', subsite: 'Brain', tumour: 'Glioblastoma', alphaBeta: 10 },
   { id: 'cns-aa', site: 'CNS', subsite: 'Brain', tumour: 'Anaplastic Astrocytoma', alphaBeta: 10 },
-  { id: 'cns-lgg', site: 'CNS', subsite: 'Brain', tumour: 'Low-grade glioma', alphaBeta: 2 },
+  { id: 'cns-lgg', site: 'CNS', subsite: 'Brain', tumour: 'Low-grade glioma', alphaBeta: 2, abLow: 1.8, abHigh: 5, uncertaintyFlag: true, abSource: 'Extrapolated from CNS late-tissue; direct LGG data sparse (Gao et al. Radiother Oncol 2018)', notes: 'Often treated with 1.8 Gy/fx or 2.0 Gy/fx; α/β=2 is pragmatic assumption.' },
   { id: 'cns-meningioma-1', site: 'CNS', subsite: 'Meningioma', tumour: 'Grade I', alphaBeta: 2 },
   { id: 'cns-meningioma-2', site: 'CNS', subsite: 'Meningioma', tumour: 'Grade II/III', alphaBeta: 10 },
   { id: 'cns-acoustic', site: 'CNS', subsite: 'Acoustic Neuroma', tumour: 'Schwannoma', alphaBeta: 2 },
@@ -131,7 +131,7 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   // ── Skin ──
   { id: 'skin-bcc', site: 'Skin', subsite: 'BCC', tumour: 'Basal Cell', alphaBeta: 10 },
   { id: 'skin-scc', site: 'Skin', subsite: 'SCC', tumour: 'Squamous Cell', alphaBeta: 10 },
-  { id: 'skin-melanoma', site: 'Skin', subsite: 'Melanoma', tumour: 'Malignant', alphaBeta: 2.5, abLow: 0.6, abHigh: 2.5 },
+  { id: 'skin-melanoma', site: 'Skin', subsite: 'Melanoma', tumour: 'Malignant', alphaBeta: 0.6, abLow: 0.57, abHigh: 2.5, uncertaintyFlag: true, notes: 'Wide uncertainty. Historically considered radioresistant; α/β may be very low (0.57 Gy — Bentzen 1994) supporting hypofractionation.' },
   { id: 'skin-merkel', site: 'Skin', subsite: 'Merkel Cell', tumour: 'Neuroendocrine', alphaBeta: 10 },
   { id: 'skin-mf', site: 'Skin', subsite: 'Mycosis Fungoides', tumour: 'T-cell Lymphoma', alphaBeta: 10 },
   { id: 'skin-kaposi', site: 'Skin', subsite: 'Kaposi Sarcoma', tumour: 'Vascular', alphaBeta: 10 },

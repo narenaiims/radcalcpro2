@@ -295,7 +295,7 @@ const LET_TABLE: LETEffect[] = [
   { let_kev_um: 10,   label: 'Low-E photons (kV CT)',    rbe_approx: 1.2, oer_approx: 2.5, example: 'Diagnostic kV; brachytherapy photons',       dna_dsb_relative: 1.3 },
   { let_kev_um: 20,   label: 'Fast neutrons (low)',       rbe_approx: 2.0, oer_approx: 2.0, example: 'Neutron capture therapy',                    dna_dsb_relative: 2.1 },
   { let_kev_um: 30,   label: 'Proton (plateau)',          rbe_approx: 1.1, oer_approx: 2.5, example: 'Entrance region of proton SOBP',             dna_dsb_relative: 1.2 },
-  { let_kev_um: 80,   label: 'Proton Bragg peak',        rbe_approx: 1.7, oer_approx: 1.8, example: 'Distal Bragg peak; RBE clinically fixed at 1.1', dna_dsb_relative: 2.0 },
+  { let_kev_um: 80,   label: 'Proton Bragg peak',        rbe_approx: 1.4, oer_approx: 1.8, example: 'Distal Bragg peak; RBE clinically fixed at 1.1', dna_dsb_relative: 2.0 },
   { let_kev_um: 100,  label: '¹²C plateau',              rbe_approx: 2.5, oer_approx: 1.6, example: 'Carbon ion plateau region',                  dna_dsb_relative: 3.0 },
   { let_kev_um: 150,  label: '¹²C Bragg peak (optimal)', rbe_approx: 3.5, oer_approx: 1.3, example: 'RBE optimal ~100–200 keV/µm (Hall)',         dna_dsb_relative: 5.0 },
   { let_kev_um: 200,  label: 'α particle / ²²³Ra',       rbe_approx: 5.0, oer_approx: 1.1, example: 'Targeted alpha therapy ²²³Ra, ²¹²Pb',       dna_dsb_relative: 8.0 },
@@ -306,7 +306,7 @@ const LET_TABLE: LETEffect[] = [
 
 const OER_DATA: TissueOER[] = [
   { tissue: 'Anoxic (in vitro, N₂)',       pO2_mmHg: 0,   oer: 1.0, context: 'True anoxia — theoretical maximum resistance' },
-  { tissue: 'Severe tumour hypoxia',        pO2_mmHg: 0.5, oer: 1.5, context: 'Perinecrotic tumour core; >10mm from capillary' },
+  { tissue: 'Severe tumour hypoxia',        pO2_mmHg: 0.5, oer: 1.2, context: 'Perinecrotic tumour core; >10mm from capillary' },
   { tissue: 'Moderate tumour hypoxia',      pO2_mmHg: 2,   oer: 2.0, context: 'Common in HNSCC (40–60%), NSCLC; HP5 measured' },
   { tissue: 'Mild hypoxia (HP5 threshold)', pO2_mmHg: 5,   oer: 2.5, context: 'Eppendorf electrode HP5 threshold; prognostic cutoff' },
   { tissue: 'Normal tissue venous',         pO2_mmHg: 30,  oer: 2.8, context: 'Venous pO₂ = 40 mmHg; near-full radiosensitivity' },
@@ -468,7 +468,7 @@ function getRBE(letKeVum: number, radiation: string = 'generic'): number {
   if (letKeVum <= 0) return 1.0;
   // Empirical model: RBE rises with LET, peaks ~150 keV/µm, then falls
   const peak_let = 150;
-  const peak_rbe = radiation === 'carbon' ? 4.5 : radiation === 'neutron' ? 5.0 : 3.5;
+  const peak_rbe = radiation === 'carbon' ? 4.5 : radiation === 'neutron' ? 5.0 : radiation === 'proton' ? 1.5 : 3.5;
   if (letKeVum <= peak_let) {
     return 1.0 + (peak_rbe - 1.0) * (letKeVum / peak_let) ** 0.6;
   } else {
@@ -485,7 +485,7 @@ function getOER(letKeVum: number): number {
 
 function getOERfromPO2(pO2: number): number {
   if (pO2 <= 0) return 1.0;
-  const K = 3; // half-saturation pO₂ (mmHg)
+  const K = 4; // half-saturation pO₂ (mmHg)
   const OERmax = 3.0, OERmin = 1.0;
   return OERmin + (OERmax - OERmin) * pO2 / (pO2 + K);
 }
@@ -1022,6 +1022,12 @@ const OERLETRBEPage: React.FC = () => {
                                 Clustered DNA DSBs predominate. OAR tolerance constraints validated for photons DO NOT directly apply. Use particle-specific RBE models (MKM, LEM for ¹²C).
                               </div>
                             )}
+                            {row.label === 'Proton Bragg peak' && (
+                              <div className="bg-sky-50 border border-sky-200 rounded-lg px-2 py-1.5 text-[10px] text-sky-700">
+                                <span className="font-bold">Proton RBE: </span>
+                                Clinical RBE fixed at 1.1 (ICRU 78); biophysical RBE at Bragg peak 1.4–1.7 (Paganetti 2014) — higher values represent experimental, not prescribed, dose.
+                              </div>
+                            )}
                             {row.label.includes('overkill') && (
                               <div className="bg-orange-50 border border-orange-200 rounded-lg px-2 py-1.5 text-[10px] text-orange-700 font-semibold">
                                 ⚠ Overkill effect: excessive ionisation density per cell reduces effective RBE. Surplus energy is wasted.
@@ -1075,6 +1081,11 @@ const OERLETRBEPage: React.FC = () => {
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
             <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
               <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">OER vs pO₂ — Photons (ICRU 40)</p>
+            </div>
+            <div className="px-3 py-2 bg-slate-50/50 border-t border-slate-100">
+              <p className="text-[9px] text-slate-400 italic leading-tight">
+                OER values modelled using Michaelis-Menten kinetics (K=4 mmHg). Values represent averaged experimental data; individual tumour heterogeneity is substantial (Vaupel & Mayer, 2007).
+              </p>
             </div>
             <div className="divide-y divide-slate-50">
               {OER_DATA.map((row, i) => {

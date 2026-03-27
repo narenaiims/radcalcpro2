@@ -219,7 +219,15 @@ const TDFPage: React.FC = () => {
                 className="input-clinical num" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1">Overall Time (d)</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-slate-500">Overall Time (d)</label>
+                <button 
+                  onClick={() => setDays(String(Math.ceil((n / 5) * 7)))}
+                  className="text-[9px] font-bold text-blue-600 hover:text-blue-800 uppercase tracking-tighter"
+                >
+                  Auto (5 fx/wk)
+                </button>
+              </div>
               <input type="number" step="1" min="1"
                 value={days} onChange={e => setDays(e.target.value)}
                 className="input-clinical num" />
@@ -262,6 +270,11 @@ const TDFPage: React.FC = () => {
             {isVeryHypo
               ? '⚠ d/fx > 5 Gy: TDF not validated. Use BED/EQD2 pages instead.'
               : '⚠ d/fx > 3 Gy: At the limit of TDF validity range.'}
+          </div>
+        )}
+        {T < n && T > 0 && (
+          <div className="px-3 py-2 border-t text-xs font-medium bg-red-50 border-red-200 text-red-700">
+            ⚠ T &lt; n: overall time shorter than fraction count implies &gt;1 fraction/day. TDF is not validated for BID or accelerated schedules — use BED/EQD2 instead.
           </div>
         )}
       </div>

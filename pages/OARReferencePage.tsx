@@ -66,7 +66,7 @@ const REIRRT: Record<string, ReRTEntry> = {
   spinal_cord: {
     maxCumEQD2: 70, unit: 'Gy EQD2₂',
     minInterval: '≥6 months (12+ preferred)',
-    notes: 'Sahgal protocol: new course ≤25 Gy EQD2₂ if prior ≤45 Gy EQD2₂. Recovery ~50% at 6 months, ~80% at 2 years. NEVER sum physical doses — EQD2 currency only.',
+    notes: 'Sahgal protocol: new course ≤25 Gy EQD2₂ if prior ≤45 Gy EQD2₂ (cumulative). This is for cases with prior conventional RT, do not conflate with de-novo SBRT spine point constraints (RTOG 0631). Recovery ~50% at 6 months, ~80% at 2 years. NEVER sum physical doses — EQD2 currency only.',
     recoveryModel: '~50% sub-lethal damage repaired at 6 months. Cumulative BED₂: prior + 0.5×recovery × new.',
     reference: 'Sahgal 2012 IJROBP; Nieder 2005',
   },
@@ -915,7 +915,7 @@ const OARReferencePage: React.FC = () => {
                       <div className="px-6 py-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Shield className="w-4 h-4 text-teal" />
-                          <h2 className="label-micro">Dose Constraints</h2>
+                          <h2 className="label-micro">Dose Constraints (Active Regime: {dFx} Gy × {nFx} fx)</h2>
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1.5">
@@ -935,7 +935,7 @@ const OARReferencePage: React.FC = () => {
                             <tr className="border-b border-white/5 bg-white/[0.01]">
                               <th className="px-6 py-4 label-micro">Endpoint</th>
                               <th className="px-6 py-4 label-micro">Metric</th>
-                              <th className="px-6 py-4 label-micro text-right">Limit</th>
+                              <th className="px-6 py-4 label-micro text-right">Limit (Ref)</th>
                               <th className="px-6 py-4 label-micro text-right">EQD2 Scaled</th>
                             </tr>
                           </thead>
@@ -1028,6 +1028,38 @@ const OARReferencePage: React.FC = () => {
                             </div>
                           );
                         })}
+                      </div>
+                    </section>
+
+                    {/* Regime Overview Section */}
+                    <section className="card-premium overflow-hidden">
+                      <div className="px-6 py-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Activity className="w-4 h-4 text-teal" />
+                          <h2 className="label-micro">Regime Overview (All Applicable)</h2>
+                        </div>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                          <thead>
+                            <tr className="border-b border-white/5 bg-white/[0.01]">
+                              <th className="px-6 py-4 label-micro">Regime</th>
+                              <th className="px-6 py-4 label-micro">Constraint</th>
+                              <th className="px-6 py-4 label-micro text-right">Limit</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/5">
+                            {selOAR.constraints.map((c, ci) => (
+                              c.regime.map((regime, ri) => (
+                                <tr key={`${ci}-${ri}`} className="hover:bg-white/[0.01] transition-colors">
+                                  <td className="px-6 py-4 text-xs text-slate-400 capitalize">{regime.replace('_', ' ')}</td>
+                                  <td className="px-6 py-4 text-xs text-white">{c.metric}</td>
+                                  <td className="px-6 py-4 text-right text-sm font-bold text-teal font-mono">{c.limit} {c.unit}</td>
+                                </tr>
+                              ))
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </section>
 

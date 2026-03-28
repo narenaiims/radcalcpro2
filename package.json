@@ -14,9 +14,11 @@
   "dependencies": {
     "@google/genai": "^1.41.0",
     "@tailwindcss/vite": "^4.2.1",
+    "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.38.0",
     "html2canvas": "^1.4.1",
+    "idb": "^8.0.3",
     "jspdf": "^2.5.1",
     "lucide-react": "^0.575.0",
     "mathjs": "14.2.1",
@@ -28,7 +30,10 @@
     "react-router-dom": "^7.13.0",
     "react-to-print": "^3.3.0",
     "recharts": "2.15.0",
-    "tailwindcss": "^4.2.1"
+    "tailwind-merge": "^3.5.0",
+    "tailwindcss": "^4.2.1",
+    "vite-plugin-pwa": "^1.2.0",
+    "workbox-window": "^7.4.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

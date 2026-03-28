@@ -166,7 +166,7 @@ const TumourSelector: React.FC<TumourSelectorProps> = ({
             <p className="text-base font-black text-slate-800 num">
               {selectedEntry.k === 0 ? '0' : selectedEntry.k.toFixed(2)}
             </p>
-            <p className="text-[9px] text-slate-400">Gy/day</p>
+            <p className="text-[9px] text-slate-400">Gy (BED)/day</p>
           </div>
         </div>
 

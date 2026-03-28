@@ -9,6 +9,7 @@ import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', 'VITE_');
@@ -20,6 +21,89 @@ export default defineConfig(({ mode }) => {
       plugins: [
         react(),
         tailwindcss(),
+        VitePWA({
+          registerType: 'prompt',
+          includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+          manifest: {
+            name: 'RadCalcPro — Radiation Oncology Toolkit',
+            short_name: 'RadCalcPro',
+            description: 'Clinical radiobiology calculators, OAR constraints, SBRT reference and viva preparation for radiation oncology postgraduates.',
+            theme_color: '#1e3a5f',
+            background_color: '#1e3a5f',
+            display: 'standalone',
+            orientation: 'portrait-primary',
+            icons: [
+              {
+                src: 'pwa-192x192.png',
+                sizes: '192x192',
+                type: 'image/png'
+              },
+              {
+                src: 'pwa-512x512.png',
+                sizes: '512x512',
+                type: 'image/png'
+              },
+              {
+                src: 'pwa-512x512.png',
+                sizes: '512x512',
+                type: 'image/png',
+                purpose: 'any maskable'
+              }
+            ]
+          },
+          workbox: {
+            globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+            runtimeCaching: [
+              {
+                urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+                handler: 'CacheFirst',
+                options: {
+                  cacheName: 'google-fonts-stylesheets',
+                  expiration: {
+                    maxEntries: 10,
+                    maxAgeSeconds: 60 * 60 * 24 * 365
+                  }
+                }
+              },
+              {
+                urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+                handler: 'CacheFirst',
+                options: {
+                  cacheName: 'google-fonts-webfonts',
+                  expiration: {
+                    maxEntries: 20,
+                    maxAgeSeconds: 60 * 60 * 24 * 365
+                  }
+                }
+              },
+              {
+                // Cache-first for calculator pages (static assets)
+                urlPattern: /\/assets\/.*\.js/i,
+                handler: 'CacheFirst',
+                options: {
+                  cacheName: 'calculator-scripts',
+                  expiration: {
+                    maxEntries: 50,
+                    maxAgeSeconds: 60 * 60 * 24 * 30
+                  }
+                }
+              },
+              {
+                // Network-first for clinical guidelines (assuming they might be fetched from an API or specific path)
+                urlPattern: /\/api\/guidelines\/.*/i,
+                handler: 'NetworkFirst',
+                options: {
+                  cacheName: 'clinical-guidelines',
+                  networkTimeoutSeconds: 5,
+                  expiration: {
+                    maxEntries: 20,
+                    maxAgeSeconds: 60 * 60 * 24 * 7
+                  }
+                }
+              }
+            ]
+          }
+        })
       ],
       define: {
         'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY ?? '')
@@ -34,7 +118,7 @@ export default defineConfig(({ mode }) => {
           'react', 'react-dom', 'react-router-dom',
           'lucide-react', 'react-to-print',
           'recharts', 'mathjs', 'date-fns',
-          'html2canvas', 'jspdf'
+          'html2canvas', 'jspdf', 'idb', 'workbox-window'
         ],
         exclude: ['motion']
       },

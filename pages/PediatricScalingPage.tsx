@@ -25,6 +25,25 @@ interface ScalingResult {
   color: string;
 }
 
+const SAFETY_NOTE = "Paediatric radiation therapy requires specialist planning review. All doses must be verified by a paediatric radiation oncologist (COG institutional membership or equivalent). These calculations are reference guides only.";
+
+const COG_CONSTRAINTS = {
+  spine: [
+    { maxAge: 1.5, maxDose: 20, desc: "< 18 months: 20 Gy" },
+    { maxAge: 6, maxDose: 30, desc: "18m–6y: 25–30 Gy" },
+    { maxAge: 12, maxDose: 35, desc: "6–12y: 35 Gy" },
+  ],
+  lung: [
+    { maxAge: 3, maxDose: 15, desc: "< 3y: 12–15 Gy" },
+    { maxAge: 10, maxDose: 18, desc: "3–10y: 15–18 Gy" },
+  ],
+  brain: [
+    { maxAge: 3, maxDose: 20, desc: "< 3y: 18–20 Gy" },
+    { maxAge: 5, maxDose: 24, desc: "3–5y: 24 Gy" },
+    { maxAge: 100, maxDose: 36, desc: "> 5y: 30–36 Gy" },
+  ]
+};
+
 const ADULT_REF_WEIGHT = 70; // kg
 const ADULT_REF_BSA = 1.73;   // m²
 
@@ -210,6 +229,20 @@ export default function PediatricScalingPage() {
 
       <div className="relative max-w-5xl mx-auto px-6 py-12">
         {/* Header */}
+        {/* Safety Note */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-6 mb-12 flex gap-4"
+        >
+          <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="text-rose-500" size={20} />
+          </div>
+          <p className="text-sm text-rose-200 leading-relaxed">
+            {SAFETY_NOTE}
+          </p>
+        </motion.div>
+
         <header className="mb-12">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -282,6 +315,26 @@ export default function PediatricScalingPage() {
                     Mosteller Formula: √[(Height × Weight) / 3600]
                   </p>
                 </div>
+              </div>
+            </section>
+
+            <section className="bg-slate-900/50 border border-slate-800 rounded-3xl p-6 backdrop-blur-sm">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-cyan-400 mb-6 flex items-center gap-2">
+                <BookOpen size={14} /> COG Age Constraints
+              </h2>
+              <div className="space-y-4">
+                {Object.entries(COG_CONSTRAINTS).map(([organ, constraints]) => (
+                  <div key={organ}>
+                    <h3 className="text-[10px] font-bold uppercase text-slate-500 mb-2">{organ}</h3>
+                    <div className="space-y-1">
+                      {constraints.map((c, i) => (
+                        <div key={i} className={`text-[11px] p-2 rounded ${age <= c.maxAge ? 'bg-cyan-500/10 text-cyan-300' : 'text-slate-400'}`}>
+                          {c.desc}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             </section>
 

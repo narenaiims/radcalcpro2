@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BookOpen, ChevronRight, GraduationCap, Calculator, Activity, AlertTriangle, Printer } from 'lucide-react';
+import { BookOpen, ChevronRight, GraduationCap, Calculator, Activity, AlertTriangle, Printer, Info, ShieldAlert, Share2 } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
 import { RadiobiologyData } from '../src/data/radiobiologyData';
 import TumourSelector from '@/components/TumourSelector';
@@ -9,8 +9,99 @@ import { AnimatedNumber } from "@/src/components/AnimatedNumber";
 import { useReactToPrint } from 'react-to-print';
 import { PrintReport } from '@/src/components/PrintReport';
 import { useRxContext } from '@/src/context/RadiobiologyContext';
+import { checkClinicalAlerts } from '../src/services/clinicalAlerts';
+import { getClinicalSummary } from '../src/services/clinicalReasoning';
+import { saveCalculation } from '../src/services/auditService';
 
 const STORAGE_KEY = 'radonco_eqd2_state_v2';
+
+// ── Landmark Trials Database ─────────────────────────────────────────────────
+const LANDMARK_TRIALS = [
+  { name: 'CHHiP', fx: 20, dose: 60, ab: 1.5, eqd2: 77.1, endpoint: 'Prostate (Non-inferiority)', outcome: '5yr bPFS 90.6%', ref: 'Dearnaley et al. Lancet 2016' },
+  { name: 'FAST-Forward', fx: 5, dose: 26, ab: 4, eqd2: 39.9, endpoint: 'Breast (Non-inferiority)', outcome: '5yr local relapse 2.1%', ref: 'Brunt et al. Lancet 2020' },
+  { name: 'START-B', fx: 15, dose: 40, ab: 4, eqd2: 44.5, endpoint: 'Breast (Non-inferiority)', outcome: '10yr local relapse 4.3%', ref: 'Haviland et al. Lancet 2013' },
+  { name: 'RTOG 0236', fx: 3, dose: 54, ab: 10, eqd2: 126, endpoint: 'Lung SBRT (Efficacy)', outcome: '3yr primary control 97.6%', ref: 'Timmerman et al. JAMA 2010' },
+  { name: 'PACE-B', fx: 5, dose: 36.25, ab: 1.5, eqd2: 84.6, endpoint: 'Prostate SBRT', outcome: '5yr bPFS 95.8%', ref: 'Tree et al. NEJM 2024' },
+  { name: 'PROFIT', fx: 7, dose: 42.7, ab: 1.5, eqd2: 86.8, endpoint: 'Prostate Hypofrac', outcome: '5yr bPFS 85%', ref: 'Catton et al. JCO 2017' },
+  { name: 'HYPO-RT-PC', fx: 7, dose: 42.7, ab: 1.5, eqd2: 86.8, endpoint: 'Prostate Hypofrac', outcome: '5yr FFF 84%', ref: 'Widmark et al. Lancet 2019' },
+  { name: 'SABR-COMET', fx: 5, dose: 30, ab: 10, eqd2: 45, endpoint: 'Oligomets (OS)', outcome: '5yr OS 42.3%', ref: 'Palma et al. JCO 2020' },
+  { name: 'RTOG 0617', fx: 30, dose: 60, ab: 10, eqd2: 60, endpoint: 'Lung NSCLC (OS)', outcome: 'Standard dose superior to 74Gy', ref: 'Bradley et al. Lancet Oncol 2015' }
+];
+
+// ── Visual Components ────────────────────────────────────────────────────────
+
+const BioGauge: React.FC<{ value: number; threshold: number; label: string; unit: string }> = ({ value, threshold, label, unit }) => {
+  const pct = Math.min(100, Math.max(0, (value / threshold) * 100));
+  const radius = 40;
+  const circumference = Math.PI * radius;
+  const offset = circumference * (1 - pct / 100);
+  
+  let color = '#ef4444'; 
+  if (pct >= 95) color = '#10b981'; 
+  else if (pct >= 80) color = '#f59e0b'; 
+
+  return (
+    <div className="flex flex-col items-center">
+      <svg viewBox="0 0 100 55" className="w-full max-w-[160px] overflow-visible">
+        <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#334155" strokeWidth="8" strokeLinecap="round" />
+        <path 
+          d="M 10 50 A 40 40 0 0 1 90 50" 
+          fill="none" 
+          stroke={color} 
+          strokeWidth="8" 
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          className="transition-all duration-1000 ease-out"
+        />
+        <text x="50" y="42" textAnchor="middle" className="text-xl font-black fill-white">{pct.toFixed(0)}%</text>
+        <text x="50" y="54" textAnchor="middle" className="text-[8px] fill-slate-400 uppercase tracking-widest">{label}</text>
+      </svg>
+      <div className="text-[10px] text-slate-500 mt-1 text-center">
+        Target: {threshold} {unit}
+      </div>
+    </div>
+  );
+};
+
+const RepopChart: React.FC<{ T: number; Tk: number; Tp: number }> = ({ T, Tk, Tp }) => {
+  const maxT = Math.max(T + 14, Tk + 14);
+  const points = [];
+  for (let t = 0; t <= maxT; t += 2) {
+    const n = t > Tk ? Math.pow(2, (t - Tk) / Tp) : 1;
+    points.push({ t, n });
+  }
+  
+  const maxN = Math.max(2, points[points.length - 1].n);
+  const width = 200;
+  const height = 60;
+  
+  const getX = (t: number) => (t / maxT) * width;
+  const getY = (n: number) => height - (n / maxN) * height;
+  
+  const pathD = `M ${points.map(p => `${getX(p.t)},${getY(p.n)}`).join(' L ')}`;
+  const currentN = T > Tk ? Math.pow(2, (T - Tk) / Tp) : 1;
+  
+  return (
+    <div className="mt-4">
+      <div className="flex justify-between text-[9px] text-slate-500 mb-1">
+        <span>Day 0</span>
+        <span>Tk (Day {Tk})</span>
+        <span>Day {maxT}</span>
+      </div>
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-[60px] overflow-visible border-b border-l border-slate-700">
+        <line x1={getX(Tk)} y1={0} x2={getX(Tk)} y2={height} stroke="#ef4444" strokeWidth="1" strokeDasharray="2 2" />
+        <line x1={getX(T)} y1={0} x2={getX(T)} y2={height} stroke="#38bdf8" strokeWidth="1" strokeDasharray="2 2" />
+        <path d={pathD} fill="none" stroke="#a78bfa" strokeWidth="2" />
+        <circle cx={getX(T)} cy={getY(currentN)} r="3" fill="#38bdf8" />
+      </svg>
+      <div className="flex justify-between text-[9px] text-slate-500 mt-1">
+        <span>Clonogens: 1x</span>
+        <span className="text-amber-400">At end of RT: {currentN.toFixed(1)}x</span>
+      </div>
+    </div>
+  );
+};
 
 // ── Sidebar Data ─────────────────────────────────────────────────────────────
 const SIDEBAR_DATA: KeyFactSection[] = [
@@ -97,8 +188,8 @@ function interpretEQD2(eqd2: number, ab: number): { text: string; level: 'pass' 
   }
   if (ab <= 2) {
     // CNS, spinal cord, prostate (low α/β)
-    if (eqd2 < 60)  return { text: 'Below curative threshold for prostate cancer', level: 'fail' };
-    if (eqd2 < 76)  return { text: 'Conventional-equivalent prostate dose (≥74 Gy EQD2₁.₅)', level: 'pass' };
+    if (eqd2 < 74)  return { text: 'Below curative threshold for prostate cancer', level: 'fail' };
+    if (eqd2 < 78)  return { text: 'Conventional-equivalent prostate dose (≥74 Gy EQD2₁.₅)', level: 'pass' };
     if (eqd2 < 90)  return { text: 'Dose-escalated prostate — trial-supported', level: 'pass' };
     return           { text: 'Very high EQD2 — verify late OAR constraints carefully', level: 'warn' };
   }
@@ -120,8 +211,9 @@ const EQD2Page: React.FC = () => {
   const [fractions,  setFractions]  = React.useState('25');
   const selectedTumour = rx.selectedTumour;
   const setSelectedTumour = (entry: RadiobiologyData | null) => setTumourSite(entry?.site ?? '', entry?.subsite ?? '', entry);
-  const [aiText,     setAiText]     = React.useState('');
-  const [aiLoading,  setAiLoading]  = React.useState(false);
+  const [aiText, setAiText] = React.useState<any>(null);
+  const [aiLoading, setAiLoading] = React.useState(false);
+  const [alerts, setAlerts] = React.useState<string[]>([]);
   const [showFormula, setShowFormula] = React.useState(false);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const contentRef = React.useRef<HTMLDivElement>(null);
@@ -129,15 +221,17 @@ const EQD2Page: React.FC = () => {
 
   // ── Persistence ───────────────────────────────────────────────────────
   React.useEffect(() => {
-    try {
-      const s = localStorage.getItem(STORAGE_KEY);
-      if (s) {
-        const p = JSON.parse(s);
-        if (p.dosePerFx) setDosePerFx(String(p.dosePerFx));
-        if (p.fractions)  setFractions(String(p.fractions));
-        if (p.alphaBeta)  setAlphaBeta(String(p.alphaBeta));
-      }
-    } catch { /* ignore */ }
+    if (Object.keys({}).length === 0) {
+      try {
+        const s = localStorage.getItem(STORAGE_KEY);
+        if (s) {
+          const p = JSON.parse(s);
+          if (p.dosePerFx) setDosePerFx(String(p.dosePerFx));
+          if (p.fractions)  setFractions(String(p.fractions));
+          if (p.alphaBeta)  setAlphaBeta(String(p.alphaBeta));
+        }
+      } catch { /* ignore */ }
+    }
   }, []);
 
   React.useEffect(() => {
@@ -169,6 +263,45 @@ const EQD2Page: React.FC = () => {
 
   const interp    = React.useMemo(() => ab > 0 && eqd2 > 0 ? interpretEQD2(eqd2, ab) : null, [eqd2, ab]);
 
+  const valid = dpf > 0 && n > 0 && ab > 0;
+
+  React.useEffect(() => {
+    if (valid && 'vibrate' in navigator) {
+      navigator.vibrate(50);
+    }
+  }, [totalDose, bed, eqd2, valid]);
+
+  // ── Advanced Features Logic ────────────────────────────────────────────
+  const matchedTrial = React.useMemo(() => {
+    if (ab === 0 || eqd2 === 0) return null;
+    let closest = null;
+    let minDiff = Infinity;
+    
+    for (const trial of LANDMARK_TRIALS) {
+      const isLowAb = ab <= 4;
+      const trialIsLowAb = trial.ab <= 4;
+      if (isLowAb !== trialIsLowAb) continue;
+      
+      const diff = Math.abs(trial.eqd2 - eqd2);
+      if (diff < 5 && diff < minDiff) {
+        minDiff = diff;
+        closest = trial;
+      }
+    }
+    return closest;
+  }, [eqd2, ab]);
+
+  const lateBED = React.useMemo(() => dpf > 3 ? totalDose * (1 + dpf / 3) : 0, [totalDose, dpf]);
+  const therapeuticRatio = React.useMemo(() => lateBED > 0 && bed > 0 ? bed / lateBED : 0, [bed, lateBED]);
+
+  const gaugeConfig = React.useMemo(() => {
+    if (ab <= 2) return { threshold: 74, label: 'Prostate Radical', unit: 'Gy EQD2', isBed: false };
+    if (ab >= 8 && selectedTumour?.site.toLowerCase().includes('head')) return { threshold: 66, label: 'H&N Radical', unit: 'Gy EQD2', isBed: false };
+    if (ab >= 8 && selectedTumour?.site.toLowerCase().includes('cervix')) return { threshold: 85, label: 'Cervix Combined', unit: 'Gy EQD2', isBed: false };
+    if (ab >= 8 && dpf >= 10) return { threshold: 100, label: 'Lung SBRT', unit: 'Gy BED', isBed: true };
+    return null;
+  }, [ab, selectedTumour, dpf]);
+
   // ── Sensitivity table (±0.2 Gy/fx steps) ────────────────────────────
   const sensitivityRows = React.useMemo(() => {
     if (ab === 0 || dpf === 0) return [];
@@ -192,56 +325,42 @@ const EQD2Page: React.FC = () => {
     });
   }, [dpf, n, ab, totalDose]);
 
-  // ── AI explanation ───────────────────────────────────────────────────
-  const generateClinicalSummary = useCallback(() => {
-    return `This fractionation schedule delivers a total dose of ${totalDose.toFixed(1)} Gy in ${n} fractions of ${dpf.toFixed(2)} Gy. With an α/β ratio of ${ab} Gy, the calculated BED is ${bed.toFixed(2)} Gy and the EQD2 is ${eqd2.toFixed(2)} Gy. This schedule is typical for ${ab >= 8 ? 'tumour' : ab >= 4 ? 'breast/sarcoma' : ab > 2 ? 'late-tissue' : 'CNS/prostate'} indications. Ensure OAR constraints are verified based on the total EQD2 dose.`;
-  }, [totalDose, n, dpf, ab, bed, eqd2]);
+  // ── Clinical Alerts ──────────────────────────────────────────────────
+  React.useEffect(() => {
+    if (valid) {
+      setAlerts(checkClinicalAlerts({ dfx: dpf, fractions: n, alphaBeta: ab, eqd2, site: selectedTumour?.site.toLowerCase() }));
+    } else {
+      setAlerts([]);
+    }
+  }, [dpf, n, ab, eqd2, valid, selectedTumour]);
 
+  // ── AI explanation ───────────────────────────────────────────────────
   const fetchAI = async () => {
     if (aiLoading || ab === 0) return;
     
-    if (!import.meta.env.VITE_GEMINI_API_KEY) {
-      setAiText(generateClinicalSummary());
-      return;
-    }
-
     setAiLoading(true);
-    setAiText('');
+    setAiText(null);
     try {
-      const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY ?? '' });
-      const prompt = `You are a radiation oncology educator. Explain the radiobiological significance of the following fractionation schedule concisely for a postgraduate trainee:
- 
-Schedule: ${n} fractions × ${dpf} Gy = ${totalDose.toFixed(1)} Gy total
-α/β ratio: ${ab} Gy
-BED${ab}: ${bed.toFixed(2)} Gy
-EQD2${ab}: ${eqd2.toFixed(2)} Gy
- 
-Cover: (1) what tissue this α/β represents, (2) clinical context where this schedule is used, (3) key OAR consideration if relevant, (4) comparison with standard 2 Gy/fx fractionation. Be concise — 4–6 sentences max. No markdown headers.`;
- 
-      const resp = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
-        contents: prompt,
+      const summary = await getClinicalSummary(`Analyze this schedule: ${n} fx x ${dpf} Gy = ${totalDose.toFixed(1)} Gy total. Alpha/Beta: ${ab}. BED: ${bed.toFixed(2)}. EQD2: ${eqd2.toFixed(2)}.`);
+      setAiText(summary);
+      await saveCalculation({
+        module: 'EQD2 Calculator',
+        inputs: { dosePerFx: dpf, fractions: n, alphaBeta: ab },
+        outputs: { totalDose, bed, eqd2 },
+        flag: summary.flag
       });
-      setAiText(resp.text ?? 'No response returned.');
-      logCalculation(
-        'EQD2 Calculator',
-        `BED ${bed.toFixed(1)} Gy, EQD2 ${eqd2.toFixed(1)} Gy`,
-        { dosePerFx: dpf, fractions: n, alphaBeta: ab, totalDose, bed, eqd2 }
-      );
-    } catch {
-      setAiText(generateClinicalSummary());
+    } catch (e) {
+      console.error(e);
     } finally {
       setAiLoading(false);
     }
   };
 
   const copyToClipboard = () => {
-    const text = `Schedule: ${n} fractions × ${dpf} Gy = ${totalDose.toFixed(1)} Gy total\nα/β ratio: ${ab} Gy\nBED: ${bed.toFixed(2)} Gy\nEQD2: ${eqd2.toFixed(2)} Gy\n\nInterpretation: ${aiText || generateClinicalSummary()}`;
+    const text = `Schedule: ${n} fractions × ${dpf} Gy = ${totalDose.toFixed(1)} Gy total\nα/β ratio: ${ab} Gy\nBED: ${bed.toFixed(2)} Gy\nEQD2: ${eqd2.toFixed(2)} Gy\n\nInterpretation: ${aiText?.summary || ''}`;
     navigator.clipboard.writeText(text);
     alert('Copied to clipboard!');
   };
-
-  const valid = dpf > 0 && n > 0 && ab > 0;
 
   return (
     <div className="space-y-8 animate-slam">
@@ -277,6 +396,22 @@ Cover: (1) what tissue this α/β represents, (2) clinical context where this sc
             {showFormula ? 'Hide Formula' : 'View Formula'}
           </button>
           <button
+            onClick={() => {
+              if (navigator.share) {
+                navigator.share({
+                  title: 'RadCalcPro EQD2 Calculation',
+                  text: `Check out this EQD2 calculation: ${totalDose.toFixed(1)} Gy in ${n} fx (EQD2: ${eqd2.toFixed(1)} Gy)`,
+                });
+              } else {
+                alert('Share functionality not supported.');
+              }
+            }}
+            className="btn-premium btn-outline py-2 flex items-center gap-2"
+          >
+            <Share2 className="w-4 h-4" />
+            Share
+          </button>
+          <button
             onClick={() => reactToPrintFn()}
             className="btn-premium btn-primary py-2 flex items-center gap-2"
           >
@@ -307,7 +442,7 @@ Cover: (1) what tissue this α/β represents, (2) clinical context where this sc
                 <div className="space-y-2">
                   <label className="label-micro">Dose / Fx (Gy)</label>
                   <input
-                    type="number" step="0.01" min="0.1" max="30"
+                    type="number" step="0.01" min="0.1" max="30" inputMode="decimal"
                     value={dosePerFx}
                     onChange={e => setDosePerFx(e.target.value)}
                     className="input-premium"
@@ -316,7 +451,7 @@ Cover: (1) what tissue this α/β represents, (2) clinical context where this sc
                 <div className="space-y-2">
                   <label className="label-micro">Fractions</label>
                   <input
-                    type="number" step="1" min="1" max="100"
+                    type="number" step="1" min="1" max="100" inputMode="decimal"
                     value={fractions}
                     onChange={e => setFractions(e.target.value)}
                     className="input-premium"
@@ -342,7 +477,7 @@ Cover: (1) what tissue this α/β represents, (2) clinical context where this sc
                 <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
                   <label className="label-micro">Manual α/β Ratio (Gy)</label>
                   <input
-                    type="number" step="0.1" min="0.5" max="20"
+                    type="number" step="0.1" min="0.5" max="20" inputMode="decimal"
                     value={alphaBeta}
                     onChange={e => {
                       const value = e.target.value;
@@ -413,12 +548,48 @@ Cover: (1) what tissue this α/β represents, (2) clinical context where this sc
                   </div>
                   <div className="card-premium p-6 bg-white/[0.02] flex flex-col items-center text-center">
                     <p className="label-micro opacity-40 mb-2">EQD2<sub>{ab}</sub></p>
-                    <p className="text-4xl font-black text-white font-mono leading-none">
+                    <p className="text-4xl font-black text-white font-mono leading-none mb-4">
                       <AnimatedNumber value={eqd2} />
                     </p>
-                    <p className="text-xs text-slate-500 mt-2">Gy (Normalized)</p>
+                    {gaugeConfig ? (
+                      <BioGauge value={gaugeConfig.isBed ? bed : eqd2} threshold={gaugeConfig.threshold} label={gaugeConfig.label} unit={gaugeConfig.unit} />
+                    ) : (
+                      <p className="text-xs text-slate-500 mt-2">Gy (Normalized)</p>
+                    )}
                   </div>
                 </div>
+
+                {/* Hypofractionation Safety Checker */}
+                {dpf > 3 && (
+                  <div className="card-premium p-4 border-l-4 border-l-amber-500 bg-amber-500/5 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <ShieldAlert className="w-4 h-4 text-amber-500" />
+                      <h3 className="text-sm font-bold text-white">Hypofractionation Safety Check</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">Late Tissue BED₃</p>
+                        <p className="text-lg font-mono font-bold text-amber-400">{lateBED.toFixed(1)} Gy</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">Therapeutic Ratio</p>
+                        <p className={`text-lg font-mono font-bold ${therapeuticRatio < 1.2 ? 'text-red-400' : 'text-emerald-400'}`}>
+                          {therapeuticRatio.toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                    {therapeuticRatio < 1.2 && (
+                      <p className="text-xs text-red-400">
+                        ⚠️ Therapeutic ratio (Tumour BED / Late BED) is below 1.2. High risk of late toxicity relative to tumour control.
+                      </p>
+                    )}
+                    {dpf > 8 && (
+                      <p className="text-xs text-amber-400/80 mt-2 border-t border-amber-500/20 pt-2">
+                        <strong>Note:</strong> At {dpf} Gy/fx, the standard LQ model may overestimate cell kill. Consider using the Universal Survival Curve (USC) or modified LQ-L model for SBRT doses {'>'}8 Gy.
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {/* Repopulation correction */}
                 <div className="card-premium p-4 space-y-4">
@@ -430,21 +601,28 @@ Cover: (1) what tissue this α/β represents, (2) clinical context where this sc
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label className="label-micro">Tk (days)</label>
-                        <input type="number" value={tk} onChange={e => setTk(parseFloat(e.target.value))} className="input-premium" />
+                        <input type="number" inputMode="decimal" value={tk} onChange={e => setTk(parseFloat(e.target.value))} className="input-premium" />
                       </div>
                       <div className="space-y-1">
                         <label className="label-micro">Tp (days)</label>
-                        <input type="number" value={tp} onChange={e => setTp(parseFloat(e.target.value))} className="input-premium" />
+                        <input type="number" inputMode="decimal" value={tp} onChange={e => setTp(parseFloat(e.target.value))} className="input-premium" />
                       </div>
                     </div>
                   )}
                   {useRepop && (
-                    <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                      <p className="label-micro opacity-60">BED<sub>rep</sub></p>
-                      <p className={`text-xl font-bold ${T < tk ? 'text-amber-500' : 'text-white'}`}>
-                        {bedRep.toFixed(2)} Gy
-                        {T < tk && <span className="ml-2 text-xs">⚠️ Repopulation not yet active</span>}
+                    <div className="pt-2 border-t border-white/5">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="label-micro opacity-60">BED<sub>rep</sub></p>
+                        <p className={`text-xl font-bold ${T < tk ? 'text-amber-500' : 'text-white'}`}>
+                          {bedRep.toFixed(2)} Gy
+                          {T < tk && <span className="ml-2 text-xs">⚠️ Repopulation not yet active</span>}
+                        </p>
+                      </div>
+                      <p className="text-[10px] text-slate-400 leading-tight">
+                        Formula: BED<sub>rep</sub> = BED - (ln(2)/Tp) × (T - Tk)<br/>
+                        <span className="text-amber-500/80">Note: T = {T.toFixed(1)} days (calculated as n × 7/5, assuming exactly 5 fx/week). For 6 fx/week or non-standard gaps, T must be actual calendar days.</span>
                       </p>
+                      <RepopChart T={T} Tk={tk} Tp={tp} />
                     </div>
                   )}
                 </div>
@@ -464,6 +642,33 @@ Cover: (1) what tissue this α/β represents, (2) clinical context where this sc
                     </div>
                   </div>
                 )}
+
+                {/* Clinical Trial Comparison Panel */}
+                {matchedTrial && (
+                  <div className="card-premium p-4 border-l-4 border-l-teal bg-teal/5 space-y-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <BookOpen className="w-4 h-4 text-teal" />
+                      <h3 className="text-sm font-bold text-white">Nearest Landmark Trial</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">Trial</p>
+                        <p className="text-sm font-bold text-white">{matchedTrial.name}</p>
+                        <p className="text-xs text-slate-400">{matchedTrial.dose} Gy / {matchedTrial.fx} fx (EQD2: {matchedTrial.eqd2} Gy)</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">Endpoint</p>
+                        <p className="text-sm text-white">{matchedTrial.endpoint}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">Outcome</p>
+                        <p className="text-sm text-white">{matchedTrial.outcome}</p>
+                        <p className="text-[10px] text-slate-500 mt-1 italic">{matchedTrial.ref}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
               </section>
 
               {/* Sensitivity */}

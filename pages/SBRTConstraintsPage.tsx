@@ -257,7 +257,7 @@ const SBRT_SITES: SBRTSite[] = [
         unit: 'Gy', priority: 'Absolute', evidence: '3',
         endpoint: 'Myelopathy', grade: 'G4',
         source: ['Sahgal 2012'], ab: 2.0,
-        notes: 'Sahgal 2012 re-irradiation rule: Dmax ≤ 14 Gy for 3fx, ≤ 21.9 Gy for 5fx. Re-RT requires multidisciplinary review and physics peer review.'
+        notes: 'Sahgal 2012 re-irradiation rule (cumulative): Thecal sac Dmax ≤ 25 Gy EQD2₂ cumulative (for cases with prior conventional RT). This equates to SBRT Dmax ≤ 14 Gy for 3fx, ≤ 21.9 Gy for 5fx (if prior was ≤ 45 Gy EQD2₂). Do not conflate with de-novo RTOG 0631 point constraint. Re-RT requires multidisciplinary review and physics peer review.'
       },
       {
         organ: 'Cauda Equina', type: 'Serial',

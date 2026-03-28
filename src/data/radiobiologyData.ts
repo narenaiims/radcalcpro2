@@ -16,7 +16,7 @@ export interface RadiobiologyData {
   abLow?: number;
   abHigh?: number;
   tk?: number;
-  k?: number;
+  k?: number; // Repopulation rate (BED loss per day, Gy/day)
   abSource?: string;
   repopNote?: string;
   clinicalContext?: string;

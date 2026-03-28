@@ -36,10 +36,12 @@ import React, {
   useMemo,
   ReactNode,
 } from 'react';
+import { getHistory, saveHistory as saveHistoryDB, saveAuditLog, CalcHistoryEntry } from '../lib/db';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
 export type TreatmentIntent = 'Radical' | 'Adjuvant' | 'Palliative' | 'SBRT' | 'SRS' | 'Brachytherapy';
+export type ThemeMode = 'light' | 'dark' | 'dim';
 
 export interface RxState {
   /** Anonymised label — initials, MRN suffix, or free text. Never full name. */
@@ -70,10 +72,12 @@ export interface RxState {
   tk: number;
   /** Repopulation rate (Gy EQD2/day) */
   kValue: number;
+  /** Theme mode */
+  theme: ThemeMode;
 }
 
 export interface HistoryEntry {
-  id: string;            // timestamp-based UUID
+  id: string;            // string ID for UI
   ts: number;            // epoch ms
   tool: string;          // e.g. 'EQD2', 'HDR Brachy'
   patientLabel: string;
@@ -96,6 +100,7 @@ const DEFAULT_RX: RxState = {
   ebrt: { totalDose: 0, dosePerFx: 0, fractions: 0 },
   tk: 28,
   kValue: 0.6,
+  theme: 'dark',
 };
 
 // ─── Presets ─────────────────────────────────────────────────────────────────
@@ -195,6 +200,7 @@ type RxAction =
   | { type: 'SET_TUMOUR_SITE'; site: string; subsite: string; entry: RadiobiologyData | null }
   | { type: 'SET_EBRT'; ebrt: RxState['ebrt'] }
   | { type: 'SET_REPOP'; tk: number; kValue: number }
+  | { type: 'SET_THEME'; theme: ThemeMode }
   | { type: 'APPLY_PRESET'; preset: RxPreset }
   | { type: 'LOAD'; state: RxState }
   | { type: 'RESET' };
@@ -210,6 +216,7 @@ function rxReducer(state: RxState, action: RxAction): RxState {
     case 'SET_TUMOUR_SITE': return { ...state, tumourSite: action.site, tumourSubsite: action.subsite, selectedTumour: action.entry };
     case 'SET_EBRT':      return { ...state, ebrt: action.ebrt };
     case 'SET_REPOP':     return { ...state, tk: action.tk, kValue: action.kValue };
+    case 'SET_THEME':     return { ...state, theme: action.theme };
     case 'APPLY_PRESET':  return {
       ...state,
       tumourSite: action.preset.site,
@@ -271,6 +278,7 @@ interface RadiobiologyContextValue {
   setTumourSite: (site: string, subsite: string, entry: RadiobiologyData | null) => void;
   setEBRT: (ebrt: RxState['ebrt']) => void;
   setRepop: (tk: number, kValue: number) => void;
+  setTheme: (theme: ThemeMode) => void;
   applyPreset: (preset: RxPreset) => void;
   reset: () => void;
 
@@ -299,12 +307,30 @@ export const RadiobiologyProvider: React.FC<{ children: ReactNode }> = ({ childr
     return DEFAULT_RX;
   });
 
-  const [history, setHistory] = useState<HistoryEntry[]>(loadHistory);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+
+  // Load history from IndexedDB on mount
+  useEffect(() => {
+    getHistory().then((dbEntries: CalcHistoryEntry[]) => {
+      const uiEntries: HistoryEntry[] = dbEntries.map(e => ({
+        id: String(e.id),
+        ts: e.timestamp,
+        tool: e.calculatorId,
+        patientLabel: e.inputs.patientLabel || '',
+        summary: e.outputs.summary || '',
+        detail: e.inputs
+      }));
+      setHistory(uiEntries);
+    });
+  }, []);
 
   // Persist rx state on every change
   useEffect(() => {
     try {
       localStorage.setItem(RX_STORAGE_KEY, JSON.stringify(rx));
+      // Apply theme to document
+      document.documentElement.classList.remove('light', 'dark', 'dim');
+      document.documentElement.classList.add(rx.theme);
     } catch { /* storage full */ }
   }, [rx]);
 
@@ -351,12 +377,13 @@ export const RadiobiologyProvider: React.FC<{ children: ReactNode }> = ({ childr
   const setTumourSite   = useCallback((site: string, subsite: string, entry: RadiobiologyData | null) => dispatch({ type: 'SET_TUMOUR_SITE', site, subsite, entry }), []);
   const setEBRT         = useCallback((ebrt: RxState['ebrt']) => dispatch({ type: 'SET_EBRT', ebrt }), []);
   const setRepop        = useCallback((tk: number, kValue: number) => dispatch({ type: 'SET_REPOP', tk, kValue }), []);
+  const setTheme        = useCallback((theme: ThemeMode) => dispatch({ type: 'SET_THEME', theme }), []);
   const applyPreset     = useCallback((preset: RxPreset) => dispatch({ type: 'APPLY_PRESET', preset }), []);
   const reset           = useCallback(() => dispatch({ type: 'RESET' }), []);
 
   // ── History ─────────────────────────────────────────────────────────────
   const logCalculation = useCallback(
-    (tool: string, summary: string, detail: Record<string, string | number>) => {
+    async (tool: string, summary: string, detail: Record<string, string | number>) => {
       const entry: HistoryEntry = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         ts: Date.now(),
@@ -365,11 +392,24 @@ export const RadiobiologyProvider: React.FC<{ children: ReactNode }> = ({ childr
         summary,
         detail,
       };
-      setHistory(prev => {
-        const next = [entry, ...prev].slice(0, HISTORY_MAX);
-        saveHistory(next);
-        return next;
+      
+      // Save to IndexedDB
+      await saveHistoryDB({
+        timestamp: entry.ts,
+        calculatorId: tool,
+        inputs: { ...detail, patientLabel: rx.patientLabel },
+        outputs: { summary },
+        version: 'v2.1.0'
       });
+      
+      // Save audit log
+      await saveAuditLog({
+        timestamp: Date.now(),
+        action: 'CALCULATION',
+        details: { tool, summary, patientLabel: rx.patientLabel }
+      });
+
+      setHistory(prev => [entry, ...prev].slice(0, HISTORY_MAX));
     },
     [rx.patientLabel]
   );
@@ -392,14 +432,14 @@ export const RadiobiologyProvider: React.FC<{ children: ReactNode }> = ({ childr
     totalDose, bed, eqd2,
     bedRepop, eqd2Repop, repopPenalty,
     setPatientLabel, setTumourAB, setOarAB, setDosePerFx,
-    setFractions, setIntent, setTumourSite, setEBRT, setRepop,
+    setFractions, setIntent, setTumourSite, setEBRT, setRepop, setTheme,
     applyPreset, reset,
     history, logCalculation, clearHistory, removeFromHistory,
   }), [
     rx, totalDose, bed, eqd2,
     bedRepop, eqd2Repop, repopPenalty,
     setPatientLabel, setTumourAB, setOarAB, setDosePerFx,
-    setFractions, setIntent, setTumourSite, setEBRT, setRepop,
+    setFractions, setIntent, setTumourSite, setEBRT, setRepop, setTheme,
     applyPreset, reset,
     history, logCalculation, clearHistory, removeFromHistory,
   ]);

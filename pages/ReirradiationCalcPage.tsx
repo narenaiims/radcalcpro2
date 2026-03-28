@@ -163,9 +163,8 @@ const calcEQD2 = (total: number, dpf: number, ab: number) =>
 function getRecoveryFraction(model: OARModel, months: number): number {
   if (model.recoveryModel === 'none') return 0;
   const targetRecovery = Math.min(model.maxRecovery, model.recoveryFraction);
-  if (months <= 0) return 0;
-  if (months >= model.recoveryThresholdMonths) return targetRecovery;
-  return (months / model.recoveryThresholdMonths) * targetRecovery;
+  if (months < model.recoveryThresholdMonths) return 0;
+  return targetRecovery;
 }
 
 // ── Status helper ─────────────────────────────────────────────────────────
@@ -293,7 +292,7 @@ const ReirradiationCalcPage: React.FC = () => {
             >
               <span className="block">{o.name}</span>
               <span className={`text-[11px] font-normal ${oarId === o.id ? 'text-blue-200' : 'text-slate-400'}`}>
-                α/β={o.ab} · BED limit {o.bedLimit} Gy
+                α/β={o.ab} · {o.recoveryModel === 'sahgal' ? `EQD2 limit ${o.eqd2Limit}` : `BED limit ${o.bedLimit}`} Gy
               </span>
             </button>
           ))}
@@ -383,14 +382,62 @@ const ReirradiationCalcPage: React.FC = () => {
                 </span>
               </div>
               {oar.recoveryModel !== 'none' && (
-                <div className="mt-1">
-                  <p className="text-[11px] text-slate-400">
-                    Threshold: {oar.recoveryThresholdMonths} months.
-                    Target Recovery = {(Math.min(oar.maxRecovery, oar.recoveryFraction) * 100).toFixed(0)}% after threshold.
-                    Effective BED1 = {calc.effectBed1.toFixed(1)} Gy
-                  </p>
-                  <p className="text-[10px] text-blue-600/70 italic mt-0.5">
-                    Recovery is linearly interpolated to threshold interval; values before threshold represent partial recovery estimates.
+                <div className="mt-3">
+                  <div className="flex justify-between items-end mb-1">
+                    <p className="text-[11px] text-slate-500 font-semibold">Recovery Model: Step Function</p>
+                    <p className="text-[10px] text-slate-400">
+                      Threshold: {oar.recoveryThresholdMonths}m · Target: {(Math.min(oar.maxRecovery, oar.recoveryFraction) * 100).toFixed(0)}%
+                    </p>
+                  </div>
+                  
+                  {/* Step Function Graph */}
+                  <div className="relative h-[40px] w-full border-b border-l border-slate-300 ml-6 mb-4 mt-2" style={{ width: 'calc(100% - 24px)' }}>
+                    {/* X-axis labels */}
+                    <div className="absolute bottom-[-16px] left-0 text-[9px] text-slate-400 transform -translate-x-1/2">0m</div>
+                    <div className="absolute bottom-[-16px] text-[9px] text-slate-400 font-bold" style={{ left: `${(oar.recoveryThresholdMonths / Math.max(12, mo + 2)) * 100}%`, transform: 'translateX(-50%)' }}>{oar.recoveryThresholdMonths}m</div>
+                    <div className="absolute bottom-[-16px] right-0 text-[9px] text-slate-400 transform translate-x-1/2">{Math.max(12, mo + 2)}m</div>
+                    
+                    {/* Y-axis labels */}
+                    <div className="absolute top-[-4px] left-[-24px] text-[9px] text-slate-400">{(Math.min(oar.maxRecovery, oar.recoveryFraction) * 100)}%</div>
+                    <div className="absolute bottom-[-4px] left-[-16px] text-[9px] text-slate-400">0%</div>
+                    
+                    {/* The Step Line */}
+                    <svg className="absolute inset-0 h-full w-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 40">
+                      <polyline 
+                        points={`0,40 ${(oar.recoveryThresholdMonths / Math.max(12, mo + 2)) * 100},40 ${(oar.recoveryThresholdMonths / Math.max(12, mo + 2)) * 100},0 100,0`}
+                        fill="none"
+                        stroke="#3b82f6"
+                        strokeWidth="2"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      {/* Current position marker */}
+                      <circle 
+                        cx={`${(mo / Math.max(12, mo + 2)) * 100}`} 
+                        cy={mo >= oar.recoveryThresholdMonths ? 0 : 40} 
+                        r="4" 
+                        fill={mo >= oar.recoveryThresholdMonths ? "#22c55e" : "#f59e0b"} 
+                        stroke="#fff"
+                        strokeWidth="1.5"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </svg>
+                  </div>
+
+                  {mo >= oar.recoveryThresholdMonths - 2 && mo < oar.recoveryThresholdMonths && (
+                    <div className="mt-4 bg-amber-50 border border-amber-200 rounded px-3 py-2 flex items-start gap-2">
+                      <div className="mt-0.5 text-amber-500">⚠️</div>
+                      <div>
+                        <p className="text-xs font-bold text-amber-800">Partial Recovery Zone (No Credit Yet)</p>
+                        <p className="text-[11px] text-amber-700 leading-tight mt-0.5">
+                          Interval is {mo} months. Recovery credit ({(Math.min(oar.maxRecovery, oar.recoveryFraction) * 100).toFixed(0)}%) activates at {oar.recoveryThresholdMonths} months. 
+                          Exact days remaining: <span className="font-bold">{Math.ceil((oar.recoveryThresholdMonths - mo) * 30.44)} days</span>.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <p className="text-[10px] text-blue-600/70 italic mt-2">
+                    Recovery is a step-function per {oar.recoveryModel === 'sahgal' ? 'Sahgal 2012' : 'Nieder 2013'}; 0% recovery is credited for intervals below the threshold.
                   </p>
                 </div>
               )}
@@ -426,19 +473,19 @@ const ReirradiationCalcPage: React.FC = () => {
 
             <div className="grid grid-cols-3 gap-3 text-center border-b border-current/10 pb-3 mb-3">
               <div>
-                <p className="text-[11px] uppercase tracking-wider opacity-60">BED1 effective</p>
-                <p className="text-lg font-black num">{calc.effectBed1.toFixed(1)}</p>
-                <p className="text-[11px] opacity-50">Gy{ab}</p>
+                <p className="text-[11px] uppercase tracking-wider opacity-60">{oar.recoveryModel === 'sahgal' ? 'EQD2_1 effective' : 'BED1 effective'}</p>
+                <p className="text-lg font-black num">{oar.recoveryModel === 'sahgal' ? (calc.effectBed1 / (1 + 2 / ab)).toFixed(1) : calc.effectBed1.toFixed(1)}</p>
+                <p className="text-[11px] opacity-50">{oar.recoveryModel === 'sahgal' ? `Gy EQD2` : `Gy${ab}`}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-wider opacity-60">BED2</p>
-                <p className="text-lg font-black num">{calc.bed2.toFixed(1)}</p>
-                <p className="text-[11px] opacity-50">Gy{ab}</p>
+                <p className="text-[11px] uppercase tracking-wider opacity-60">{oar.recoveryModel === 'sahgal' ? 'EQD2_2' : 'BED2'}</p>
+                <p className="text-lg font-black num">{oar.recoveryModel === 'sahgal' ? calc.eqd2.toFixed(1) : calc.bed2.toFixed(1)}</p>
+                <p className="text-[11px] opacity-50">{oar.recoveryModel === 'sahgal' ? `Gy EQD2` : `Gy${ab}`}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-wider opacity-60">Cumulative BED</p>
-                <p className="text-2xl font-black num">{calc.cumBED.toFixed(1)}</p>
-                <p className="text-[11px] opacity-50">Gy{ab}</p>
+                <p className="text-[11px] uppercase tracking-wider opacity-60">{oar.recoveryModel === 'sahgal' ? 'Cumulative EQD2' : 'Cumulative BED'}</p>
+                <p className="text-2xl font-black num">{oar.recoveryModel === 'sahgal' ? calc.cumEQD2.toFixed(1) : calc.cumBED.toFixed(1)}</p>
+                <p className="text-[11px] opacity-50">{oar.recoveryModel === 'sahgal' ? `Gy EQD2` : `Gy${ab}`}</p>
               </div>
             </div>
 
@@ -448,10 +495,21 @@ const ReirradiationCalcPage: React.FC = () => {
                   {calc.status === 'pass' ? 'Within limit' : calc.status === 'warn' ? 'Near limit' : 'EXCEEDS LIMIT'}
                 </span>
                 <p className="text-[11px] mt-1 opacity-70">
-                  Limit: {bedLimit} Gy{ab} &nbsp;·&nbsp;
-                  {calc.status !== 'fail'
-                    ? `Headroom: ${calc.headroom.toFixed(1)} Gy`
-                    : `Exceeded by ${(calc.cumBED - bedLimit).toFixed(1)} Gy`}
+                  {oar.recoveryModel === 'sahgal' ? (
+                    <>
+                      Limit: {oar.eqd2Limit} Gy EQD2 &nbsp;·&nbsp;
+                      {calc.status !== 'fail'
+                        ? `Headroom: ${(oar.eqd2Limit - calc.cumEQD2).toFixed(1)} Gy`
+                        : `Exceeded by ${(calc.cumEQD2 - oar.eqd2Limit).toFixed(1)} Gy`}
+                    </>
+                  ) : (
+                    <>
+                      Limit: {bedLimit} Gy{ab} &nbsp;·&nbsp;
+                      {calc.status !== 'fail'
+                        ? `Headroom: ${calc.headroom.toFixed(1)} Gy`
+                        : `Exceeded by ${(calc.cumBED - bedLimit).toFixed(1)} Gy`}
+                    </>
+                  )}
                 </p>
               </div>
               <div className="text-right">
@@ -472,7 +530,7 @@ const ReirradiationCalcPage: React.FC = () => {
             </div>
             <div className="flex justify-between text-[9px] opacity-50 mt-0.5">
               <span>0</span>
-              <span>{bedLimit} Gy (limit)</span>
+              <span>{oar.recoveryModel === 'sahgal' ? `${oar.eqd2Limit} Gy EQD2 (limit)` : `${bedLimit} Gy (limit)`}</span>
             </div>
           </div>
         </div>
@@ -492,8 +550,8 @@ const ReirradiationCalcPage: React.FC = () => {
                   <tr className="text-[11px] text-slate-400 uppercase border-b border-slate-100">
                     <th className="px-3 py-2 text-left">Re-RT dose</th>
                     <th className="px-3 py-2 text-right">d/fx</th>
-                    <th className="px-3 py-2 text-right">BED2</th>
-                    <th className="px-3 py-2 text-right">Cumulative BED</th>
+                    <th className="px-3 py-2 text-right">{oar.recoveryModel === 'sahgal' ? 'EQD2_2' : 'BED2'}</th>
+                    <th className="px-3 py-2 text-right">{oar.recoveryModel === 'sahgal' ? 'Cum EQD2' : 'Cum BED'}</th>
                     <th className="px-3 py-2 text-left">Status</th>
                   </tr>
                 </thead>
@@ -503,8 +561,8 @@ const ReirradiationCalcPage: React.FC = () => {
                       className={r.isCur ? 'bg-blue-50 font-bold text-blue-800' : 'text-slate-700'}>
                       <td className="px-3 py-2 num">{r.dose} Gy{r.isCur && ' ←'}</td>
                       <td className="px-3 py-2 text-right num">{dpf2.toFixed(1)}</td>
-                      <td className="px-3 py-2 text-right num">{r.b2.toFixed(1)}</td>
-                      <td className="px-3 py-2 text-right num">{r.cum.toFixed(1)}</td>
+                      <td className="px-3 py-2 text-right num">{oar.recoveryModel === 'sahgal' ? (r.b2 / (1 + 2 / ab)).toFixed(1) : r.b2.toFixed(1)}</td>
+                      <td className="px-3 py-2 text-right num">{oar.recoveryModel === 'sahgal' ? (r.cum / (1 + 2 / ab)).toFixed(1) : r.cum.toFixed(1)}</td>
                       <td className="px-3 py-2">
                         <span className={`result-badge ${r.status}`}>
                           {r.status === 'pass' ? 'OK' : r.status === 'warn' ? 'Near' : 'FAIL'}
@@ -528,12 +586,12 @@ const ReirradiationCalcPage: React.FC = () => {
                   <tr className="text-[11px] text-slate-400 uppercase border-b border-slate-100">
                     <th className="px-3 py-2 text-left">Interval</th>
                     <th className="px-3 py-2 text-right">Recovery</th>
-                    <th className="px-3 py-2 text-right">Effective BED1</th>
+                    <th className="px-3 py-2 text-right">{oar.recoveryModel === 'sahgal' ? 'Eff. EQD2_1' : 'Eff. BED1'}</th>
                     <th className="px-3 py-2 text-right">Headroom</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {[3,6,12,18,24,36].map(m => {
+                  {[3,5,6,12,18,24,36].map(m => {
                     const rec  = getRecoveryFraction(oar, m);
                     const eBed = calc.bed1 * (1 - rec);
                     const room = Math.max(0, bedLimit - eBed - calc.bed2);
@@ -542,9 +600,9 @@ const ReirradiationCalcPage: React.FC = () => {
                       <tr key={m} className={isCur ? 'bg-blue-50 font-bold text-blue-800' : 'text-slate-700'}>
                         <td className="px-3 py-2">{m} months{isCur && ' ←'}</td>
                         <td className="px-3 py-2 text-right num">{(rec * 100).toFixed(0)}%</td>
-                        <td className="px-3 py-2 text-right num">{eBed.toFixed(1)} Gy</td>
+                        <td className="px-3 py-2 text-right num">{oar.recoveryModel === 'sahgal' ? (eBed / (1 + 2 / ab)).toFixed(1) : eBed.toFixed(1)} Gy</td>
                         <td className={`px-3 py-2 text-right num ${room > 10 ? 'text-green-700' : room > 0 ? 'text-amber-700' : 'text-red-700'}`}>
-                          {room > 0 ? `+${room.toFixed(1)} Gy` : `${room.toFixed(1)} Gy`}
+                          {room > 0 ? `+${oar.recoveryModel === 'sahgal' ? (room / (1 + 2 / ab)).toFixed(1) : room.toFixed(1)} Gy` : `${oar.recoveryModel === 'sahgal' ? (room / (1 + 2 / ab)).toFixed(1) : room.toFixed(1)} Gy`}
                         </td>
                       </tr>
                     );
@@ -573,7 +631,7 @@ const ReirradiationCalcPage: React.FC = () => {
                 { criterion: 'Cumulative BED₂', value: '≤ 135 Gy₂', note: 'Hard limit. Some use 130 Gy₂ conservatively.' },
                 { criterion: 'Minimum interval', value: '≥ 6 months', note: 'Allows partial (25%) recovery. Shorter intervals = 0% recovery credit.' },
                 { criterion: 'Partial cord irradiation', value: 'Preferred', note: 'Retreating same cord segment = higher risk. Lateral approach preferred.' },
-                { criterion: 'SBRT re-RT (Sahgal)', value: 'Thecal sac Dmax ≤ 25 Gy EQD2', note: 'In 3–5 fx. Physics peer review mandatory. Multidisciplinary case conference.' },
+                { criterion: 'SBRT re-RT (Sahgal)', value: 'Cumulative Thecal sac Dmax ≤ 25 Gy EQD2', note: 'For cases with prior conventional RT. In 3–5 fx. Physics peer review mandatory. Do not conflate with de-novo RTOG 0631 point constraint.' },
               ].map((r, i) => (
                 <div key={i} className="px-3 py-2.5">
                   <div className="flex items-baseline justify-between gap-2">

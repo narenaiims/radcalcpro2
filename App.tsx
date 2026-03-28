@@ -3,6 +3,8 @@ import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-d
 import Header from './components/Header';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import UpdateNotification from './components/UpdateNotification';
+import { RadiobiologyProvider } from './src/context/RadiobiologyContext';
+import { PageSkeleton } from './src/components/Skeleton';
 
 // Lazy-load all pages for performance
 const Home                = lazy(() => import('./pages/Home'));
@@ -48,20 +50,7 @@ const ProtonTherapyPage          = lazy(() => import('./pages/ProtonTherapyPage'
 
 // ── Minimal inline spinner — no external deps ─────────────────────────────
 const PageLoader: React.FC = () => (
-  <div className="flex items-center justify-center min-h-[40vh]">
-    <div className="flex flex-col items-center gap-3">
-      <svg
-        className="animate-spin w-7 h-7 text-blue-700"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none" viewBox="0 0 24 24"
-      >
-        <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-        <path className="opacity-80" fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-      </svg>
-      <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Loading</span>
-    </div>
-  </div>
+  <PageSkeleton />
 );
 
 // ── Global error boundary ─────────────────────────────────────────────────
@@ -157,9 +146,11 @@ const Layout: React.FC = () => {
 };
 
 const App: React.FC = () => (
-  <Router>
-    <Layout />
-  </Router>
+  <RadiobiologyProvider>
+    <Router>
+      <Layout />
+    </Router>
+  </RadiobiologyProvider>
 );
 
 export default App;

@@ -20,20 +20,88 @@
   --color-clinical-surface: #f1f5f9;
 }
 
+:root {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --accent-color: #1d4ed8;
+  --surface-glass: rgba(255, 255, 255, 0.8);
+  --surface-border: rgba(0, 0, 0, 0.1);
+}
+
+.dark {
+  --bg-primary: #060810;
+  --bg-secondary: #0f172a;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-color: #1e293b;
+  --accent-color: #38BDF8;
+  --surface-glass: rgba(255, 255, 255, 0.03);
+  --surface-border: rgba(255, 255, 255, 0.1);
+}
+
+.dim {
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --text-primary: #a0a0a0;
+  --text-secondary: #707070;
+  --text-muted: #505050;
+  --border-color: #1a1a1a;
+  --accent-color: #0f766e;
+  --surface-glass: rgba(255, 255, 255, 0.01);
+  --surface-border: rgba(255, 255, 255, 0.05);
+  filter: brightness(0.8) contrast(1.2);
+}
+
 /* Base resets and styles */
 html {
   -webkit-tap-highlight-color: transparent;
   scroll-behavior: smooth;
   font-family: var(--font-sans);
-  background-color: #060810;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body {
-  @apply text-slate-400 antialiased;
-  background-color: #060810;
+  @apply antialiased;
+  background-color: var(--bg-primary);
   line-height: 1.6;
   font-variant-numeric: tabular-nums;
   overflow-x: hidden;
+  font-size: 16px; /* Base font size */
+}
+
+/* Typography & Readability */
+.label-micro {
+  @apply font-black uppercase tracking-[0.2em];
+  font-size: 12px !important; /* Minimum 12px for labels */
+  color: var(--text-muted);
+}
+
+.data-value {
+  @apply font-mono;
+  font-size: 14px !important; /* Minimum 14px for data values */
+  font-variant-numeric: tabular-nums;
+}
+
+/* High Contrast AAA Compliance */
+.text-high-contrast {
+  color: var(--text-primary);
+  filter: contrast(1.2);
+}
+
+/* Prevent text selection on interactive elements */
+button, 
+.interactive, 
+[role="button"],
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Atmospheric Background */
@@ -57,123 +125,39 @@ body {
   pointer-events: none;
 }
 
-/* Typography */
-h1, h2, h3, h4 {
-  @apply font-serif tracking-tight text-white;
-}
-
-.font-display { font-family: var(--font-serif); }
-.font-body { font-family: var(--font-sans); }
-
 /* Glassmorphism */
-/* Glassmorphism */
-  .glass-hover {
-    @apply transition-all duration-300 hover:bg-white/10 hover:border-white/20;
-  }
-
-  /* Components */
-  .station {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden mb-4 transition-all duration-300;
-  }
-
-  .station-head {
-    @apply p-4 flex items-center gap-4 cursor-pointer hover:bg-white/5 transition-colors;
-  }
-
-  .stn-num {
-    @apply w-10 h-10 rounded-xl flex items-center justify-center font-mono text-sm font-bold;
-  }
-
-  .stn-name {
-    @apply flex-1 font-serif text-lg text-white;
-  }
-
-  .stn-badge {
-    @apply text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border;
-  }
-
-  .badge-bil { @apply text-amber-500 border-amber-500/20 bg-amber-500/5; }
-  .badge-sel { @apply text-teal-500 border-teal-500/20 bg-teal-500/5; }
-
-  .boundary-grid {
-    @apply grid grid-cols-2 sm:grid-cols-3 gap-3;
-  }
-
-  .b-item {
-    @apply flex flex-col p-3 rounded-xl bg-white/5 border border-white/5;
-  }
-
-  .b-label {
-    @apply text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1;
-  }
-
-  .b-val {
-    @apply text-[11px] text-slate-400 leading-snug;
-  }
-
-  .pro-note {
-    @apply p-4 rounded-xl bg-gold/5 border border-gold/10 text-xs text-slate-400 italic leading-relaxed;
-  }
-
-  .evidence-tag {
-    @apply text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-white/10 text-white/60 border border-white/5;
-  }
-
-  /* Tabs */
-  .tab-btn {
-    @apply relative transition-all duration-300;
-  }
-
-  .tab-btn.active::after {
-    content: '';
-    @apply absolute bottom-0 left-0 right-0 h-0.5 bg-teal shadow-[0_0_10px_rgba(45,212,191,0.5)];
-  }
-
-  /* Quiz */
-  .quiz-opt {
-    @apply w-full p-4 rounded-xl border border-white/10 text-left transition-all hover:bg-white/5 hover:border-white/20;
-  }
-
-  .quiz-opt.selected {
-    @apply border-teal bg-teal/5 text-teal-400;
-  }
-
-  .quiz-opt.correct {
-    @apply border-teal bg-teal/10 text-teal-400;
-  }
-
-  .quiz-opt.wrong {
-    @apply border-coral bg-coral/10 text-coral;
-  }
-
-/* Premium UI Components */
 .card-premium {
-  @apply bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl transition-all duration-300;
+  background-color: var(--surface-glass);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--surface-border);
+  @apply rounded-2xl transition-all duration-300;
 }
 
-.label-micro {
-  @apply text-[10px] font-black uppercase tracking-[0.2em] text-slate-500;
+.glass-hover {
+  @apply transition-all duration-300 hover:bg-white/10 hover:border-white/20;
 }
 
-.btn-premium {
-  @apply relative px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all duration-300 active:scale-95 overflow-hidden;
+/* Components */
+.station {
+  background-color: var(--surface-glass);
+  backdrop-blur: 24px;
+  border: 1px solid var(--surface-border);
+  @apply rounded-2xl overflow-hidden mb-4 transition-all duration-300;
 }
 
-.btn-primary {
-  @apply bg-teal text-white shadow-[0_0_20px_rgba(45,212,191,0.3)] hover:shadow-[0_0_30px_rgba(45,212,191,0.5)] hover:bg-teal/90;
+.station-head {
+  @apply p-4 flex items-center gap-4 cursor-pointer hover:bg-white/5 transition-colors;
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+.stn-num {
+  @apply w-10 h-10 rounded-xl flex items-center justify-center font-mono text-sm font-bold;
+  background-color: var(--accent-color);
+  color: white;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  @apply bg-transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+.stn-name {
+  @apply flex-1 font-serif text-lg;
+  color: var(--text-primary);
 }
 
 /* Animations */
@@ -184,12 +168,4 @@ h1, h2, h3, h4 {
 
 .animate-slam {
   animation: slamIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 }

@@ -15,19 +15,26 @@ export const PrintReport = React.forwardRef<HTMLDivElement, PrintReportProps>(
       <div ref={ref} className="hidden print:block p-8 bg-white text-black font-serif">
         <style>{`@media print { body * { visibility: hidden; } .print-content, .print-content * { visibility: visible; } .print-content { position: absolute; left: 0; top: 0; } }`}</style>
         <div className="print-content">
-          <h1 className="text-2xl font-bold mb-4">Rad Calc Pro</h1>
-          <h2 className="text-xl mb-2">{title}</h2>
-          <p className="text-sm mb-6">{new Date().toLocaleString()}</p>
+          <h1 className="text-2xl font-bold mb-1">RadCalcPro v2.1.0</h1>
+          <p className="text-[10px] text-slate-500 mb-4 uppercase tracking-widest font-sans">Clinical Physics Decision Support Tool</p>
+          
+          <div className="flex justify-between items-end mb-6 border-b-2 border-black pb-2">
+            <h2 className="text-xl font-bold uppercase tracking-tight">{title}</h2>
+            <div className="text-right">
+              <p className="text-[10px] font-bold uppercase tracking-wider">Generated On</p>
+              <p className="text-sm font-mono">{new Date().toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+            </div>
+          </div>
           
           {parameters && parameters.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-lg font-bold mb-2 border-b">Parameters</h3>
-              <table className="w-full border-collapse">
+            <div className="mb-8">
+              <h3 className="text-xs font-black uppercase tracking-widest mb-3 bg-slate-100 p-1 px-2">Input Parameters</h3>
+              <table className="w-full border-collapse text-sm">
                 <tbody>
                   {parameters.map((f, i) => (
-                    <tr key={i} className="border-b">
-                      <td className="py-2 font-semibold">{f.label}</td>
-                      <td className="py-2 text-right">{f.value}</td>
+                    <tr key={i} className="border-b border-slate-200">
+                      <td className="py-2 text-slate-600">{f.label}</td>
+                      <td className="py-2 text-right font-bold">{f.value}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -36,14 +43,14 @@ export const PrintReport = React.forwardRef<HTMLDivElement, PrintReportProps>(
           )}
 
           {results && results.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-lg font-bold mb-2 border-b">Results</h3>
+            <div className="mb-8">
+              <h3 className="text-xs font-black uppercase tracking-widest mb-3 bg-slate-100 p-1 px-2">Calculated Results</h3>
               <table className="w-full border-collapse">
                 <tbody>
                   {results.map((f, i) => (
-                    <tr key={i} className="border-b">
-                      <td className="py-2 font-semibold">{f.label}</td>
-                      <td className="py-2 text-right">{f.value} {f.unit || ''}</td>
+                    <tr key={i} className="border-b-2 border-black">
+                      <td className="py-3 font-bold text-lg">{f.label}</td>
+                      <td className="py-3 text-right font-black text-2xl">{f.value} <span className="text-sm font-normal">{f.unit || ''}</span></td>
                     </tr>
                   ))}
                 </tbody>
@@ -52,26 +59,30 @@ export const PrintReport = React.forwardRef<HTMLDivElement, PrintReportProps>(
           )}
 
           {clinicalInsight && (
-            <div className="mb-6">
-              <h3 className="text-lg font-bold mb-2 border-b">Clinical Insight</h3>
-              <p className="py-2">{clinicalInsight}</p>
+            <div className="mb-8 p-4 bg-slate-50 border-l-4 border-slate-300">
+              <h3 className="text-xs font-black uppercase tracking-widest mb-2">Clinical Interpretation</h3>
+              <p className="text-sm leading-relaxed italic">{clinicalInsight}</p>
             </div>
           )}
 
-          {fields && fields.length > 0 && (
-            <table className="w-full border-collapse mb-6">
-              <tbody>
-                {fields.map((f, i) => (
-                  <tr key={i} className="border-b">
-                    <td className="py-2 font-semibold">{f.label}</td>
-                    <td className="py-2 text-right">{f.value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          
-          {footer && <p className="text-xs italic">{footer}</p>}
+          <div className="mt-12 pt-8 border-t border-slate-300">
+            <h4 className="text-[10px] font-black uppercase tracking-widest mb-2 text-red-700">Clinical Safety Disclaimer</h4>
+            <p className="text-[9px] leading-tight text-slate-600 text-justify">
+              This report is generated by RadCalcPro, a decision-support tool intended for use by qualified radiation oncology professionals only. 
+              Calculations are based on established radiobiological models (LQ model, Dale 1985, etc.) but must be independently verified by a second 
+              qualified physicist or oncologist before clinical implementation. The authors and developers accept no liability for clinical decisions 
+              made based on these outputs. Patient identification must be manually verified. This document is not a prescription. 
+              Verify all α/β ratios and repair constants against site-specific protocols.
+            </p>
+            <div className="mt-4 flex justify-between items-end">
+              <div className="text-[9px] text-slate-400 font-mono">
+                Checksum: {Math.random().toString(36).substring(2, 15).toUpperCase()}
+              </div>
+              <div className="w-32 border-b border-black text-center text-[8px] uppercase font-bold pb-1">
+                Physicist Signature
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );

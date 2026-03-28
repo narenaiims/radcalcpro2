@@ -65,15 +65,15 @@ function calcEffectiveHalfLife(bioT: number): number {
   return (T_HALF_I131 * bioT) / (T_HALF_I131 + bioT);
 }
 
-function calcMaxSafe(tbv_L: number, hct: number): { activity_MBq: number; note: string } {
+function calcMaxSafe(tbv_L: number, hct: number, Te_d: number): { activity_MBq: number; note: string } {
   // Benua-Leeper: limit blood dose to 2 Gy (marrow). Simplified estimate:
-  // A_max (MBq) ≈ 2 Gy × (blood volume mL) / (constant)
-  // Blood volume ≈ TBV × (1-Hct) for plasma
+  // Blood dose (Gy) = A₀ × 0.0031 / bloodVol_mL × integral_factor
+  // Max activity (MBq) ≈ 2 × bloodVol_mL / (0.0031 × eff_half_life_hours × 1.443)
   const bloodVol_mL = tbv_L * 1000 * (1 - hct);
   // Simplified Benua constant ~0.0031 Gy/MBq per mL (empiric from MSK data)
-  const A_MBq = (2.0 * bloodVol_mL) / 0.0031 / bloodVol_mL * 100; // scaled
+  const A_MBq = (2.0 * bloodVol_mL) / (0.0031 * Te_d * 24 * 1.443);
   // Practical upper bound: 14 GBq in most protocols; bone marrow limit
-  return { activity_MBq: Math.min(14000, 2800 + tbv_L * 180), note: '≤2 Gy to blood; 14 GBq absolute max (pulmonary mets: <3 GBq/cycle)' };
+  return { activity_MBq: Math.min(14000, A_MBq), note: '≤2 Gy to blood; 14 GBq absolute max (pulmonary mets: <3 GBq/cycle)' };
 }
 
 function decayCurve(A0_MBq: number, Te_d: number): { t: number; A: number }[] {
@@ -90,7 +90,7 @@ function calc(
   const Te = calcEffectiveHalfLife(bioT);
   const A_marinelli = calcMarinelli(targetDose, mass, uptake, Te);
   const A_fixed_MBq = fixed_GBq * 1000;
-  const { activity_MBq: A_maxSafe, note: msNote } = calcMaxSafe(tbv, hct);
+  const { activity_MBq: A_maxSafe, note: msNote } = calcMaxSafe(tbv, hct, Te);
 
   const actualDose_marinelli = targetDose; // by definition
   // Dose delivered if fixed activity used:

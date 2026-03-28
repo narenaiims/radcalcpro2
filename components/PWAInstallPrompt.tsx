@@ -27,6 +27,15 @@ const PWAInstallPrompt: React.FC = () => {
       return;
     }
 
+    const triggerHandler = () => {
+      const dismissed = localStorage.getItem('pwa-prompt-dismissed');
+      if (!dismissed) {
+        setIsVisible(true);
+      }
+    };
+
+    window.addEventListener('pwa-trigger-prompt', triggerHandler);
+
     if (restricted) {
       // In restricted mode, we show the banner once if not dismissed
       const dismissed = localStorage.getItem('pwa-restricted-dismissed');
@@ -36,21 +45,10 @@ const PWAInstallPrompt: React.FC = () => {
       return;
     }
 
-    // iOS doesn't support beforeinstallprompt, so we show it manually if not dismissed
-    if (ios) {
-      const dismissed = localStorage.getItem('pwa-ios-dismissed');
-      if (!dismissed) {
-        // Delay slightly to not annoy immediately
-        const timer = setTimeout(() => setIsVisible(true), 3000);
-        return () => clearTimeout(timer);
-      }
-      return;
-    }
-
     const handler = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      setIsVisible(true);
+      // Don't show immediately, wait for trigger
     };
 
     window.addEventListener('beforeinstallprompt', handler);
@@ -58,6 +56,7 @@ const PWAInstallPrompt: React.FC = () => {
     window.addEventListener('pwa-prompt-cleared', clearHandler);
 
     return () => {
+      window.removeEventListener('pwa-trigger-prompt', triggerHandler);
       window.removeEventListener('beforeinstallprompt', handler);
       window.removeEventListener('pwa-prompt-cleared', clearHandler);
     };
@@ -65,6 +64,7 @@ const PWAInstallPrompt: React.FC = () => {
 
   const dismiss = () => {
     setIsExiting(true);
+    localStorage.setItem('pwa-prompt-dismissed', 'true');
     if (isRestricted) {
       localStorage.setItem('pwa-restricted-dismissed', 'true');
     }

@@ -124,7 +124,7 @@ const PRESETS: SitePreset[] = [
     ],
     notes: [
       'BID fractionation: ≥6h inter-fraction interval mandatory.',
-      '34 Gy / 10 fx BID: EQD2₄ = 34 × (3.4+4)/(2+4) = 41.9 Gy (breast α/β=4). ≡ EQD2₁₀ ≈ 3',
+      '34 Gy / 10 fx BID: EQD2₄ = 34 × (3.4+4)/(2+4) = 41.9 Gy (breast α/β=4). ≡ EQD2₁₀ = 34 × (3.4+10)/(2+10) = 37.97 Gy',
       'Eligibility: T1-2 (≤3cm), N0, ≥50y, unicentric, clear margins.',
       'GEC-ESTRO favours multicatheter over single-entry balloon.',
     ],

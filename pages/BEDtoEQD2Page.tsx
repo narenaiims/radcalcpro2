@@ -32,15 +32,29 @@ const QUICK_REF_DATA = {
 };
 
 // ── Common clinical BED/EQD2 reference values ─────────────────────────────
-const CLINICAL_REF = [
+interface ClinicalReference {
+  label: string;
+  note: string;
+  bed10?: number;
+  eqd2_10?: number;
+  bed4?: number;
+  eqd2_4?: number;
+  bed_p?: number;
+  eqd2_p?: number;
+  bed2?: number;
+  eqd2_2?: number;
+  eqd2_3?: number | null;
+}
+
+const CLINICAL_REF: ClinicalReference[] = [
   { label: 'WBRT palliative (30/10)',     bed10: 39.0,  eqd2_10: 32.5,  eqd2_3: null,  note: 'Standard palliation' },
   { label: 'H&N radical (70/35)',         bed10: 84.0,  eqd2_10: 70.0,  eqd2_3: null,  note: 'Standard fractionation' },
   { label: 'Breast (50/25)',              bed4:  75.0,  eqd2_4:  50.0,  eqd2_3: null,  note: 'Conventional' },
   { label: 'Breast START-B (40/15)',      bed4:  66.7,  eqd2_4:  44.5,  eqd2_3: null,  note: 'START-B (2.67 Gy/fx)' },
   { label: 'Breast FAST-Forward (26/5)',  bed4:  59.8,  eqd2_4:  39.9,  eqd2_3: null,  note: 'FAST-Forward (5.2 Gy/fx)' },
-  { label: 'Prostate (78/39)',            bed15: 182.0, eqd2_15: 78.0,  eqd2_3: null,  note: 'α/β=1.5 (Standard)' },
-  { label: 'Prostate CHHiP (60/20)',      bed15: 180.0, eqd2_15: 77.1,  eqd2_3: null,  note: 'CHHiP (3 Gy/fx)' },
-  { label: 'Lung SBRT (54/3)',            bed10: 151.2, eqd2_10: 126.0, eqd2_3: null,  note: 'RTOG 0236 (Tumour α/β=10)' },
+  { label: 'Prostate (78/39)',            bed_p: 182.0, eqd2_p:  78.0,  eqd2_3: null,  note: 'α/β=1.5 (Standard)' },
+  { label: 'Prostate CHHiP (60/20)',      bed_p: 180.0, eqd2_p:  77.1,  eqd2_3: null,  note: 'CHHiP (3 Gy/fx)' },
+  { label: 'Lung SBRT (54/3)',            bed10: 151.2, eqd2_10: 126.0, eqd2_3: null,  note: 'RTOG 0236 (Rx at 80% isodose, Dmax=67.5Gy)' },
   { label: 'Lung SABR (48/4)',            bed10: 105.6, eqd2_10: 88.0,  eqd2_3: null,  note: 'Common peripheral SBRT' },
   { label: 'Lung SABR (60/5)',            bed10: 132.0, eqd2_10: 110.0, eqd2_3: null,  note: 'Stereotactic (12 Gy/fx)' },
   { label: 'Bone palliation (8/1)',       bed10: 14.4,  eqd2_10: 12.0,  eqd2_3: null,  note: 'Single fraction' },
@@ -294,9 +308,9 @@ const BEDtoEQD2Page: React.FC = () => {
             <tbody className="divide-y divide-slate-50">
               {CLINICAL_REF.map((r, i) => {
                 // Pick best available BED value and its alpha-beta
-                const bedVal  = r.bed10  ?? r.bed4   ?? r.bed15  ?? r.bed2   ?? 0;
-                const eqd2Val = r.eqd2_10 ?? r.eqd2_4 ?? r.eqd2_15 ?? r.eqd2_2 ?? 0;
-                const abKey   = r.bed10 ? '10' : r.bed4 ? '4' : r.bed15 ? '1.5' : '2';
+                const bedVal  = r.bed10  ?? r.bed4   ?? r.bed_p  ?? r.bed2   ?? 0;
+                const eqd2Val = r.eqd2_10 ?? r.eqd2_4 ?? r.eqd2_p ?? r.eqd2_2 ?? 0;
+                const abKey   = r.bed10 ? '10' : r.bed4 ? '4' : r.bed_p ? '1.5' : '2';
                 return (
                   <tr key={i}
                     className="text-slate-700 hover:bg-slate-50 cursor-pointer"
@@ -306,8 +320,8 @@ const BEDtoEQD2Page: React.FC = () => {
                       setInput(String(bedVal));
                     }}>
                     <td className="px-3 py-2 font-medium">{r.label}</td>
-                    <td className="px-3 py-2 text-right num font-bold text-blue-800">
-                      {bedVal.toFixed(1)}<sub>{abKey}</sub>
+                    <td className="px-3 py-2 text-right num font-bold text-blue-800" title={`Calculated using α/β = ${abKey} Gy`}>
+                      {bedVal.toFixed(1)}<sub className="cursor-help">{abKey}</sub>
                     </td>
                     <td className="px-3 py-2 text-right num text-emerald-800">
                       {eqd2Val ? eqd2Val.toFixed(1) : '—'}
@@ -342,7 +356,7 @@ const BEDtoEQD2Page: React.FC = () => {
             },
             {
               title: 'SBRT lung BED₁₀ ≥ 100 Gy threshold',
-              body: 'TROG 09.02 (Ball 2019) and RTOG 0236 demonstrated that lung SBRT with BED₁₀ ≥100 Gy achieves local control >90%. This threshold = EQD2₁₀ ≈ 60 Gy and corresponds to e.g. 54 Gy/3fx or 60 Gy/5fx.',
+              body: 'TROG 09.02 (Ball 2019) and RTOG 0236 demonstrated that lung SBRT with BED₁₀ ≥100 Gy achieves local control >90%. This threshold = EQD2₁₀ ≈ 60 Gy and corresponds to e.g. 54 Gy/3fx or 60 Gy/5fx. Note: BED₁₀ = 151.2 Gy for RTOG 0236 assumes 54 Gy is the prescription point (Rx at 80% isodose). If using UK convention (100%/95% isodose to PTV), the same protocol does not equal the same BED.',
             },
           ].map((item, i) => (
             <div key={i} className="px-3 py-2.5">

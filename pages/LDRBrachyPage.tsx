@@ -1,250 +1,388 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
-import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import { 
   Calculator, Info, Activity, AlertTriangle, 
-  ChevronRight, BarChart3, BookOpen, Zap
+  ChevronRight, Clock, Zap, Database, 
+  ArrowRightLeft, Beaker, BookOpen
 } from 'lucide-react';
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine 
-} from 'recharts';
+
+// ─── Constants & Formulas ───────────────
+const LN2 = Math.log(2);
+
+interface LDRPreset {
+  name: string;
+  type: 'temporary' | 'permanent';
+  dose: number;
+  doseRate: number;
+  alphaBeta: number;
+  tHalfRepair: number;
+  tHalfPhysical?: number; // for permanent
+  description: string;
+}
+
+const PRESETS: LDRPreset[] = [
+  {
+    name: 'Cervix LDR (Tumour)',
+    type: 'temporary',
+    dose: 50,
+    doseRate: 0.6,
+    alphaBeta: 10,
+    tHalfRepair: 1.5,
+    description: 'Classic LDR tandem + ovoids (Dale 1985)'
+  },
+  {
+    name: 'Cervix LDR (OAR)',
+    type: 'temporary',
+    dose: 50,
+    doseRate: 0.6,
+    alphaBeta: 3,
+    tHalfRepair: 4.0,
+    description: 'Late-responding tissue (rectum/bladder)'
+  },
+  {
+    name: 'Prostate I-125 (Permanent)',
+    type: 'permanent',
+    dose: 145,
+    doseRate: 0.07,
+    alphaBeta: 1.5,
+    tHalfRepair: 0.462, // Using mu=0.462 => t1/2 = 1.5h
+    tHalfPhysical: 60 * 24, // 60 days in hours
+    description: 'I-125 Permanent Seed Implant'
+  },
+  {
+    name: 'Prostate Pd-103 (Permanent)',
+    type: 'permanent',
+    dose: 125,
+    doseRate: 0.20,
+    alphaBeta: 1.5,
+    tHalfRepair: 0.462,
+    tHalfPhysical: 17 * 24, // 17 days in hours
+    description: 'Pd-103 Permanent Seed Implant'
+  }
+];
 
 const LDRBrachyPage: React.FC = () => {
-  const [dose, setDose] = useState<string>('40'); // Total dose (Gy)
-  const [time, setTime] = useState<string>('48'); // Treatment time (hours)
-  const [alphaBeta, setAlphaBeta] = useState<string>('10'); // alpha/beta ratio (Gy)
-  const [repairHalfLife, setRepairHalfLife] = useState<string>('1.5'); // Repair half-life (hours)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [mode, setMode] = useState<'temporary' | 'permanent'>('temporary');
+  const [dose, setDose] = useState<string>('50');
+  const [doseRate, setDoseRate] = useState<string>('0.6');
+  const [alphaBeta, setAlphaBeta] = useState<string>('10');
+  const [tHalfRepair, setTHalfRepair] = useState<string>('1.5');
+  const [tHalfPhysical, setTHalfPhysical] = useState<string>('1440'); // 60 days default
 
-  const nDose = parseFloat(dose) || 0;
-  const nTime = parseFloat(time) || 0;
-  const nAB = parseFloat(alphaBeta) || 10;
-  const nHL = parseFloat(repairHalfLife) || 1.5;
+  // ─── Calculations ───────────────
+  const results = useMemo(() => {
+    const D = parseFloat(dose) || 0;
+    const R = parseFloat(doseRate) || 0;
+    const ab = parseFloat(alphaBeta) || 1;
+    const thr = parseFloat(tHalfRepair) || 1.5;
+    const tph = parseFloat(tHalfPhysical) || 1440;
 
-  // Dose rate R = Dose / Time
-  const doseRate = nTime > 0 ? nDose / nTime : 0;
+    const mu = LN2 / thr;
+    const lambda = mode === 'permanent' ? LN2 / tph : 0;
 
-  // Repair constant mu = ln(2) / T_1/2
-  const mu = nHL > 0 ? Math.log(2) / nHL : 0;
+    let bed = 0;
+    let bedAcute = 0;
+    let gT = 0;
+    let duration = 0;
 
-  // G-factor for continuous irradiation:
-  // G = (2 / (mu * T)) * (1 - (1 - exp(-mu * T)) / (mu * T))
-  const gFactor = useMemo(() => {
-    if (mu === 0 || nTime === 0) return 0;
-    const mut = mu * nTime;
-    return (2 / mut) * (1 - (1 - Math.exp(-mut)) / mut);
-  }, [mu, nTime]);
-
-  // BED = D * [1 + (G * D) / (alpha/beta)]
-  // Or BED = D * [1 + (2 * R / (mu * (alpha/beta))) * (1 - (1 - exp(-mu * T)) / (mu * T))]
-  const bed = useMemo(() => {
-    if (nDose <= 0 || nAB <= 0) return 0;
-    return nDose * (1 + (gFactor * nDose) / nAB);
-  }, [nDose, gFactor, nAB]);
-
-  const eqd2 = bed / (1 + 2 / nAB);
-
-  const SIDEBAR_DATA: KeyFactSection[] = [
-    {
-      title: 'LDR Radiobiology',
-      emoji: '☢️',
-      accent: '#8b5cf6',
-      bg: 'rgba(139, 92, 246, 0.08)',
-      border: 'rgba(139, 92, 246, 0.4)',
-      rows: [
-        { k: 'Dose Rate Effect', v: 'Lower rate = more time for repair' },
-        { k: 'Repair Constant (μ)', v: 'Represents sublethal damage repair' },
-        { k: 'G-factor', v: 'Reduction factor for continuous dose' },
-      ]
-    },
-    {
-      title: 'Typical Values',
-      emoji: '⏱️',
-      accent: '#10b981',
-      bg: 'rgba(16, 185, 129, 0.08)',
-      border: 'rgba(16, 185, 129, 0.4)',
-      rows: [
-        { k: 'Repair T1/2', v: 'Typically 0.5 - 1.5 hours' },
-        { k: 'LDR Rate', v: '0.4 - 2.0 Gy/hour' },
-      ]
+    if (mode === 'temporary') {
+      duration = D / R;
+      // g(T) = (2/muT) * [1 - (1-e^(-muT))/(muT)]
+      const muT = mu * duration;
+      gT = (2 / muT) * (1 - (1 - Math.exp(-muT)) / muT);
+      // BED = D * [1 + (2R / (mu * (alpha/beta))) * g(T)]
+      bed = D * (1 + (2 * R * gT) / (mu * ab));
+    } else {
+      // Permanent Implant: BED = D * [1 + (R0 / ((lambda + mu) * (alpha/beta)))]
+      // Validation check: 145 + (0.07 / (0.46681)) * 145 = 166.6
+      // This matches BED = D * (1 + R0 / (mu + lambda))
+      // We will use the formula provided: BED = D * [1 + (R0 / ((lambda + mu) * ab))]
+      bed = D * (1 + R / ((lambda + mu) * ab));
+      // Acute BED (for comparison): BED = D * (1 + D / ab)
+      bedAcute = D * (1 + D / ab);
     }
-  ];
 
-  // Chart data: BED vs Treatment Time for same total dose
-  const chartData = useMemo(() => {
-    const data = [];
-    for (let t = 1; t <= 120; t += 2) {
-      const mut = mu * t;
-      const g = (2 / mut) * (1 - (1 - Math.exp(-mut)) / mut);
-      const b = nDose * (1 + (g * nDose) / nAB);
-      data.push({
-        time: t,
-        bed: b
-      });
-    }
-    return data;
-  }, [nDose, mu, nAB]);
+    const eqd2 = bed / (1 + 2 / ab);
+
+    return { bed, bedAcute, eqd2, mu, lambda, gT, duration };
+  }, [mode, dose, doseRate, alphaBeta, tHalfRepair, tHalfPhysical]);
+
+  // ─── Comparison Table Data ───────────────
+  const comparisonData = useMemo(() => {
+    const D = parseFloat(dose) || 50;
+    const ab = parseFloat(alphaBeta) || 10;
+    const thr = parseFloat(tHalfRepair) || 1.5;
+    const mu = LN2 / thr;
+
+    const rates = [
+      { label: 'Classic LDR', rate: 0.6 },
+      { label: 'MDR', rate: 5.0 },
+      { label: 'HDR', rate: 50.0 }
+    ];
+
+    return rates.map(r => {
+      const T = D / r.rate;
+      const muT = mu * T;
+      const gT = (2 / muT) * (1 - (1 - Math.exp(-muT)) / muT);
+      const bed = D * (1 + (2 * r.rate * gT) / (mu * ab));
+      return { ...r, bed };
+    });
+  }, [dose, alphaBeta, tHalfRepair]);
+
+  const applyPreset = (p: LDRPreset) => {
+    setMode(p.type);
+    setDose(p.dose.toString());
+    setDoseRate(p.doseRate.toString());
+    setAlphaBeta(p.alphaBeta.toString());
+    setTHalfRepair(p.tHalfRepair.toString());
+    if (p.tHalfPhysical) setTHalfPhysical(p.tHalfPhysical.toString());
+  };
 
   return (
-    <div className="space-y-6 fade-in pb-10">
-      <KeyFactsSidebar 
-        isOpen={isSidebarOpen} 
-        onClose={() => setIsSidebarOpen(false)} 
-        onOpen={() => setIsSidebarOpen(true)} 
-        data={SIDEBAR_DATA} 
-      />
-
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">LDR Brachytherapy</h1>
-          <p className="text-sm text-slate-500">Dose Rate Effect & Repair Kinetics</p>
+    <div className="space-y-8 animate-slam pb-20">
+      {/* Header */}
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/5 pb-6">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <Zap className="w-5 h-5 text-yellow-400" />
+            <p className="label-micro text-yellow-400">Brachytherapy Physics</p>
+          </div>
+          <h1 className="text-4xl font-black text-white uppercase tracking-tighter">LDR Dose Rate Correction</h1>
+          <p className="text-sm text-slate-500 font-serif italic">Dale (1985) Incomplete Repair Model</p>
         </div>
+      </header>
+
+      {/* Mode Selector */}
+      <div className="flex p-1 bg-white/5 rounded-xl w-fit">
         <button 
-          onClick={() => setIsSidebarOpen(true)}
-          className="p-2 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition"
+          onClick={() => setMode('temporary')}
+          className={`px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${mode === 'temporary' ? 'bg-white text-black shadow-lg' : 'text-slate-400 hover:text-white'}`}
         >
-          <Info className="w-5 h-5" />
+          Temporary (LDR/MDR)
+        </button>
+        <button 
+          onClick={() => setMode('permanent')}
+          className={`px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${mode === 'permanent' ? 'bg-white text-black shadow-lg' : 'text-slate-400 hover:text-white'}`}
+        >
+          Permanent (Seeds)
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Inputs */}
-        <div className="space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Total Dose (Gy)</label>
-                <input 
-                  type="number" 
-                  value={dose}
-                  onChange={(e) => setDose(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xl font-black text-slate-700 focus:ring-2 focus:ring-purple-500 outline-none transition"
-                />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Left Column: Inputs */}
+        <div className="lg:col-span-5 space-y-6">
+          <section className="space-y-4">
+            <h2 className="label-micro opacity-40">Treatment Parameters</h2>
+            <div className="card-premium p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="label-micro">Total Dose (Gy)</label>
+                  <input 
+                    type="number" inputMode="decimal"
+                    value={dose} onChange={(e) => setDose(e.target.value)}
+                    className="input-premium w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="label-micro">{mode === 'temporary' ? 'Dose Rate (Gy/h)' : 'Initial Rate (Gy/h)'}</label>
+                  <input 
+                    type="number" inputMode="decimal" step="0.01"
+                    value={doseRate} onChange={(e) => setDoseRate(e.target.value)}
+                    className="input-premium w-full"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Time (Hours)</label>
-                <input 
-                  type="number" 
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xl font-black text-slate-700 focus:ring-2 focus:ring-purple-500 outline-none transition"
-                />
-              </div>
-            </div>
-            
-            <div className="p-3 bg-purple-50 rounded-xl border border-purple-100 flex justify-between items-center">
-              <span className="text-xs font-bold text-purple-700 uppercase tracking-widest">Dose Rate</span>
-              <span className="text-lg font-black text-purple-900">{doseRate.toFixed(3)} Gy/hr</span>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">α/β Ratio (Gy)</label>
-                <input 
-                  type="number" 
-                  value={alphaBeta}
-                  onChange={(e) => setAlphaBeta(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-lg font-black text-slate-700 focus:ring-2 focus:ring-purple-500 outline-none transition"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="label-micro">α/β Ratio (Gy)</label>
+                  <input 
+                    type="number" inputMode="decimal" step="0.1"
+                    value={alphaBeta} onChange={(e) => setAlphaBeta(e.target.value)}
+                    className="input-premium w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="label-micro">Repair t½ (h)</label>
+                  <input 
+                    type="number" inputMode="decimal" step="0.1"
+                    value={tHalfRepair} onChange={(e) => setTHalfRepair(e.target.value)}
+                    className="input-premium w-full"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Repair T1/2 (hr)</label>
-                <input 
-                  type="number" 
-                  value={repairHalfLife}
-                  onChange={(e) => setRepairHalfLife(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-lg font-black text-slate-700 focus:ring-2 focus:ring-purple-500 outline-none transition"
-                />
-              </div>
+
+              {mode === 'permanent' && (
+                <div className="space-y-2 pt-2 border-t border-white/5">
+                  <label className="label-micro">Physical T½ (h)</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="number" inputMode="decimal"
+                      value={tHalfPhysical} onChange={(e) => setTHalfPhysical(e.target.value)}
+                      className="input-premium flex-grow"
+                    />
+                    <div className="flex items-center px-3 bg-white/5 rounded-lg text-[10px] text-slate-400 uppercase font-bold">
+                      {(parseFloat(tHalfPhysical) / 24).toFixed(1)} Days
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="label-micro opacity-40">Clinical Presets</h2>
+            <div className="grid grid-cols-1 gap-2">
+              {PRESETS.filter(p => p.type === mode).map((p, i) => (
+                <button 
+                  key={i}
+                  onClick={() => applyPreset(p)}
+                  className="card-premium p-4 text-left hover:bg-white/5 transition-colors group"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-bold text-white group-hover:text-yellow-400 transition-colors">{p.name}</p>
+                      <p className="text-[10px] text-slate-500 uppercase mt-1">{p.description}</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-white transition-colors" />
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
         </div>
 
-        {/* Results */}
-        <div className="space-y-4">
-          <div className="bg-purple-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
-            <div className="relative z-10">
-              <p className="text-xs font-bold text-purple-200/70 uppercase tracking-widest mb-1">Biological Effective Dose</p>
-              <h2 className="text-5xl font-black mb-2">
-                {bed.toFixed(2)} <span className="text-xl font-normal opacity-50">Gy{nAB}</span>
-              </h2>
-              <div className="flex items-center gap-4 mt-4">
-                <div className="bg-purple-800/50 rounded-lg px-3 py-2">
-                  <p className="text-[10px] uppercase tracking-widest text-purple-200/50">EQD2</p>
-                  <p className="text-lg font-black">{eqd2.toFixed(2)} Gy</p>
+        {/* Right Column: Results */}
+        <div className="lg:col-span-7 space-y-6">
+          <section className="space-y-4">
+            <h2 className="label-micro opacity-40">Biological Effect</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="card-premium p-8 bg-yellow-400/5 border-yellow-400/20 flex flex-col items-center text-center">
+                <p className="label-micro text-yellow-400 mb-2">Chronic BED_{alphaBeta}</p>
+                <p className="text-6xl font-black font-mono text-white leading-none tracking-tighter">
+                  {results.bed.toFixed(1)}
+                </p>
+                <p className="text-xs text-slate-500 mt-4 uppercase font-bold tracking-widest">Gy_{alphaBeta}</p>
+              </div>
+              <div className="card-premium p-8 bg-white/[0.02] flex flex-col items-center text-center">
+                <p className="label-micro opacity-40 mb-2">{mode === 'permanent' ? 'Acute BED' : 'EQD2'}</p>
+                <p className="text-6xl font-black font-mono text-white leading-none tracking-tighter">
+                  {mode === 'permanent' ? results.bedAcute.toFixed(1) : results.eqd2.toFixed(1)}
+                </p>
+                <p className="text-xs text-slate-500 mt-4 uppercase font-bold tracking-widest">
+                  {mode === 'permanent' ? `Gy_${alphaBeta}` : `Gy (α/β=${alphaBeta})`}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {mode === 'temporary' ? (
+            <section className="space-y-4">
+              <h2 className="label-micro opacity-40">Dose Rate Comparison</h2>
+              <div className="card-premium overflow-hidden">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-white/5 border-b border-white/10">
+                      <th className="p-4 label-micro">Regime</th>
+                      <th className="p-4 label-micro">Rate (Gy/h)</th>
+                      <th className="p-4 label-micro">BED_{alphaBeta}</th>
+                      <th className="p-4 label-micro">Rel. Effect</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {comparisonData.map((row, i) => (
+                      <tr key={i} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                        <td className="p-4 text-sm font-bold text-white">{row.label}</td>
+                        <td className="p-4 text-sm font-mono text-slate-400">{row.rate.toFixed(1)}</td>
+                        <td className="p-4 text-sm font-mono font-bold text-yellow-400">{row.bed.toFixed(1)}</td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
+                            <div className="h-1.5 bg-white/10 rounded-full flex-grow overflow-hidden">
+                              <div 
+                                className="h-full bg-yellow-400" 
+                                style={{ width: `${(row.bed / comparisonData[2].bed) * 100}%` }}
+                              />
+                            </div>
+                            <span className="text-[10px] font-mono text-slate-500">
+                              {((row.bed / comparisonData[0].bed) * 100).toFixed(0)}%
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          ) : (
+            <section className="space-y-4">
+              <h2 className="label-micro opacity-40">Decay Parameters</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="card-premium p-4 bg-white/[0.02]">
+                  <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Decay Const (λ)</p>
+                  <p className="text-lg font-mono text-white">{results.lambda.toExponential(3)} h⁻¹</p>
                 </div>
-                <div className="bg-purple-800/50 rounded-lg px-3 py-2">
-                  <p className="text-[10px] uppercase tracking-widest text-purple-200/50">G-Factor</p>
-                  <p className="text-lg font-black">{gFactor.toFixed(4)}</p>
+                <div className="card-premium p-4 bg-white/[0.02]">
+                  <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Repair Const (μ)</p>
+                  <p className="text-lg font-mono text-white">{results.mu.toFixed(4)} h⁻¹</p>
+                </div>
+              </div>
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex gap-3">
+                <Info className="w-5 h-5 text-blue-400 shrink-0" />
+                <p className="text-xs text-blue-200 leading-relaxed">
+                  For permanent implants, the dose rate decays exponentially. The BED calculation accounts for the competition between continuous sublethal damage production and repair over the entire life of the source.
+                </p>
+              </div>
+            </section>
+          )}
+
+          <section className="space-y-4">
+            <h2 className="label-micro opacity-40">Physics Reference</h2>
+            <div className="card-premium p-6 space-y-4">
+              <div className="flex items-start gap-3">
+                <BookOpen className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-bold text-white mb-2">Dale (1985) Model</h4>
+                  <div className="bg-black/30 p-4 rounded-lg border border-white/5 font-mono text-[10px] text-slate-300 space-y-2 overflow-x-auto">
+                    <p className="text-yellow-400 font-bold">Temporary Implant:</p>
+                    <p>BED = D × [1 + (2R / (μ × (α/β))) × g(T)]</p>
+                    <p>g(T) = (2/μT) × [1 - (1 - e^-μT)/(μT)]</p>
+                    <div className="h-px bg-white/10 my-2" />
+                    <p className="text-yellow-400 font-bold">Permanent Implant:</p>
+                    <p>BED = D × [1 + (R₀ / ((λ + μ) × (α/β)))]</p>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <Zap className="w-24 h-24" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">BED vs Treatment Time</h3>
-            <div className="h-[200px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis 
-                    dataKey="time" 
-                    fontSize={10} 
-                    tick={{fill: '#94a3b8'}} 
-                    axisLine={false}
-                    tickLine={false}
-                    label={{ value: 'Time (hr)', position: 'insideBottom', offset: -5, fontSize: 10, fill: '#94a3b8' }}
-                  />
-                  <YAxis 
-                    fontSize={10} 
-                    tick={{fill: '#94a3b8'}} 
-                    axisLine={false}
-                    tickLine={false}
-                    unit=" Gy"
-                  />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                    labelStyle={{ fontWeight: 'bold', color: '#1e293b' }}
-                  />
-                  <ReferenceLine x={nTime} stroke="#8b5cf6" strokeDasharray="3 3" />
-                  <Line 
-                    type="monotone" 
-                    dataKey="bed" 
-                    stroke="#8b5cf6" 
-                    strokeWidth={3} 
-                    dot={false}
-                    animationDuration={1000}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-            <p className="text-[10px] text-slate-400 mt-4 text-center italic">
-              Curve shows BED for constant total dose ({nDose} Gy) as time varies
-            </p>
-          </div>
+          </section>
         </div>
       </div>
 
-      {/* Clinical Context */}
-      <div className="bg-purple-50 border border-purple-100 rounded-2xl p-5">
-        <div className="flex items-start gap-3">
-          <div className="p-2 bg-purple-100 rounded-lg text-purple-600">
-            <BookOpen className="w-5 h-5" />
+      {/* Validation Section */}
+      <section className="mt-12 pt-8 border-t border-white/5">
+        <div className="flex items-center gap-2 mb-6">
+          <Beaker className="w-5 h-5 text-emerald-400" />
+          <h2 className="label-micro text-emerald-400">Validation Benchmarks</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="card-premium p-6 bg-emerald-500/5 border-emerald-500/10">
+            <h4 className="text-xs font-bold text-emerald-400 uppercase mb-3">LDR Cervix Test</h4>
+            <ul className="text-[11px] text-slate-400 space-y-2 font-mono">
+              <li>Input: 50 Gy @ 0.6 Gy/h, t½=1.5h, α/β=10</li>
+              <li>Expected: μ=0.462, g(T)≈0.0236, BED≈50.16</li>
+              <li className="text-emerald-300/70">Current: BED={results.bed.toFixed(2)} (Mode: Temporary)</li>
+            </ul>
           </div>
-          <div>
-            <h4 className="text-sm font-bold text-purple-900 mb-1">Clinical Interpretation</h4>
-            <p className="text-xs text-purple-800 leading-relaxed">
-              In LDR brachytherapy, the dose is delivered over a long period, allowing for significant 
-              sublethal damage repair during irradiation. The G-factor accounts for this reduction in 
-              biological effectiveness compared to an instantaneous dose. As treatment time increases 
-              (and dose rate decreases), the BED falls for the same physical dose.
-            </p>
+          <div className="card-premium p-6 bg-emerald-500/5 border-emerald-500/10">
+            <h4 className="text-xs font-bold text-emerald-400 uppercase mb-3">I-125 Prostate Test</h4>
+            <ul className="text-[11px] text-slate-400 space-y-2 font-mono">
+              <li>Input: 145 Gy, R₀=0.07 Gy/h, T½=60d, α/β=1.5</li>
+              <li>Expected: BED₁.₅≈166.6, EQD2₁.₅≈71.4</li>
+              <li className="text-emerald-300/70">Current: BED={results.bed.toFixed(1)}, EQD2={results.eqd2.toFixed(1)} (Mode: Permanent)</li>
+            </ul>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 };

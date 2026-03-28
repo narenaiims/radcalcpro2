@@ -5,7 +5,7 @@ import ShareButton from './ShareButton';
 import { CalcHistoryPanel } from '../src/components/CalcHistoryPanel';
 import { useRxContext } from '../src/context/RadiobiologyContext';
 
-import { RotateCcw, Home, History } from 'lucide-react';
+import { RotateCcw, Home, History, Sun, Moon, EyeOff } from 'lucide-react';
 
 // ── Route manifest (single source of truth for nav) ──────────────────────
 export const ROUTES = [
@@ -210,7 +210,7 @@ const Header: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [query, setQuery]   = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
-  const { history } = useRxContext();
+  const { history, rx, setTheme } = useRxContext();
   const drawerRef = useRef<HTMLDivElement>(null);
   const isHome = location.pathname === '/';
   const pageInfo = usePageInfo(location.pathname);
@@ -316,6 +316,27 @@ const Header: React.FC = () => {
                 <Home className="w-4 h-4 relative z-10 drop-shadow-sm shrink-0" />
                 <span className="hidden lg:inline text-[10px] font-bold uppercase tracking-wider relative z-10">Home</span>
               </Link>
+            </Magnetic>
+
+            <Magnetic>
+              <button
+                onClick={() => {
+                  const next: Record<string, 'light' | 'dark' | 'dim'> = {
+                    light: 'dark',
+                    dark: 'dim',
+                    dim: 'light'
+                  };
+                  setTheme(next[rx.theme]);
+                }}
+                className="group relative flex items-center gap-1.5 px-2 py-1.5 rounded-xl text-blue-200 hover:text-white hover:bg-white/5 transition-all overflow-hidden"
+                title={`Switch Theme (Current: ${rx.theme})`}
+              >
+                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br ${currentAccent.glow} blur-xl transition-opacity`} />
+                {rx.theme === 'light' && <Sun className="w-4 h-4 relative z-10 drop-shadow-sm shrink-0" />}
+                {rx.theme === 'dark' && <Moon className="w-4 h-4 relative z-10 drop-shadow-sm shrink-0" />}
+                {rx.theme === 'dim' && <EyeOff className="w-4 h-4 relative z-10 drop-shadow-sm shrink-0" />}
+                <span className="hidden lg:inline text-[10px] font-bold uppercase tracking-wider relative z-10">{rx.theme}</span>
+              </button>
             </Magnetic>
 
             <Magnetic>

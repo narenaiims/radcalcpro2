@@ -9,7 +9,7 @@ const QUICK_REF_DATA = [
     category: "Gap Principles",
     items: [
       { label: "OTT Impact", value: "Repopulation Loss" },
-      { label: "K-value", value: "EQD2 loss/day" },
+      { label: "K-value", value: "BED loss/day" },
       { label: "Tk", value: "Kick-off time (days)" },
     ]
   },
@@ -99,14 +99,14 @@ const EBRTGapPage: React.FC = () => {
     const daysElapsedAtGapStart = totalFx > 0 ? Math.ceil((data.fxCompleted / totalFx) * estimatedOverallTime) : 0;
     
     const effectiveRepopDays = Math.max(0, data.gapDays - Math.max(0, tk - daysElapsedAtGapStart));
-    const eqd2Loss = k * effectiveRepopDays;
+    const bedLoss = k * effectiveRepopDays;
+    const eqd2Loss = bedLoss / (1 + 2 / ab);
     
     const tkReachedBeforeGap = daysElapsedAtGapStart >= tk;
     
     // Compensation
-    // Convert EQD2 loss back to physical dose at current d/fx
-    const conversionFactor = ab > 0 ? (1 + 2/ab) / (1 + dpf/ab) : 1;
-    const physicalDoseLoss = eqd2Loss * conversionFactor;
+    // Convert BED loss back to physical dose at current d/fx
+    const physicalDoseLoss = ab > 0 ? bedLoss / (1 + dpf / ab) : 0;
     
     const extraFxExact = dpf > 0 ? physicalDoseLoss / dpf : 0;
     const extraFx = Math.ceil(extraFxExact);
@@ -408,6 +408,9 @@ const EBRTGapPage: React.FC = () => {
                     {results.effectiveRepopDays < data.gapDays 
                       ? ` Only ${results.effectiveRepopDays} of ${data.gapDays} days are subject to repopulation (Tk=${results.tk}d).`
                       : ` All ${data.gapDays} days are subject to repopulation correction.`}
+                  </p>
+                  <p className="text-[10px] text-blue-600/80 mt-1.5 leading-tight">
+                    Note: Gap start day is estimated assuming exactly 5 fx/week. For 6 fx/week or non-standard schedules, actual calendar days elapsed may differ.
                   </p>
                 </div>
               </div>

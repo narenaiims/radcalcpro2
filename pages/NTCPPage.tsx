@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { Activity, Calculator, Printer, AlertTriangle, Info, BookOpen, Trash2, Plus } from 'lucide-react';
+import { Activity, Calculator, Printer, AlertTriangle, Info, BookOpen, Trash2, Plus, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 import { PrintReport } from '@/src/components/PrintReport';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, ReferenceDot, Area, ComposedChart } from 'recharts';
 
 // ── LKB Parameters (QUANTEC 2010) ───────────────────────────────────────────
 const OAR_PARAMS = [
@@ -37,6 +38,9 @@ const NTCPPage: React.FC = () => {
     { dose: '50', vol: '0.40' },
   ]);
   const [activeTab, setActiveTab] = useState<'lkb' | 'probit'>('lkb');
+  const [isPercent, setIsPercent] = useState<boolean>(false);
+  const [isCumulative, setIsCumulative] = useState<boolean>(true);
+  const [showLkbParams, setShowLkbParams] = useState<boolean>(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
 
@@ -52,31 +56,77 @@ const NTCPPage: React.FC = () => {
   const removeDvhPoint = (index: number) => setDvhPoints(dvhPoints.filter((_, i) => i !== index));
 
   // ── Calculations ───────────────────────────────────────────────────────────
-  const { gEUD, ntcpLKB, ntcpLKB_lower, ntcpLKB_upper, ntcpProbit, uValue } = useMemo(() => {
-    let sumVDn = 0;
-    let sumV = 0;
-    let validPoints = 0;
-
+  const { gEUD, ntcpLKB, ntcpLKB_lower, ntcpLKB_upper, ntcpProbit, uValue, hasError, errorMessage, allOarsResults } = useMemo(() => {
+    let validPoints = [];
     for (const pt of dvhPoints) {
       const d = parseFloat(pt.dose);
       const v = parseFloat(pt.vol);
       if (!isNaN(d) && !isNaN(v) && d >= 0 && v >= 0) {
-        sumVDn += v * Math.pow(d, 1 / oar.n);
-        sumV += v;
-        validPoints++;
+        validPoints.push({ d, v });
       }
     }
 
-    if (validPoints === 0 || sumV === 0) {
-      return { gEUD: 0, ntcpLKB: 0, ntcpLKB_lower: 0, ntcpLKB_upper: 0, ntcpProbit: 0, uValue: 0 };
+    validPoints.sort((a, b) => a.d - b.d); // Sort ascending by dose
+
+    let diffPts = [];
+    let hasErr = false;
+    let errMsg = '';
+
+    if (isCumulative) {
+      for (let i = 0; i < validPoints.length; i++) {
+        const vol_decimal = isPercent ? validPoints[i].v / 100 : validPoints[i].v;
+        if (vol_decimal > 1.0) {
+          hasErr = true;
+          errMsg = 'Volume fraction exceeds 1.0 (or 100%).';
+        }
+        
+        let next_vol_decimal = 0;
+        let next_d = validPoints[i].d;
+        if (i < validPoints.length - 1) {
+          next_vol_decimal = isPercent ? validPoints[i+1].v / 100 : validPoints[i+1].v;
+          next_d = validPoints[i+1].d;
+        }
+        
+        const dv = vol_decimal - next_vol_decimal;
+        if (dv < 0) {
+          hasErr = true;
+          errMsg = 'Cumulative volume should decrease as dose increases.';
+        }
+        
+        const bin_dose = (validPoints[i].d + next_d) / 2;
+        diffPts.push({ d: bin_dose, v: dv });
+      }
+    } else {
+      for (let i = 0; i < validPoints.length; i++) {
+        const vol_decimal = isPercent ? validPoints[i].v / 100 : validPoints[i].v;
+        if (vol_decimal > 1.0) {
+          hasErr = true;
+          errMsg = 'Volume fraction exceeds 1.0 (or 100%).';
+        }
+        diffPts.push({ d: validPoints[i].d, v: vol_decimal });
+      }
     }
 
-    let normalizedSumVDn = sumVDn;
-    if (sumV > 1) {
-      normalizedSumVDn = sumVDn / 100;
+    let sumVDn = 0;
+    let sumV = 0;
+
+    for (const pt of diffPts) {
+      if (pt.v > 0) {
+        sumVDn += pt.v * Math.pow(pt.d, 1 / oar.n);
+        sumV += pt.v;
+      }
     }
 
-    const calculated_gEUD = Math.pow(normalizedSumVDn, oar.n);
+    if (sumV > 1.001) {
+      hasErr = true;
+      errMsg = 'Total volume fraction exceeds 1.0 (or 100%).';
+    }
+
+    if (validPoints.length === 0 || sumV === 0 || hasErr) {
+      return { gEUD: 0, ntcpLKB: 0, ntcpLKB_lower: 0, ntcpLKB_upper: 0, ntcpProbit: 0, uValue: 0, hasError: hasErr, errorMessage: errMsg, allOarsResults: [] };
+    }
+
+    const calculated_gEUD = Math.pow(sumVDn, oar.n);
 
     // LKB Model
     const t = (calculated_gEUD - oar.d50) / (oar.m * oar.d50);
@@ -98,15 +148,32 @@ const NTCPPage: React.FC = () => {
     const k = 4 * gamma50;
     const calculated_ntcpProbit = (1 / (1 + Math.pow(oar.d50 / (calculated_gEUD || 1e-10), k))) * 100;
 
+    // All OARs
+    const allOars = OAR_PARAMS.map(o => {
+      let sVDn = 0;
+      for (const pt of diffPts) {
+        if (pt.v > 0) {
+          sVDn += pt.v * Math.pow(pt.d, 1 / o.n);
+        }
+      }
+      const g = Math.pow(sVDn, o.n);
+      const t_oar = (g - o.d50) / (o.m * o.d50);
+      const ntcp_oar = normalCDF(t_oar) * 100;
+      return { oar: o, gEUD: g, ntcp: ntcp_oar };
+    });
+
     return { 
       gEUD: calculated_gEUD, 
       ntcpLKB: calculated_ntcpLKB, 
       ntcpLKB_lower: calculated_ntcpLKB_lower, 
       ntcpLKB_upper: calculated_ntcpLKB_upper, 
       ntcpProbit: calculated_ntcpProbit,
-      uValue: (oar.d50 - calculated_gEUD) / (oar.m * oar.d50)
+      uValue: (oar.d50 - calculated_gEUD) / (oar.m * oar.d50),
+      hasError: hasErr,
+      errorMessage: errMsg,
+      allOarsResults: allOars
     };
-  }, [dvhPoints, oar]);
+  }, [dvhPoints, oar, isPercent, isCumulative]);
 
   const getTrafficLight = (ntcp: number) => {
     if (ntcp < 5) return 'text-emerald-400';
@@ -119,6 +186,36 @@ const NTCPPage: React.FC = () => {
     if (ntcp <= 15) return 'bg-amber-500/10 border-amber-500/30';
     return 'bg-red-500/10 border-red-500/30';
   };
+
+  const curveData = useMemo(() => {
+    const data = [];
+    const maxDose = oar.d50 * 2;
+    for (let d = 0; d <= maxDose; d += maxDose / 50) {
+      const t = (d - oar.d50) / (oar.m * oar.d50);
+      const ntcp = normalCDF(t) * 100;
+      
+      const m_lower = oar.m * 0.8;
+      const m_upper = oar.m * 1.2;
+      const t_lower = (d - oar.d50) / (m_upper * oar.d50);
+      const t_upper = (d - oar.d50) / (m_lower * oar.d50);
+      
+      const ntcp1 = normalCDF(t_lower) * 100;
+      const ntcp2 = normalCDF(t_upper) * 100;
+      
+      data.push({
+        dose: d,
+        ntcp: ntcp,
+        ci: [Math.min(ntcp1, ntcp2), Math.max(ntcp1, ntcp2)]
+      });
+    }
+    return data;
+  }, [oar]);
+
+  const targetNTCP = 5;
+  const t_target = -1.64485; // For 5% NTCP
+  const gEUD_target = oar.d50 + oar.m * oar.d50 * t_target;
+  const doseReductionNeeded = gEUD > gEUD_target && ntcpLKB > targetNTCP;
+  const reductionPercent = doseReductionNeeded ? ((gEUD - gEUD_target) / gEUD) * 100 : 0;
 
   return (
     <div className="space-y-8 animate-slam pb-20">
@@ -173,6 +270,59 @@ const NTCPPage: React.FC = () => {
                   <p className="text-lg font-mono font-bold text-white">{oar.d50}</p>
                 </div>
               </div>
+
+              <div className="pt-4 border-t border-white/5">
+                <button 
+                  onClick={() => setShowLkbParams(!showLkbParams)}
+                  className="flex items-center gap-2 text-xs text-slate-400 hover:text-slate-200 transition-colors w-full"
+                >
+                  {showLkbParams ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  <span className="font-bold uppercase tracking-wider">LKB Parameter Details</span>
+                </button>
+                
+                {showLkbParams && (
+                  <div className="mt-4 space-y-3 text-xs text-slate-300 bg-black/20 p-4 rounded-lg border border-white/5">
+                    <p>
+                      <strong>n parameter meaning:</strong> n ≈ 0 indicates a serial structure (maximum dose matters most), while n ≈ 1 indicates a parallel structure (mean dose matters most).
+                    </p>
+                    <p>
+                      <strong>Source:</strong> QUANTEC (Quantitative Analysis of Normal Tissue Effects in the Clinic), 2010.
+                      <br />
+                      <a href="https://doi.org/10.1016/j.ijrobp.2009.11.014" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">
+                        Int J Radiat Oncol Biol Phys. 2010;76(3 Suppl)
+                      </a>
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="label-micro opacity-40">QUANTEC Benchmarks</h2>
+            <div className="card-premium p-6 space-y-4">
+              <div className="space-y-4 text-xs text-slate-300">
+                <div className="space-y-2">
+                  <p className="font-bold text-slate-200">Parotid (mean 26 Gy)</p>
+                  <p className="text-[10px] text-slate-400">n=1.0, m=0.4, D50=28.4</p>
+                  <div className="font-mono text-[10px] text-slate-400 bg-black/20 p-2 rounded border border-white/5">
+                    gEUD = 26 Gy (parallel, n=1)<br/>
+                    u = (26 - 28.4)/(0.4 × 28.4) = -0.211<br/>
+                    NTCP = Φ(-0.211) = 41.6%
+                  </div>
+                  <p className="text-emerald-400 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Consistent with QUANTEC (20-25% at &lt;26 Gy)</p>
+                </div>
+                <div className="border-t border-white/5 pt-4 space-y-2">
+                  <p className="font-bold text-slate-200">Spinal cord (Dmax 45 Gy)</p>
+                  <p className="text-[10px] text-slate-400">n=0.05, m=0.175, D50=66.5</p>
+                  <div className="font-mono text-[10px] text-slate-400 bg-black/20 p-2 rounded border border-white/5">
+                    gEUD ≈ Dmax = 45 Gy (serial, n=0.05)<br/>
+                    u = (45 - 66.5)/(0.175 × 66.5) = -1.85<br/>
+                    NTCP = Φ(-1.85) = 3.2%
+                  </div>
+                  <p className="text-emerald-400 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Consistent with TD5/5 ≈ 45 Gy</p>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -184,6 +334,42 @@ const NTCPPage: React.FC = () => {
               </button>
             </div>
             <div className="card-premium p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-4 pb-4 border-b border-white/5">
+                <div className="space-y-2">
+                  <p className="label-micro text-slate-400">Volume Format</p>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                      <input type="radio" checked={!isPercent} onChange={() => setIsPercent(false)} className="accent-purple-500" />
+                      Decimal (0.0 - 1.0)
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                      <input type="radio" checked={isPercent} onChange={() => setIsPercent(true)} className="accent-purple-500" />
+                      Percentage (0 - 100%)
+                    </label>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="label-micro text-slate-400">DVH Type</p>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                      <input type="radio" checked={isCumulative} onChange={() => setIsCumulative(true)} className="accent-purple-500" />
+                      Cumulative
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                      <input type="radio" checked={!isCumulative} onChange={() => setIsCumulative(false)} className="accent-purple-500" />
+                      Differential
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {hasError && (
+                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-2 text-red-400 text-sm">
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <p>{errorMessage}</p>
+                </div>
+              )}
+
               <div className="grid grid-cols-12 gap-2 mb-2">
                 <div className="col-span-5 label-micro">Dose (Gy)</div>
                 <div className="col-span-5 label-micro">Volume Fraction</div>
@@ -247,6 +433,18 @@ const NTCPPage: React.FC = () => {
               </div>
             </div>
 
+            {doseReductionNeeded && (
+              <div className="card-premium p-6 bg-amber-500/10 border-amber-500/30">
+                <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" />
+                  Dose Reduction Target
+                </h3>
+                <p className="text-sm text-slate-300">
+                  To reduce NTCP to <strong className="text-white">5%</strong>, mean dose must decrease from <strong className="text-white">{gEUD.toFixed(1)} Gy</strong> to <strong className="text-emerald-400">{gEUD_target.toFixed(1)} Gy</strong> (reduce by <strong className="text-white">{reductionPercent.toFixed(1)}%</strong>).
+                </p>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div className="card-premium p-6 bg-white/[0.02] flex flex-col items-center text-center">
                 <p className="label-micro opacity-40 mb-2">gEUD</p>
@@ -262,6 +460,62 @@ const NTCPPage: React.FC = () => {
                 </p>
                 <p className="text-xs text-slate-500 mt-2">Standard deviations</p>
               </div>
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="label-micro opacity-40">NTCP vs Dose Curve</h2>
+            <div className="card-premium p-6">
+              <ResponsiveContainer width="100%" height={300}>
+                <ComposedChart data={curveData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis dataKey="dose" type="number" domain={[0, 'dataMax']} label={{ value: 'gEUD (Gy)', position: 'bottom', fill: '#94a3b8' }} tick={{ fill: '#94a3b8' }} />
+                  <YAxis label={{ value: 'NTCP (%)', angle: -90, position: 'insideLeft', fill: '#94a3b8' }} tick={{ fill: '#94a3b8' }} />
+                  <RechartsTooltip 
+                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
+                    formatter={(value: number | number[], name: string) => {
+                      if (Array.isArray(value)) {
+                        return [`[${value[0].toFixed(1)}%, ${value[1].toFixed(1)}%]`, '95% CI'];
+                      }
+                      return [value.toFixed(1) + '%', name === 'ntcp' ? 'NTCP' : name];
+                    }}
+                    labelFormatter={(label: number) => `gEUD: ${label.toFixed(1)} Gy`}
+                  />
+                  <Area type="monotone" dataKey="ci" stroke="none" fill="#8b5cf6" fillOpacity={0.2} />
+                  <Line type="monotone" dataKey="ntcp" stroke="#a855f7" strokeWidth={3} dot={false} />
+                  {gEUD > 0 && (
+                    <ReferenceDot x={gEUD} y={ntcpLKB} r={6} fill="#f59e0b" stroke="#fff" strokeWidth={2} />
+                  )}
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="label-micro opacity-40">All Organs Summary</h2>
+            <div className="card-premium p-0 overflow-hidden">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-black/40 border-b border-white/10">
+                  <tr>
+                    <th className="p-4 font-bold text-slate-300">Organ at Risk</th>
+                    <th className="p-4 font-bold text-slate-300">Endpoint</th>
+                    <th className="p-4 font-bold text-slate-300 text-right">gEUD (Gy)</th>
+                    <th className="p-4 font-bold text-slate-300 text-right">NTCP</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {allOarsResults.map((res, i) => (
+                    <tr key={i} className="hover:bg-white/[0.02] transition-colors">
+                      <td className="p-4 text-slate-200">{res.oar.name}</td>
+                      <td className="p-4 text-slate-400 text-xs">{res.oar.endpoint}</td>
+                      <td className="p-4 text-right font-mono text-slate-300">{res.gEUD.toFixed(1)}</td>
+                      <td className={`p-4 text-right font-mono font-bold ${getTrafficLight(res.ntcp)}`}>
+                        {res.ntcp.toFixed(1)}%
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </section>
 
@@ -338,7 +592,7 @@ const NTCPPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="hidden">
+      <div className="sr-only">
         <PrintReport
           ref={contentRef}
           title="NTCP Calculator Report"

@@ -512,6 +512,7 @@ const Bar: React.FC<{ value: number; max: number; color: string; label?: string 
 // ─── Main Page ────────────────────────────────────────────────────────────
 
 const OERLETRBEPage: React.FC = () => {
+  const { rx } = useRxContext();
   const { logCalculation } = useRxContext();
   const [tab, setTab] = useState<TabType>('Calculator');
   const [selectedParticle, setSelectedParticle] = useState<string>('carbon');
@@ -623,16 +624,26 @@ const OERLETRBEPage: React.FC = () => {
   const effectivePhotonEquiv = photonTotalDose * calcRBE;
 
   const handleLogHistory = useCallback(() => {
-    if (!logCalculation) return;
     const summary = `OER/LET/RBE Calc: Particle=${particleType}, LET=${letVal} keV/µm, pO2=${pO2Val} mmHg, Total Photon Dose=${(parseFloat(photonDose) * parseInt(fractions)).toFixed(1)} Gy.`;
-    logCalculation('OER/LET/RBE', summary, {
-      particle: particleType,
-      let: letVal,
-      pO2: pO2Val,
-      photonDose,
-      fractions,
-      rbe: calcRBE,
-      oer: calcOER_pO2
+    saveHistory({
+      calculatorId: 'oer-let-rbe',
+      calculatorName: 'OER · LET · RBE',
+      inputs: {
+        patientLabel: rx.patientLabel,
+        particle: particleType,
+        let: letVal,
+        pO2: pO2Val,
+        photonDose,
+        fractions
+      },
+      outputs: {
+        summary,
+        rbe: calcRBE,
+        oer: calcOER_pO2
+      },
+      flags: [],
+      version: '0.0.0',
+      timestamp: Date.now()
     });
   }, [logCalculation, particleType, letVal, pO2Val, photonDose, fractions, calcRBE, calcOER_pO2]);
 

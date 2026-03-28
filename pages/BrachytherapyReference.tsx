@@ -9,6 +9,7 @@ import { skinData } from "../src/data/brachytherapy/skin";
 import { cervixData } from "../src/data/brachytherapy/cervix";
 import { breastData } from "../src/data/brachytherapy/breast";
 import { esophagusData } from "../src/data/brachytherapy/esophagus";
+import { bronchusData } from "../src/data/brachytherapy/bronchus";
 
 // Component Imports
 import SectionCard from "../src/components/brachytherapy/SectionCard";
@@ -58,6 +59,7 @@ const SITES: Record<string, any> = {
   cervix:   { label: "Cervix",   icon: "🌺", primary: C.emerald, bg: C.emeraldBg, border: C.emeraldBd },
   breast:   { label: "Breast",   icon: "🌸", primary: C.indigo,  bg: C.indigoBg,  border: C.indigoBd },
   esophagus:{ label: "Esophagus",icon: "🥖", primary: C.orange,  bg: C.orangeBg,  border: C.orangeBd },
+  bronchus: { label: "Bronchus", icon: "🫁", primary: "#86EFAC", bg: "rgba(134,239,172,0.09)", border: "rgba(134,239,172,0.28)" },
 };
 
 const KB: Record<string, any[]> = {
@@ -67,6 +69,7 @@ const KB: Record<string, any[]> = {
   cervix:   cervixData,
   breast:   breastData,
   esophagus:esophagusData,
+  bronchus: bronchusData,
 };
 
 export default function BrachytherapyReference() {
@@ -257,6 +260,45 @@ export default function BrachytherapyReference() {
                 ["#F87171", "Cartilage Layer",  "α/β ≈ 2 Gy: max 3.5 Gy/fraction"],
                 ["#60A5FA", "Bolus",            "Required for concave surfaces"],
                 [C.amber+"99","Dose Fall-off",  "Rapid 1/r² — protects deep structures"],
+              ].map(([c,l,d],i)=>(
+                <div key={i} style={{ padding:"9px 12px", borderRadius:"10px", backgroundColor:C.card2, borderLeft:`3px solid ${c}` }}>
+                  <div style={{ fontSize:"11px", fontWeight:700, color:c, fontFamily:"'Outfit',sans-serif", marginBottom:"2px" }}>{l}</div>
+                  <div style={{ fontSize:"10px", color:C.dim }}>{d}</div>
+                </div>
+              ))}
+              {activeSite==="cervix" && [
+                [C.emerald,  "Central Tandem",  "Intrauterine: 2–6 cm active"],
+                ["#FBBF24", "Ovoids / Ring",    "Forniceal: pear-shaped dose"],
+                ["#A78BFA", "Point A",          "2cm lat, 2cm sup to os"],
+                ["#60A5FA", "Bladder",          "D2cc < 80 Gy EQD2₃"],
+                ["#F87171", "Rectum",           "D2cc < 65 Gy EQD2₃"],
+                [C.emerald+"99","HR-CTV",       "Target: D90 ≥ 85 Gy EQD2"],
+              ].map(([c,l,d],i)=>(
+                <div key={i} style={{ padding:"9px 12px", borderRadius:"10px", backgroundColor:C.card2, borderLeft:`3px solid ${c}` }}>
+                  <div style={{ fontSize:"11px", fontWeight:700, color:c, fontFamily:"'Outfit',sans-serif", marginBottom:"2px" }}>{l}</div>
+                  <div style={{ fontSize:"10px", color:C.dim }}>{d}</div>
+                </div>
+              ))}
+              {activeSite==="breast" && [
+                [C.indigo,   "Lumpectomy Bed",  "Target for APBI boost"],
+                [C.indigo+"99","Catheters",     "Interstitial multi-catheter"],
+                ["#86EFAC", "Skin Surface",     "OAR: D1cc < 32 Gy"],
+                ["#F87171", "Chest Wall",       "OAR: D1cc < 40 Gy"],
+                ["#FBBF24", "Rx Isodose",       "V100 coverage of cavity+margin"],
+                ["#60A5FA", "BID Gap",          "Min 6h between fractions"],
+              ].map(([c,l,d],i)=>(
+                <div key={i} style={{ padding:"9px 12px", borderRadius:"10px", backgroundColor:C.card2, borderLeft:`3px solid ${c}` }}>
+                  <div style={{ fontSize:"11px", fontWeight:700, color:c, fontFamily:"'Outfit',sans-serif", marginBottom:"2px" }}>{l}</div>
+                  <div style={{ fontSize:"10px", color:C.dim }}>{d}</div>
+                </div>
+              ))}
+              {(activeSite==="esophagus" || activeSite==="bronchus") && [
+                [site.primary, "Active Source",  "Ir-192 stepping source"],
+                [site.primary+"99","Dwell Steps", "Typically 5mm spacing"],
+                ["#86EFAC", "1 cm Rx Point",    "Standard prescription distance"],
+                ["#F87171", "Mucosal Wall",     "Risk of fistula / necrosis"],
+                ["#A78BFA", "Aorta / Vessels",  "Critical OAR in central tumors"],
+                ["#60A5FA", "Centering",        "Bougie ensures lumen centering"],
               ].map(([c,l,d],i)=>(
                 <div key={i} style={{ padding:"9px 12px", borderRadius:"10px", backgroundColor:C.card2, borderLeft:`3px solid ${c}` }}>
                   <div style={{ fontSize:"11px", fontWeight:700, color:c, fontFamily:"'Outfit',sans-serif", marginBottom:"2px" }}>{l}</div>

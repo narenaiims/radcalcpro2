@@ -30,13 +30,11 @@ import React, {
   createContext,
   useContext,
   useReducer,
-  useState,
   useEffect,
   useCallback,
   useMemo,
   ReactNode,
 } from 'react';
-import { getHistory, saveHistory as saveHistoryDB, saveAuditLog, CalcHistoryEntry } from '../lib/db';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -281,12 +279,6 @@ interface RadiobiologyContextValue {
   setTheme: (theme: ThemeMode) => void;
   applyPreset: (preset: RxPreset) => void;
   reset: () => void;
-
-  // History
-  history: HistoryEntry[];
-  logCalculation: (tool: string, summary: string, detail: Record<string, string | number>) => void;
-  clearHistory: () => void;
-  removeFromHistory: (id: string) => void;
 }
 
 const RadiobiologyContext = createContext<RadiobiologyContextValue | null>(null);
@@ -306,23 +298,6 @@ export const RadiobiologyProvider: React.FC<{ children: ReactNode }> = ({ childr
     } catch { /* ignore */ }
     return DEFAULT_RX;
   });
-
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
-
-  // Load history from IndexedDB on mount
-  useEffect(() => {
-    getHistory().then((dbEntries: CalcHistoryEntry[]) => {
-      const uiEntries: HistoryEntry[] = dbEntries.map(e => ({
-        id: String(e.id),
-        ts: e.timestamp,
-        tool: e.calculatorId,
-        patientLabel: e.inputs.patientLabel || '',
-        summary: e.outputs.summary || '',
-        detail: e.inputs
-      }));
-      setHistory(uiEntries);
-    });
-  }, []);
 
   // Persist rx state on every change
   useEffect(() => {
@@ -381,52 +356,6 @@ export const RadiobiologyProvider: React.FC<{ children: ReactNode }> = ({ childr
   const applyPreset     = useCallback((preset: RxPreset) => dispatch({ type: 'APPLY_PRESET', preset }), []);
   const reset           = useCallback(() => dispatch({ type: 'RESET' }), []);
 
-  // ── History ─────────────────────────────────────────────────────────────
-  const logCalculation = useCallback(
-    async (tool: string, summary: string, detail: Record<string, string | number>) => {
-      const entry: HistoryEntry = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-        ts: Date.now(),
-        tool,
-        patientLabel: rx.patientLabel,
-        summary,
-        detail,
-      };
-      
-      // Save to IndexedDB
-      await saveHistoryDB({
-        timestamp: entry.ts,
-        calculatorId: tool,
-        inputs: { ...detail, patientLabel: rx.patientLabel },
-        outputs: { summary },
-        version: 'v2.1.0'
-      });
-      
-      // Save audit log
-      await saveAuditLog({
-        timestamp: Date.now(),
-        action: 'CALCULATION',
-        details: { tool, summary, patientLabel: rx.patientLabel }
-      });
-
-      setHistory(prev => [entry, ...prev].slice(0, HISTORY_MAX));
-    },
-    [rx.patientLabel]
-  );
-
-  const clearHistory = useCallback(() => {
-    setHistory([]);
-    localStorage.removeItem(HISTORY_KEY);
-  }, []);
-
-  const removeFromHistory = useCallback((id: string) => {
-    setHistory(prev => {
-      const next = prev.filter(entry => entry.id !== id);
-      saveHistory(next);
-      return next;
-    });
-  }, []);
-
   const value = useMemo<RadiobiologyContextValue>(() => ({
     rx,
     totalDose, bed, eqd2,
@@ -434,14 +363,12 @@ export const RadiobiologyProvider: React.FC<{ children: ReactNode }> = ({ childr
     setPatientLabel, setTumourAB, setOarAB, setDosePerFx,
     setFractions, setIntent, setTumourSite, setEBRT, setRepop, setTheme,
     applyPreset, reset,
-    history, logCalculation, clearHistory, removeFromHistory,
   }), [
     rx, totalDose, bed, eqd2,
     bedRepop, eqd2Repop, repopPenalty,
     setPatientLabel, setTumourAB, setOarAB, setDosePerFx,
     setFractions, setIntent, setTumourSite, setEBRT, setRepop, setTheme,
     applyPreset, reset,
-    history, logCalculation, clearHistory, removeFromHistory,
   ]);
 
   return (

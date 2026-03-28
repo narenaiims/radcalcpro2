@@ -136,7 +136,6 @@ export default defineConfig(({ mode }) => {
           },
           onwarn(warning, warn) {
             // Suppress TypeScript extension warnings from importmap-style imports
-            if (warning.code === 'UNRESOLVED_IMPORT') return;
             if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return;
             warn(warning);
           }

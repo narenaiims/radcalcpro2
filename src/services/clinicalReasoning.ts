@@ -11,7 +11,7 @@ export interface ClinicalSummary {
   references: string[];
 }
 
-export async function getClinicalSummary(prompt: string): Promise<ClinicalSummary> {
+export async function getClinicalSummary(prompt: string, systemInstruction?: string): Promise<ClinicalSummary> {
   // Fallback chain logic
   try {
     // Primary: Claude (Simulated here as we only have Gemini SDK)
@@ -21,11 +21,16 @@ export async function getClinicalSummary(prompt: string): Promise<ClinicalSummar
     try {
       // Fallback 1: Gemini
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-2.0-flash",
         contents: prompt,
-        config: { responseMimeType: "application/json" }
+        config: { 
+          responseMimeType: "application/json",
+          systemInstruction: systemInstruction || "You are a radiation oncology clinical decision support system. You assist qualified radiation oncologists and physicists. Provide concise (4–6 sentence) radiobiological interpretation. Always mention: (1) tissue category for this α/β, (2) clinical context, (3) comparison to standard 2 Gy/fx, (4) key OAR consideration. Never recommend specific patient treatment. Flag if dose appears non-standard. Use SI units. No markdown headers."
+        }
       });
-      return JSON.parse(response.text || "{}");
+      let text = response.text || "{}";
+      text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+      return JSON.parse(text);
     } catch (e) {
       // Fallback 2: Rule-based
       return generateClinicalSummaryRuleBased();

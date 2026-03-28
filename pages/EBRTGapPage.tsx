@@ -310,6 +310,16 @@ const EBRTGapPage: React.FC = () => {
                 </div>
 
                 <div className="pt-4 border-t border-slate-200">
+                  {selectedTumour && (
+                    <div className="mb-4 p-3 bg-slate-100 rounded-lg border border-slate-200">
+                      <p className="text-xs font-bold text-slate-700 mb-1">
+                        Repopulation rate: {selectedTumour.k ?? 'N/A'} Gy BED loss/day
+                      </p>
+                      <p className="text-[10px] text-slate-500 italic">
+                        Footnote: {selectedTumour.repopFootnote ?? 'No derivation footnote available.'}
+                      </p>
+                    </div>
+                  )}
                   <label className="flex items-center gap-2 cursor-pointer mb-3">
                     <input type="checkbox" checked={data.isBID} onChange={e => updateData('isBID', e.target.checked)} className="accent-blue-600" />
                     <span className="text-sm font-bold text-slate-800">Use BID (Twice Daily) Compensation</span>
@@ -364,6 +374,18 @@ const EBRTGapPage: React.FC = () => {
                 {results.interpretation.level} Sensitivity
               </span>
 
+              {/* K-Value Transparency Panel */}
+              <div className="mb-6 p-4 bg-slate-800 rounded-xl text-white">
+                <h4 className="text-xs font-bold text-blue-300 uppercase tracking-widest mb-3">K-Value Transparency Panel</h4>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                  <p className="text-slate-400">Tumour:</p><p className="font-medium">{selectedTumour.subsite} {selectedTumour.tumour}</p>
+                  <p className="text-slate-400">α/β:</p><p className="font-medium">{results.ab} Gy</p>
+                  <p className="text-slate-400">Kick-off time (Tk):</p><p className="font-medium">{results.tk} days</p>
+                  <p className="text-slate-400">Repopulation rate (k):</p><p className="font-medium">{results.k} Gy BED/day</p>
+                  <p className="text-slate-400">Source:</p><p className="font-medium italic">{selectedTumour.repopFootnote}</p>
+                </div>
+              </div>
+
               {/* Main Card */}
               <div className="bg-slate-900 rounded-2xl p-5 text-white mb-6 shadow-lg relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl -mr-10 -mt-10" />
@@ -393,6 +415,54 @@ const EBRTGapPage: React.FC = () => {
                       <p className="text-[10px] text-slate-400 mt-1">Late Tissue EQD2₃: {results.bidLateEQD2.toFixed(1)} Gy {results.bidLateEQD2 > 60 && <span className="text-red-400 font-bold">⚠️ Exceeds limit</span>}</p>
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* Site-Specific Evidence Context */}
+              <div className="mb-8 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                <h4 className="text-sm font-bold text-slate-800 mb-2">Clinical Evidence Context</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  {selectedTumour.clinicalContext ?? 'Evidence for this site is based on standard radiobiological models (LQ model). Clinical judgment is required for individual patient cases, especially in the presence of comorbidities or prior treatment.'}
+                </p>
+              </div>
+
+              {/* OTT Tracker */}
+              <div className="mb-8">
+                <h4 className="text-sm font-bold text-slate-800 mb-3">Overall Treatment Time (OTT) Tracker</h4>
+                <div className="relative h-12 bg-slate-100 rounded-xl flex items-center px-4">
+                  <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-300" />
+                  <div className="absolute right-4 top-0 bottom-0 w-0.5 bg-slate-300" />
+                  <div className="flex-1 h-2 bg-slate-200 rounded-full relative">
+                    <div className="absolute left-0 top-0 bottom-0 bg-green-500 rounded-full" style={{ width: `${(data.fxCompleted / totalFx) * 100}%` }} />
+                    <div className="absolute left-[calc((data.fxCompleted/totalFx)*100%)] top-0 bottom-0 bg-red-500 rounded-full" style={{ width: `${(data.gapDays / (totalFx / 5 * 7)) * 100}%` }} />
+                  </div>
+                </div>
+                <div className="flex justify-between text-[10px] text-slate-500 mt-1">
+                  <span>Start</span>
+                  <span>Gap</span>
+                  <span>End</span>
+                </div>
+              </div>
+
+              {/* Compensation Strategies */}
+              <div className="mb-8">
+                <h4 className="text-sm font-bold text-slate-800 mb-3">Compensation Strategies</h4>
+                <div className="space-y-4">
+                  {/* Strategy A */}
+                  <div className="p-4 bg-white border border-slate-200 rounded-xl">
+                    <p className="text-xs font-bold text-slate-900 mb-1">A: Extra Fractions</p>
+                    <p className="text-xs text-slate-600">Add {results.extraFx} fractions of {data.dosePerFx} Gy.</p>
+                  </div>
+                  {/* Strategy B */}
+                  <div className="p-4 bg-white border border-slate-200 rounded-xl">
+                    <p className="text-xs font-bold text-slate-900 mb-1">B: Increased Dose/Fraction</p>
+                    <p className="text-xs text-slate-600">Increase dose per fraction by {((results.physicalDoseLoss / (totalFx - data.fxCompleted)) / data.dosePerFx * 100).toFixed(1)}%.</p>
+                  </div>
+                  {/* Strategy C */}
+                  <div className="p-4 bg-white border border-slate-200 rounded-xl">
+                    <p className="text-xs font-bold text-slate-900 mb-1">C: BID Fractionation</p>
+                    <p className="text-xs text-slate-600">{data.isBID ? `Add ${results.bidExtraDays} BID days.` : 'BID not selected.'}</p>
+                  </div>
                 </div>
               </div>
 
@@ -483,7 +553,7 @@ const EBRTGapPage: React.FC = () => {
         data={SIDEBAR_DATA} 
       />
 
-      <div className="hidden">
+      <div className="sr-only">
         <PrintReport
           ref={contentRef}
           title="EBRT Gap Correction Report"
@@ -497,6 +567,17 @@ const EBRTGapPage: React.FC = () => {
             { label: 'EQD2 Loss', value: results?.eqd2Loss.toFixed(2) || '0', unit: 'Gy' },
             { label: 'Extra Fx', value: results?.extraFx.toString() || '0', unit: 'fx' },
             { label: 'New Total Dose', value: results?.newTotalDose.toFixed(1) || '0', unit: 'Gy' },
+          ]}
+          transparencyPanel={[
+            { label: 'Tumour', value: `${selectedTumour?.subsite} ${selectedTumour?.tumour}` },
+            { label: 'α/β', value: `${results?.ab} Gy` },
+            { label: 'Tk', value: `${results?.tk} days` },
+            { label: 'k', value: `${results?.k} Gy BED/day` },
+          ]}
+          compensationStrategies={[
+            { label: 'Extra Fractions', value: `Add ${results?.extraFx} fractions of ${data.dosePerFx} Gy.` },
+            { label: 'Increased Dose/Fx', value: `Increase dose per fraction by ${((results?.physicalDoseLoss ?? 0 / (totalFx - data.fxCompleted)) / data.dosePerFx * 100).toFixed(1)}%.` },
+            { label: 'BID Fractionation', value: data.isBID ? `Add ${results?.bidExtraDays} BID days.` : 'BID not selected.' },
           ]}
           clinicalInsight={results?.interpretation.description}
         />

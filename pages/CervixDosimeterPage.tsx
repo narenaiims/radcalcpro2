@@ -71,18 +71,35 @@ const CervixDosimeterPage: React.FC = () => {
     return dose * (dose + ab) / (2 + ab);
   };
 
+  const STRUCTURE_KEY_MAP: Record<string, keyof BrachyFraction> = {
+    'HR-CTV D90':   'hrCtvD90',
+    'Bladder D2cc': 'bladderD2cc',
+    'Rectum D2cc':  'rectumD2cc',
+    'Sigmoid D2cc': 'sigmoidD2cc',
+    'Vagina D2cc':  'vaginaD2cc',
+  };
+
   const results = useMemo(() => {
     return STRUCTURES.map(structure => {
       const ebrtEQD2 = ebrtFx * calcEQD2(ebrtDosePerFx, structure.ab);
       
       let brachyEQD2 = 0;
+      let hasMappingError = false;
+      
       fractions.forEach(fx => {
-        const dose = fx[structure.name.toLowerCase().replace(/ /g, '').replace('d90', 'hrCtvD90').replace('d2cc', 'D2cc') as keyof BrachyFraction] as number;
-        brachyEQD2 += calcEQD2(dose, structure.ab);
+        const key = STRUCTURE_KEY_MAP[structure.name];
+        const dose = fx[key];
+        
+        if (dose === undefined) {
+          console.error(`Data mapping error for structure: ${structure.name}`);
+          hasMappingError = true;
+        } else {
+          brachyEQD2 += calcEQD2(Number(dose) || 0, structure.ab);
+        }
       });
 
       const total = ebrtEQD2 + brachyEQD2;
-      return { ...structure, total, ebrtEQD2, brachyEQD2 };
+      return { ...structure, total, ebrtEQD2, brachyEQD2, hasMappingError };
     });
   }, [ebrtDosePerFx, ebrtFx, fractions]);
 
@@ -91,7 +108,7 @@ const CervixDosimeterPage: React.FC = () => {
   };
 
   const adaptiveResults = useMemo(() => {
-    const remainingFractions = 6 - fractions.filter(f => f.hrCtvD90 > 0).length;
+    const remainingFractions = fractions.filter(f => !f.hrCtvD90 || f.hrCtvD90 === 0).length;
     if (remainingFractions === 0) return { remainingFractions: 0, maxD90: 0, maxBladder: 0 };
 
     const hrCtvStructure = STRUCTURES.find(s => s.name === 'HR-CTV D90')!;
@@ -100,7 +117,7 @@ const CervixDosimeterPage: React.FC = () => {
     const currentHrCtvEQD2 = results.find(r => r.name === 'HR-CTV D90')!.brachyEQD2;
     const currentBladderEQD2 = results.find(r => r.name === 'Bladder D2cc')!.brachyEQD2;
 
-    const targetHrCtvEQD2 = hrCtvStructure.goal - (ebrtFx * calcEQD2(ebrtDosePerFx, hrCtvStructure.ab));
+    const targetHrCtvEQD2 = 85 - (ebrtFx * calcEQD2(ebrtDosePerFx, hrCtvStructure.ab));
     const limitBladderEQD2 = bladderStructure.limit - (ebrtFx * calcEQD2(ebrtDosePerFx, bladderStructure.ab));
 
     const remainingHrCtvEQD2 = Math.max(0, targetHrCtvEQD2 - currentHrCtvEQD2);
@@ -110,6 +127,7 @@ const CervixDosimeterPage: React.FC = () => {
     // d^2 + ab*d - EQD2*(2+ab) = 0
     // d = (-ab + sqrt(ab^2 + 4*EQD2*(2+ab))) / 2
     const solveDose = (eqd2: number, ab: number) => {
+      if (eqd2 <= 0) return 0;
       return (-ab + Math.sqrt(Math.pow(ab, 2) + 4 * eqd2 * (2 + ab))) / 2;
     };
 
@@ -160,7 +178,32 @@ const CervixDosimeterPage: React.FC = () => {
             </section>
 
             <section className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Brachytherapy Fractions</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold text-white">Brachytherapy Fractions</h2>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-slate-400">Planned:</span>
+                  <select 
+                    value={fractions.length}
+                    onChange={(e) => {
+                      const newCount = Number(e.target.value);
+                      if (newCount > fractions.length) {
+                        const newFractions = [...fractions];
+                        for (let i = fractions.length; i < newCount; i++) {
+                          newFractions.push({ id: Date.now().toString() + i, hrCtvD90: 0, bladderD2cc: 0, rectumD2cc: 0, sigmoidD2cc: 0, vaginaD2cc: 0 });
+                        }
+                        setFractions(newFractions);
+                      } else if (newCount < fractions.length) {
+                        setFractions(fractions.slice(0, newCount));
+                      }
+                    }}
+                    className="bg-slate-950 border border-slate-800 rounded-lg p-1 text-sm text-white focus:outline-none focus:border-cyan-500"
+                  >
+                    {[1, 2, 3, 4, 5, 6].map(n => (
+                      <option key={n} value={n}>{n} fractions</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -179,7 +222,14 @@ const CervixDosimeterPage: React.FC = () => {
                         <td className="py-2">{i + 1}</td>
                         {['hrCtvD90', 'bladderD2cc', 'rectumD2cc', 'sigmoidD2cc', 'vaginaD2cc'].map(field => (
                           <td key={field} className="py-2">
-                            <input type="number" value={fx[field as keyof BrachyFraction]} onChange={e => updateFraction(fx.id, field as keyof BrachyFraction, Number(e.target.value))} className="w-20 bg-slate-950 border border-slate-800 rounded p-1 text-center" />
+                            <input 
+                              type="number" 
+                              value={fx[field as keyof BrachyFraction] || ''} 
+                              onChange={e => updateFraction(fx.id, field as keyof BrachyFraction, e.target.value === '' ? 0 : Number(e.target.value))} 
+                              className="w-20 bg-slate-950 border border-slate-800 rounded p-1 text-center focus:outline-none focus:border-cyan-500" 
+                              step="0.1"
+                              min="0"
+                            />
                           </td>
                         ))}
                       </tr>
@@ -215,29 +265,69 @@ const CervixDosimeterPage: React.FC = () => {
               <h2 className="text-lg font-bold text-white mb-4">Combined EQD2</h2>
               <div className="space-y-4">
                 {results.map(res => (
-                  <div key={res.name} className="flex justify-between items-center bg-slate-950 p-3 rounded-lg">
-                    <span className="text-sm text-slate-300">{res.name}</span>
-                    <span className={`font-mono font-bold ${res.total >= res.goal ? 'text-emerald-400' : 'text-amber-400'}`}>{res.total.toFixed(1)} Gy</span>
+                  <div key={res.name} className="flex flex-col bg-slate-950 p-3 rounded-lg border border-slate-800/50">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-slate-300">{res.name}</span>
+                      <span className={`font-mono font-bold ${res.total >= res.goal ? 'text-emerald-400' : 'text-amber-400'}`}>{res.total.toFixed(1)} Gy</span>
+                    </div>
+                    {res.hasMappingError && (
+                      <div className="mt-2 text-xs text-rose-400 flex items-center gap-1 bg-rose-500/10 p-2 rounded border border-rose-500/20">
+                        <AlertTriangle className="w-3 h-3" />
+                        Data mapping error — contact support
+                      </div>
+                    )}
+                    {res.name === 'HR-CTV D90' && (
+                      <div className="mt-3 space-y-1">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-slate-400">
+                            {85 - res.total > 0 
+                              ? `Δ to target: +${(85 - res.total).toFixed(1)} Gy remaining` 
+                              : `Target reached (${(res.total - 85).toFixed(1)} Gy over)`}
+                          </span>
+                          <span className="text-slate-400">{res.total.toFixed(1)} / 85 Gy</span>
+                        </div>
+                        <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full transition-all duration-500 ${res.total >= 90 ? 'bg-emerald-500' : res.total >= 85 ? 'bg-amber-500' : 'bg-rose-500'}`} 
+                            style={{ width: `${Math.min(100, (res.total / 90) * 100)}%` }} 
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             </section>
             <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
               <h2 className="text-lg font-bold text-white mb-4">Adaptive Planning</h2>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center bg-slate-950 p-3 rounded-lg">
-                  <span className="text-sm text-slate-300">Remaining Fractions</span>
-                  <span className="font-mono font-bold text-white">{adaptiveResults.remainingFractions}</span>
+              {adaptiveResults.remainingFractions > 0 ? (
+                <div className="space-y-4">
+                  <div className="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                    <div className="text-sm text-slate-400 mb-1">Remaining fractions</div>
+                    <div className="text-2xl font-mono font-bold text-white">{adaptiveResults.remainingFractions}</div>
+                  </div>
+                  
+                  <div className="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                    <div className="text-sm text-slate-400 mb-1">Required HR-CTV D90 per remaining fraction</div>
+                    <div className="text-xl font-mono font-bold text-cyan-400">
+                      {adaptiveResults.maxD90.toFixed(1)} Gy <span className="text-sm font-sans font-normal text-slate-500">to reach 85 Gy target</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                    <div className="text-sm text-slate-400 mb-1">Maximum Bladder D2cc per remaining fraction</div>
+                    <div className="text-xl font-mono font-bold text-rose-400">
+                      {adaptiveResults.maxBladder.toFixed(1)} Gy <span className="text-sm font-sans font-normal text-slate-500">to stay within limit</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center bg-slate-950 p-3 rounded-lg">
-                  <span className="text-sm text-slate-300">Max D90/fx</span>
-                  <span className="font-mono font-bold text-cyan-400">{adaptiveResults.maxD90.toFixed(1)} Gy</span>
+              ) : (
+                <div className="bg-slate-950 p-6 rounded-lg border border-slate-800 text-center">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                  <div className="text-white font-medium">All fractions completed</div>
+                  <div className="text-sm text-slate-400 mt-1">Target evaluation is complete.</div>
                 </div>
-                <div className="flex justify-between items-center bg-slate-950 p-3 rounded-lg">
-                  <span className="text-sm text-slate-300">Max Bladder/fx</span>
-                  <span className="font-mono font-bold text-rose-400">{adaptiveResults.maxBladder.toFixed(1)} Gy</span>
-                </div>
-              </div>
+              )}
             </section>
           </div>
         </div>

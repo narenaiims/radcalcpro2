@@ -16,7 +16,8 @@ export interface RadiobiologyData {
   abLow?: number;
   abHigh?: number;
   tk?: number;
-  k?: number; // Repopulation rate (BED loss per day, Gy/day)
+  k?: number; // Repopulation rate (Gy BED loss/day)
+  repopFootnote?: string; // Footnote explaining derivation
   abSource?: string;
   repopNote?: string;
   clinicalContext?: string;
@@ -24,21 +25,21 @@ export interface RadiobiologyData {
 
 export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   // ── Head & Neck ──
-  { id: 'hn-larynx', site: 'Head & Neck', subsite: 'Larynx', tumour: 'SCC', alphaBeta: 10 },
-  { id: 'hn-naso', site: 'Head & Neck', subsite: 'Nasopharynx', tumour: 'SCC', alphaBeta: 10 },
-  { id: 'hn-oro-hpv-neg', site: 'Head & Neck', subsite: 'Oropharynx', tumour: 'SCC HPV-', alphaBeta: 10 },
-  { id: 'hn-oro-hpv-pos', site: 'Head & Neck', subsite: 'Oropharynx', tumour: 'SCC HPV+', alphaBeta: 10, abSource: 'Ang et al RTOG 0129' },
-  { id: 'hn-oral-cavity', site: 'Head & Neck', subsite: 'Oral Cavity', tumour: 'SCC', alphaBeta: 10 },
-  { id: 'hn-hypopharynx', site: 'Head & Neck', subsite: 'Hypopharynx', tumour: 'SCC', alphaBeta: 10 },
-  { id: 'hn-salivary-adeno', site: 'Head & Neck', subsite: 'Salivary Gland', tumour: 'Adenocarcinoma', alphaBeta: 8 },
-  { id: 'hn-salivary-acc', site: 'Head & Neck', subsite: 'Salivary Gland', tumour: 'Adenoid Cystic', alphaBeta: 8 },
-  { id: 'hn-thyroid-ana', site: 'Head & Neck', subsite: 'Thyroid', tumour: 'Anaplastic', alphaBeta: 10 },
-  { id: 'hn-thyroid-diff', site: 'Head & Neck', subsite: 'Thyroid', tumour: 'Differentiated', alphaBeta: 10 },
-  { id: 'hn-sinus', site: 'Head & Neck', subsite: 'Paranasal Sinus', tumour: 'SCC/Adeno', alphaBeta: 10 },
-  { id: 'hn-cup', site: 'Head & Neck', subsite: 'Unknown Primary', tumour: 'SCC', alphaBeta: 10 },
-  { id: 'hn-glomus', site: 'Head & Neck', subsite: 'Glomus Tumour', tumour: 'Paraganglioma', alphaBeta: 2 },
-  { id: 'hn-chordoma', site: 'Head & Neck', subsite: 'Base of Skull', tumour: 'Chordoma', alphaBeta: 2 },
-  { id: 'hn-chondrosarcoma', site: 'Head & Neck', subsite: 'Base of Skull', tumour: 'Chondrosarcoma', alphaBeta: 2 },
+  { id: 'hn-larynx', site: 'Head & Neck', subsite: 'Larynx', tumour: 'SCC', alphaBeta: 10, repopFootnote: 'Withers HR et al. Acta Oncol 1988' },
+  { id: 'hn-naso', site: 'Head & Neck', subsite: 'Nasopharynx', tumour: 'SCC', alphaBeta: 10, repopFootnote: 'Withers HR et al. Acta Oncol 1988' },
+  { id: 'hn-oro-hpv-neg', site: 'Head & Neck', subsite: 'Oropharynx', tumour: 'SCC HPV-', alphaBeta: 10, repopFootnote: 'Withers HR et al. Acta Oncol 1988' },
+  { id: 'hn-oro-hpv-pos', site: 'Head & Neck', subsite: 'Oropharynx', tumour: 'SCC HPV+', alphaBeta: 10, abSource: 'Ang et al RTOG 0129', repopFootnote: 'Withers HR et al. Acta Oncol 1988' },
+  { id: 'hn-oral-cavity', site: 'Head & Neck', subsite: 'Oral Cavity', tumour: 'SCC', alphaBeta: 10, repopFootnote: 'Withers HR et al. Acta Oncol 1988' },
+  { id: 'hn-hypopharynx', site: 'Head & Neck', subsite: 'Hypopharynx', tumour: 'SCC', alphaBeta: 10, repopFootnote: 'Withers HR et al. Acta Oncol 1988' },
+  { id: 'hn-salivary-adeno', site: 'Head & Neck', subsite: 'Salivary Gland', tumour: 'Adenocarcinoma', alphaBeta: 8, repopFootnote: 'Extrapolated from SCC' },
+  { id: 'hn-salivary-acc', site: 'Head & Neck', subsite: 'Salivary Gland', tumour: 'Adenoid Cystic', alphaBeta: 8, repopFootnote: 'Extrapolated from SCC' },
+  { id: 'hn-thyroid-ana', site: 'Head & Neck', subsite: 'Thyroid', tumour: 'Anaplastic', alphaBeta: 10, repopFootnote: 'Extrapolated from SCC' },
+  { id: 'hn-thyroid-diff', site: 'Head & Neck', subsite: 'Thyroid', tumour: 'Differentiated', alphaBeta: 10, repopFootnote: 'Extrapolated from SCC' },
+  { id: 'hn-sinus', site: 'Head & Neck', subsite: 'Paranasal Sinus', tumour: 'SCC/Adeno', alphaBeta: 10, repopFootnote: 'Withers HR et al. Acta Oncol 1988' },
+  { id: 'hn-cup', site: 'Head & Neck', subsite: 'Unknown Primary', tumour: 'SCC', alphaBeta: 10, repopFootnote: 'Withers HR et al. Acta Oncol 1988' },
+  { id: 'hn-glomus', site: 'Head & Neck', subsite: 'Glomus Tumour', tumour: 'Paraganglioma', alphaBeta: 2, repopFootnote: 'Minimal repopulation' },
+  { id: 'hn-chordoma', site: 'Head & Neck', subsite: 'Base of Skull', tumour: 'Chordoma', alphaBeta: 2, repopFootnote: 'Minimal repopulation' },
+  { id: 'hn-chondrosarcoma', site: 'Head & Neck', subsite: 'Base of Skull', tumour: 'Chondrosarcoma', alphaBeta: 2, repopFootnote: 'Minimal repopulation' },
 
   // ── Thoracic ──
   { id: 'thor-nsclc-adeno', site: 'Thoracic', subsite: 'Lung', tumour: 'NSCLC Adeno', alphaBeta: 10 },

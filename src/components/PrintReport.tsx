@@ -5,14 +5,16 @@ interface PrintReportProps {
   parameters?: { label: string; value: string | number }[];
   results?: { label: string; value: string | number; unit?: string }[];
   clinicalInsight?: string;
+  compensationStrategies?: { label: string; value: string }[];
+  transparencyPanel?: { label: string; value: string | number }[];
   fields?: { label: string; value: string | number }[];
   footer?: string;
 }
 
 export const PrintReport = React.forwardRef<HTMLDivElement, PrintReportProps>(
-  ({ title, parameters, results, clinicalInsight, fields, footer }, ref) => {
+  ({ title, parameters, results, clinicalInsight, compensationStrategies, transparencyPanel, fields, footer }, ref) => {
     return (
-      <div ref={ref} className="hidden print:block p-8 bg-white text-black font-serif">
+      <div ref={ref} className="sr-only print:block p-8 bg-white text-black font-serif">
         <style>{`@media print { body * { visibility: hidden; } .print-content, .print-content * { visibility: visible; } .print-content { position: absolute; left: 0; top: 0; } }`}</style>
         <div className="print-content">
           <h1 className="text-2xl font-bold mb-1">RadCalcPro v2.1.0</h1>
@@ -26,6 +28,20 @@ export const PrintReport = React.forwardRef<HTMLDivElement, PrintReportProps>(
             </div>
           </div>
           
+          {transparencyPanel && transparencyPanel.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-xs font-black uppercase tracking-widest mb-3 bg-slate-100 p-1 px-2">K-Value Transparency</h3>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {transparencyPanel.map((f, i) => (
+                  <div key={i} className="flex justify-between border-b border-slate-200 py-1">
+                    <span className="text-slate-600">{f.label}</span>
+                    <span className="font-bold">{f.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {parameters && parameters.length > 0 && (
             <div className="mb-8">
               <h3 className="text-xs font-black uppercase tracking-widest mb-3 bg-slate-100 p-1 px-2">Input Parameters</h3>
@@ -55,6 +71,20 @@ export const PrintReport = React.forwardRef<HTMLDivElement, PrintReportProps>(
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {compensationStrategies && compensationStrategies.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-xs font-black uppercase tracking-widest mb-3 bg-slate-100 p-1 px-2">Compensation Strategies</h3>
+              <div className="space-y-2">
+                {compensationStrategies.map((s, i) => (
+                  <div key={i} className="text-sm">
+                    <span className="font-bold">{s.label}: </span>
+                    <span>{s.value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

@@ -18,6 +18,7 @@ interface LDRPreset {
   tHalfRepair: number;
   tHalfPhysical?: number; // for permanent
   description: string;
+  clinicalContext?: string;
 }
 
 const PRESETS: LDRPreset[] = [
@@ -28,7 +29,8 @@ const PRESETS: LDRPreset[] = [
     doseRate: 0.6,
     alphaBeta: 10,
     tHalfRepair: 1.5,
-    description: 'Classic LDR tandem + ovoids (Dale 1985)'
+    description: 'Classic LDR tandem + ovoids (Dale 1985)',
+    clinicalContext: 'Standard LDR brachytherapy for cervix cancer. The high dose rate relative to permanent implants requires careful consideration of repair kinetics. Tumour α/β is typically 10.'
   },
   {
     name: 'Cervix LDR (OAR)',
@@ -37,17 +39,30 @@ const PRESETS: LDRPreset[] = [
     doseRate: 0.6,
     alphaBeta: 3,
     tHalfRepair: 4.0,
-    description: 'Late-responding tissue (rectum/bladder)'
+    description: 'Late-responding tissue (rectum/bladder)',
+    clinicalContext: 'Late-responding normal tissues have a lower α/β (typically 3) and longer repair half-times (up to 4h), making them more sensitive to dose rate effects.'
   },
   {
-    name: 'Prostate I-125 (Permanent)',
+    name: 'Prostate I-125 (Tumour)',
     type: 'permanent',
     dose: 145,
     doseRate: 0.07,
     alphaBeta: 1.5,
-    tHalfRepair: 0.462, // Using mu=0.462 => t1/2 = 1.5h
+    tHalfRepair: 1.5,
     tHalfPhysical: 60 * 24, // 60 days in hours
-    description: 'I-125 Permanent Seed Implant'
+    description: 'I-125 Permanent Seed Implant',
+    clinicalContext: 'I-125 has a low initial dose rate (0.07 Gy/h) but delivers dose over months. The low α/β (1.5) of prostate cancer makes it highly sensitive to fraction size, but the continuous low dose rate spares late-responding normal tissues.'
+  },
+  {
+    name: 'Prostate I-125 (OAR Late)',
+    type: 'permanent',
+    dose: 145,
+    doseRate: 0.07,
+    alphaBeta: 3.0,
+    tHalfRepair: 4.0,
+    tHalfPhysical: 60 * 24,
+    description: 'Late-responding prostate tissue',
+    clinicalContext: 'Late-responding normal tissues around the prostate (rectum, urethra) have longer repair half-times (e.g., 4h), affecting their BED from continuous low dose rate exposure.'
   },
   {
     name: 'Prostate Pd-103 (Permanent)',
@@ -55,9 +70,10 @@ const PRESETS: LDRPreset[] = [
     dose: 125,
     doseRate: 0.20,
     alphaBeta: 1.5,
-    tHalfRepair: 0.462,
+    tHalfRepair: 1.5,
     tHalfPhysical: 17 * 24, // 17 days in hours
-    description: 'Pd-103 Permanent Seed Implant'
+    description: 'Pd-103 Permanent Seed Implant',
+    clinicalContext: 'Pd-103 has a shorter physical half-life (17 days) and higher initial dose rate than I-125, delivering the dose more quickly. Often preferred for faster-growing tumours.'
   }
 ];
 
@@ -68,6 +84,10 @@ const LDRBrachyPage: React.FC = () => {
   const [alphaBeta, setAlphaBeta] = useState<string>('10');
   const [tHalfRepair, setTHalfRepair] = useState<string>('1.5');
   const [tHalfPhysical, setTHalfPhysical] = useState<string>('1440'); // 60 days default
+  const [repairModel, setRepairModel] = useState<'standard' | 'advanced'>('standard');
+  const [fastFraction, setFastFraction] = useState<string>('0.8');
+  const [tHalfSlow, setTHalfSlow] = useState<string>('4.0');
+  const [selectedPreset, setSelectedPreset] = useState<LDRPreset | null>(null);
 
   // ─── Calculations ───────────────
   const results = useMemo(() => {
@@ -76,13 +96,19 @@ const LDRBrachyPage: React.FC = () => {
     const ab = parseFloat(alphaBeta) || 1;
     const thr = parseFloat(tHalfRepair) || 1.5;
     const tph = parseFloat(tHalfPhysical) || 1440;
+    
+    const A = parseFloat(fastFraction) || 0.8;
+    const ths = parseFloat(tHalfSlow) || 4.0;
 
     const mu = LN2 / thr;
+    const mu2 = LN2 / ths;
     const lambda = mode === 'permanent' ? LN2 / tph : 0;
 
     let bed = 0;
     let bedAcute = 0;
     let gT = 0;
+    let gT1 = 0;
+    let gT2 = 0;
     let duration = 0;
 
     if (mode === 'temporary') {
@@ -90,22 +116,34 @@ const LDRBrachyPage: React.FC = () => {
       // g(T) = (2/muT) * [1 - (1-e^(-muT))/(muT)]
       const muT = mu * duration;
       gT = (2 / muT) * (1 - (1 - Math.exp(-muT)) / muT);
-      // BED = D * [1 + (2R / (mu * (alpha/beta))) * g(T)]
-      bed = D * (1 + (2 * R * gT) / (mu * ab));
+      
+      if (repairModel === 'advanced') {
+        const muT2 = mu2 * duration;
+        gT1 = gT;
+        gT2 = (2 / muT2) * (1 - (1 - Math.exp(-muT2)) / muT2);
+        // BED = D * [1 + (2R / (alpha/beta)) * (A * g(T1) / mu1 + (1-A) * g(T2) / mu2)]
+        bed = D * (1 + (2 * R / ab) * (A * gT1 / mu + (1 - A) * gT2 / mu2));
+      } else {
+        // BED = D * [1 + (2R / (mu * (alpha/beta))) * g(T)]
+        bed = D * (1 + (2 * R * gT) / (mu * ab));
+      }
     } else {
-      // Permanent Implant: BED = D * [1 + (R0 / ((lambda + mu) * (alpha/beta)))]
-      // Validation check: 145 + (0.07 / (0.46681)) * 145 = 166.6
-      // This matches BED = D * (1 + R0 / (mu + lambda))
-      // We will use the formula provided: BED = D * [1 + (R0 / ((lambda + mu) * ab))]
-      bed = D * (1 + R / ((lambda + mu) * ab));
+      // Permanent Implant
+      if (repairModel === 'advanced') {
+        // BED = D * [1 + (R0 / (alpha/beta)) * (A / (lambda + mu1) + (1-A) / (lambda + mu2))]
+        bed = D * (1 + (R / ab) * (A / (lambda + mu) + (1 - A) / (lambda + mu2)));
+      } else {
+        // BED = D * [1 + (R0 / ((lambda + mu) * ab))]
+        bed = D * (1 + R / ((lambda + mu) * ab));
+      }
       // Acute BED (for comparison): BED = D * (1 + D / ab)
       bedAcute = D * (1 + D / ab);
     }
 
     const eqd2 = bed / (1 + 2 / ab);
 
-    return { bed, bedAcute, eqd2, mu, lambda, gT, duration };
-  }, [mode, dose, doseRate, alphaBeta, tHalfRepair, tHalfPhysical]);
+    return { bed, bedAcute, eqd2, mu, mu2, lambda, gT, gT1, gT2, duration };
+  }, [mode, dose, doseRate, alphaBeta, tHalfRepair, tHalfPhysical, repairModel, fastFraction, tHalfSlow]);
 
   // ─── Comparison Table Data ───────────────
   const comparisonData = useMemo(() => {
@@ -115,7 +153,7 @@ const LDRBrachyPage: React.FC = () => {
     const mu = LN2 / thr;
 
     const rates = [
-      { label: 'Classic LDR', rate: 0.6 },
+      { label: 'LDR', rate: 0.6 },
       { label: 'MDR', rate: 5.0 },
       { label: 'HDR', rate: 50.0 }
     ];
@@ -136,6 +174,7 @@ const LDRBrachyPage: React.FC = () => {
     setAlphaBeta(p.alphaBeta.toString());
     setTHalfRepair(p.tHalfRepair.toString());
     if (p.tHalfPhysical) setTHalfPhysical(p.tHalfPhysical.toString());
+    setSelectedPreset(p);
   };
 
   return (
@@ -203,7 +242,7 @@ const LDRBrachyPage: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="label-micro">Repair t½ (h)</label>
+                  <label className="label-micro">Repair Half-Time (T½, hours)</label>
                   <input 
                     type="number" inputMode="decimal" step="0.1"
                     value={tHalfRepair} onChange={(e) => setTHalfRepair(e.target.value)}
@@ -228,6 +267,53 @@ const LDRBrachyPage: React.FC = () => {
                 </div>
               )}
             </div>
+
+            {/* Advanced Repair Model Tab */}
+            <div className="card-premium overflow-hidden">
+              <div className="flex border-b border-white/5">
+                <button 
+                  onClick={() => setRepairModel('standard')}
+                  className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-wider transition-colors ${repairModel === 'standard' ? 'bg-white/5 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  Standard Repair
+                </button>
+                <button 
+                  onClick={() => setRepairModel('advanced')}
+                  className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-wider transition-colors ${repairModel === 'advanced' ? 'bg-white/5 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  Two-Component Repair
+                </button>
+              </div>
+              
+              {repairModel === 'advanced' && (
+                <div className="p-6 space-y-4 bg-white/[0.02]">
+                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex gap-3 mb-4">
+                    <Info className="w-5 h-5 text-blue-400 shrink-0" />
+                    <p className="text-xs text-blue-200 leading-relaxed">
+                      Models incomplete repair using both fast and slow repair components.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="label-micro">Fast Fraction (A)</label>
+                      <input 
+                        type="number" inputMode="decimal" step="0.1" min="0" max="1"
+                        value={fastFraction} onChange={(e) => setFastFraction(e.target.value)}
+                        className="input-premium w-full"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="label-micro">Slow T½ (h)</label>
+                      <input 
+                        type="number" inputMode="decimal" step="0.1"
+                        value={tHalfSlow} onChange={(e) => setTHalfSlow(e.target.value)}
+                        className="input-premium w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </section>
 
           <section className="space-y-4">
@@ -237,18 +323,34 @@ const LDRBrachyPage: React.FC = () => {
                 <button 
                   key={i}
                   onClick={() => applyPreset(p)}
-                  className="card-premium p-4 text-left hover:bg-white/5 transition-colors group"
+                  className={`card-premium p-4 text-left transition-colors group ${selectedPreset?.name === p.name ? 'bg-white/10 border-white/20' : 'hover:bg-white/5'}`}
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="text-sm font-bold text-white group-hover:text-yellow-400 transition-colors">{p.name}</p>
+                      <p className={`text-sm font-bold transition-colors ${selectedPreset?.name === p.name ? 'text-yellow-400' : 'text-white group-hover:text-yellow-400'}`}>{p.name}</p>
                       <p className="text-[10px] text-slate-500 uppercase mt-1">{p.description}</p>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-white transition-colors" />
+                    <ChevronRight className={`w-4 h-4 transition-colors ${selectedPreset?.name === p.name ? 'text-yellow-400' : 'text-slate-600 group-hover:text-white'}`} />
                   </div>
                 </button>
               ))}
             </div>
+            
+            {selectedPreset?.clinicalContext && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mt-4"
+              >
+                <div className="flex items-start gap-3">
+                  <Activity className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1">Clinical Context</h4>
+                    <p className="text-sm text-slate-300 leading-relaxed">{selectedPreset.clinicalContext}</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </section>
         </div>
 
@@ -312,6 +414,11 @@ const LDRBrachyPage: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
+                <div className="p-4 bg-white/[0.02] border-t border-white/5">
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    <span className="text-yellow-400 font-bold">Interpretation:</span> BED_HDR &gt; BED_LDR because at low dose rates, repair is complete between dose increments → less quadratic (β) cell kill. At very low dose rates, the quadratic term β approaches 0.
+                  </p>
+                </div>
               </div>
             </section>
           ) : (
@@ -360,28 +467,47 @@ const LDRBrachyPage: React.FC = () => {
 
       {/* Validation Section */}
       <section className="mt-12 pt-8 border-t border-white/5">
-        <div className="flex items-center gap-2 mb-6">
-          <Beaker className="w-5 h-5 text-emerald-400" />
-          <h2 className="label-micro text-emerald-400">Validation Benchmarks</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="card-premium p-6 bg-emerald-500/5 border-emerald-500/10">
-            <h4 className="text-xs font-bold text-emerald-400 uppercase mb-3">LDR Cervix Test</h4>
-            <ul className="text-[11px] text-slate-400 space-y-2 font-mono">
-              <li>Input: 50 Gy @ 0.6 Gy/h, t½=1.5h, α/β=10</li>
-              <li>Expected: μ=0.462, g(T)≈0.0236, BED≈50.16</li>
-              <li className="text-emerald-300/70">Current: BED={results.bed.toFixed(2)} (Mode: Temporary)</li>
-            </ul>
+        <details className="group">
+          <summary className="flex items-center gap-2 mb-6 cursor-pointer list-none">
+            <Beaker className="w-5 h-5 text-emerald-400" />
+            <h2 className="label-micro text-emerald-400">Validation Benchmarks (Show Working)</h2>
+            <ChevronRight className="w-4 h-4 text-emerald-400/50 group-open:rotate-90 transition-transform" />
+          </summary>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            <div className="card-premium p-6 bg-emerald-500/5 border-emerald-500/10">
+              <h4 className="text-xs font-bold text-emerald-400 uppercase mb-3">LDR Cervix Test</h4>
+              <ul className="text-[11px] text-slate-400 space-y-2 font-mono">
+                <li>Input: 50 Gy @ 0.6 Gy/h, t½=1.5h, α/β=10</li>
+                <li>Expected: μ=0.462, g(T)≈0.0236, BED≈50.16</li>
+                <li className="text-emerald-300/70">Current: BED={results.bed.toFixed(2)} (Mode: Temporary)</li>
+                <li className="pt-2 border-t border-emerald-500/10">
+                  <span className="text-emerald-400">Working:</span><br/>
+                  μ = ln(2) / 1.5 = 0.462 h⁻¹<br/>
+                  T = 50 / 0.6 = 83.33 h<br/>
+                  μT = 0.462 * 83.33 = 38.5<br/>
+                  g(T) = (2/38.5) * [1 - (1 - e^-38.5)/38.5] ≈ 0.0236<br/>
+                  BED = 50 * [1 + (2*0.6 / (0.462*10)) * 0.0236] ≈ 50.16
+                </li>
+              </ul>
+            </div>
+            <div className="card-premium p-6 bg-emerald-500/5 border-emerald-500/10">
+              <h4 className="text-xs font-bold text-emerald-400 uppercase mb-3">I-125 Prostate Test</h4>
+              <ul className="text-[11px] text-slate-400 space-y-2 font-mono">
+                <li>Input: 145 Gy, R₀=0.07 Gy/h, T½_phys=60d, T½_rep=1.5h, α/β=1.5</li>
+                <li>Expected: BED₁.₅≈166.6, EQD2₁.₅≈71.4</li>
+                <li className="text-emerald-300/70">Current: BED={results.bed.toFixed(1)}, EQD2={results.eqd2.toFixed(1)} (Mode: Permanent)</li>
+                <li className="pt-2 border-t border-emerald-500/10">
+                  <span className="text-emerald-400">Working:</span><br/>
+                  λ = ln(2) / (60*24) = 0.000481 h⁻¹<br/>
+                  μ = ln(2) / 1.5 = 0.462 h⁻¹<br/>
+                  BED = 145 * [1 + 0.07 / ((0.000481 + 0.462) * 1.5)]<br/>
+                  BED = 145 * [1 + 0.07 / (0.462481 * 1.5)]<br/>
+                  BED = 145 * [1 + 0.07 / 0.6937] ≈ 166.6
+                </li>
+              </ul>
+            </div>
           </div>
-          <div className="card-premium p-6 bg-emerald-500/5 border-emerald-500/10">
-            <h4 className="text-xs font-bold text-emerald-400 uppercase mb-3">I-125 Prostate Test</h4>
-            <ul className="text-[11px] text-slate-400 space-y-2 font-mono">
-              <li>Input: 145 Gy, R₀=0.07 Gy/h, T½=60d, α/β=1.5</li>
-              <li>Expected: BED₁.₅≈166.6, EQD2₁.₅≈71.4</li>
-              <li className="text-emerald-300/70">Current: BED={results.bed.toFixed(1)}, EQD2={results.eqd2.toFixed(1)} (Mode: Permanent)</li>
-            </ul>
-          </div>
-        </div>
+        </details>
       </section>
     </div>
   );

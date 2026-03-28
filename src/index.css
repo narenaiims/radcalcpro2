@@ -87,6 +87,12 @@ body {
   @apply font-mono;
   font-size: 14px !important; /* Minimum 14px for data values */
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.font-mono {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
 /* High Contrast AAA Compliance */

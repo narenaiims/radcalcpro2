@@ -562,7 +562,7 @@ const OARReferencePage: React.FC = () => {
           <div className="text-left md:text-right">
             <p className="label-micro opacity-40">Active Regime</p>
             <p className="text-xl md:text-2xl font-black text-white font-mono">
-              {dFx} Gy × {nFx} fx
+              {dFx.toFixed(1)} Gy × {Math.round(nFx)} fx
             </p>
           </div>
           <button
@@ -758,9 +758,9 @@ const OARReferencePage: React.FC = () => {
 
                 <section className="card-premium p-4 space-y-4 hidden lg:block">
                   <div className="flex items-center justify-between">
-                    <h3 className="label-micro opacity-40">Fractionation</h3>
+                    <h3 className="label-micro opacity-40">Active Regime</h3>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-teal font-bold font-mono">{dFx} Gy/fx</span>
+                      <span className="text-[10px] text-teal font-bold font-mono">{dFx.toFixed(1)} Gy × {Math.round(nFx)} fx</span>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
@@ -810,9 +810,9 @@ const OARReferencePage: React.FC = () => {
                 <div className="lg:hidden mt-6">
                   <section className="card-premium p-4 space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="label-micro opacity-40">Fractionation</h3>
+                      <h3 className="label-micro opacity-40">Active Regime</h3>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-teal font-bold font-mono">{dFx} Gy/fx</span>
+                        <span className="text-[10px] text-teal font-bold font-mono">{dFx.toFixed(1)} Gy × {Math.round(nFx)} fx</span>
                       </div>
                     </div>
                     <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -915,7 +915,7 @@ const OARReferencePage: React.FC = () => {
                       <div className="px-6 py-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Shield className="w-4 h-4 text-teal" />
-                          <h2 className="label-micro">Dose Constraints (Active Regime: {dFx} Gy × {nFx} fx)</h2>
+                          <h2 className="label-micro">Dose Constraints (Active Regime: {dFx.toFixed(1)} Gy × {Math.round(nFx)} fx)</h2>
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1.5">
@@ -966,12 +966,12 @@ const OARReferencePage: React.FC = () => {
                                     <p className="text-lg font-black text-white font-mono">
                                       {c.limit} <span className="text-[10px] font-normal text-slate-500">{c.unit}</span>
                                     </p>
-                                    <p className="text-[9px] text-slate-500 uppercase">Ref: 2Gy/fx</p>
+                                    <p className="text-[9px] text-slate-500 uppercase">Ref: {c.regime.includes('conventional') ? '2Gy/fx' : c.regime.join(', ')}</p>
                                   </td>
                                   <td className="px-6 py-4 text-right">
                                     <div className="space-y-0.5">
                                       <p className={`text-lg font-black font-mono ${isScaled ? 'text-teal' : 'text-slate-600'}`}>
-                                        {typeof limitToShow === 'number' ? limitToShow.toFixed(1) : limitToShow}
+                                        {typeof limitToShow === 'number' ? limitToShow.toFixed(2) : limitToShow}
                                       </p>
                                       <p className="text-[9px] text-slate-500">α/β: {ab}</p>
                                     </div>
@@ -1008,7 +1008,7 @@ const OARReferencePage: React.FC = () => {
                                   <p className="text-[9px] text-slate-500 uppercase mt-1">{c.regime.join(', ')}</p>
                                 </div>
                                 <div className="text-right">
-                                  <p className="label-micro opacity-40 mb-1">Limit (2Gy)</p>
+                                  <p className="label-micro opacity-40 mb-1">Limit (Ref: {c.regime.includes('conventional') ? '2Gy/fx' : c.regime.join(', ')})</p>
                                   <p className="text-lg font-black text-white font-mono">
                                     {c.limit} <span className="text-[10px] font-normal text-slate-500">{c.unit}</span>
                                   </p>
@@ -1021,7 +1021,7 @@ const OARReferencePage: React.FC = () => {
                                 <div className="text-right">
                                   <p className="label-micro opacity-40 mb-1">EQD2 Scaled</p>
                                   <p className={`text-lg font-black font-mono ${isScaled ? 'text-teal' : 'text-slate-600'}`}>
-                                    {typeof limitToShow === 'number' ? limitToShow.toFixed(1) : limitToShow}
+                                    {typeof limitToShow === 'number' ? limitToShow.toFixed(2) : limitToShow}
                                   </p>
                                 </div>
                               </div>

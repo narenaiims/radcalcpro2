@@ -373,7 +373,7 @@ const BEDtoEQD2Page: React.FC = () => {
         Ball DL et al. TROG 09.02. Lancet Oncol 2019. Timmerman R et al. RTOG 0236. JAMA 2010.
       </p>
 
-      <div className="hidden">
+      <div className="sr-only">
         <PrintReport
           ref={contentRef}
           title="BED ↔ EQD2 Converter Report"

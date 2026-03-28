@@ -257,7 +257,7 @@ const Header: React.FC = () => {
         {/* Top glow */}
         <div className={`absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent ${currentAccent.glow} to-transparent transition-all duration-500`} />
 
-        <div className="flex items-center justify-between px-3 md:px-4 min-h-[3.5rem] py-2 relative z-10">
+        <div className="flex items-center justify-between px-4 md:px-6 min-h-[4rem] py-3 relative z-10">
 
           {/* Left: logo or back button */}
           <div className="flex-1 min-w-0 mr-2">
@@ -306,98 +306,6 @@ const Header: React.FC = () => {
           {/* Right: home icon + menu button */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <Magnetic>
-              <Link
-                to="/"
-                className={`group relative flex items-center gap-1.5 px-2 py-1.5 rounded-xl text-blue-200 hover:text-white transition-all overflow-hidden
-                  ${isHome ? 'bg-white/10 text-white' : 'hover:bg-white/5'}`}
-                title="Home"
-              >
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br ${currentAccent.glow} blur-xl transition-opacity`} />
-                <Home className="w-4 h-4 relative z-10 drop-shadow-sm shrink-0" />
-                <span className="hidden lg:inline text-[10px] font-bold uppercase tracking-wider relative z-10">Home</span>
-              </Link>
-            </Magnetic>
-
-            <Magnetic>
-              <button
-                onClick={() => {
-                  const next: Record<string, 'light' | 'dark' | 'dim'> = {
-                    light: 'dark',
-                    dark: 'dim',
-                    dim: 'light'
-                  };
-                  setTheme(next[rx.theme]);
-                }}
-                className="group relative flex items-center gap-1.5 px-2 py-1.5 rounded-xl text-blue-200 hover:text-white hover:bg-white/5 transition-all overflow-hidden"
-                title={`Switch Theme (Current: ${rx.theme})`}
-              >
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br ${currentAccent.glow} blur-xl transition-opacity`} />
-                {rx.theme === 'light' && <Sun className="w-4 h-4 relative z-10 drop-shadow-sm shrink-0" />}
-                {rx.theme === 'dark' && <Moon className="w-4 h-4 relative z-10 drop-shadow-sm shrink-0" />}
-                {rx.theme === 'dim' && <EyeOff className="w-4 h-4 relative z-10 drop-shadow-sm shrink-0" />}
-                <span className="hidden lg:inline text-[10px] font-bold uppercase tracking-wider relative z-10">{rx.theme}</span>
-              </button>
-            </Magnetic>
-
-            <Magnetic>
-              <button
-                onClick={() => {
-                  localStorage.clear();
-                  window.location.reload();
-                }}
-                className="group relative flex items-center gap-1.5 px-2 py-1.5 rounded-xl text-blue-200 hover:text-white hover:bg-white/5 transition-all overflow-hidden"
-                title="Master Reset"
-              >
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br ${currentAccent.glow} blur-xl transition-opacity`} />
-                <RotateCcw className="w-4 h-4 relative z-10 drop-shadow-sm shrink-0" />
-                <span className="hidden lg:inline text-[10px] font-bold uppercase tracking-wider relative z-10">Reset</span>
-              </button>
-            </Magnetic>
-
-            <Magnetic>
-              <button
-                onClick={() => setHistoryOpen(o => !o)}
-                className={`
-                  group relative flex items-center gap-1.5 px-2 py-1.5 rounded-xl transition-all overflow-hidden
-                  ${historyOpen ? 'bg-amber-600/30 text-amber-300' : 'text-blue-200 hover:text-white hover:bg-white/5'}
-                `}
-                title="Calculation History"
-                aria-label="Open calculation history"
-              >
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br ${currentAccent.glow} blur-xl transition-opacity`} />
-                <div className="relative z-10 shrink-0">
-                  <History className="w-4 h-4" />
-                  {history.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full border border-[#0a1020]" />
-                  )}
-                </div>
-                <span className="hidden lg:inline text-[10px] font-bold uppercase tracking-wider relative z-10">History</span>
-              </button>
-            </Magnetic>
-
-            <Magnetic>
-              <div className="relative group flex items-center">
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br ${currentAccent.glow} blur-xl transition-opacity rounded-xl`} />
-                <ShareButton className="relative z-10 flex items-center gap-1.5 px-2 py-1.5">
-                  <span className="hidden lg:inline text-[10px] font-bold uppercase tracking-wider relative z-10 pointer-events-none text-blue-200 group-hover:text-white transition-colors">Share</span>
-                </ShareButton>
-              </div>
-            </Magnetic>
-
-            <Link
-              to="/about"
-              className="ml-1 w-7 h-7 md:w-8 md:h-8 rounded-full border border-blue-400/30 overflow-hidden hover:border-white transition-colors shrink-0"
-              title="About Developer"
-            >
-              <img 
-                src="https://unavatar.io/twitter/drn_dr" 
-                alt="Dr. Narendra Rathore" 
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-            </Link>
-
-            <Magnetic>
               <button
                 onClick={() => setOpen(o => !o)}
                 className={`
@@ -443,7 +351,61 @@ const Header: React.FC = () => {
       >
         {/* Drawer header */}
         <div className="flex items-center justify-between px-4 py-3 bg-[#0a1020] text-white flex-shrink-0">
-          <span className="text-sm font-bold tracking-tight">All Tools</span>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/"
+              className="text-blue-200 hover:text-white transition"
+              title="Home"
+            >
+              <Home className="w-6 h-6" />
+            </Link>
+            <button
+              onClick={() => setHistoryOpen(o => !o)}
+              className="text-blue-200 hover:text-white transition"
+              title="Calculation History"
+            >
+              <History className="w-6 h-6" />
+            </button>
+            <button
+              onClick={() => {
+                const next: Record<string, 'light' | 'dark' | 'dim'> = {
+                  light: 'dark',
+                  dark: 'dim',
+                  dim: 'light'
+                };
+                setTheme(next[rx.theme]);
+              }}
+              className="text-blue-200 hover:text-white transition"
+              title={`Switch Theme (Current: ${rx.theme})`}
+            >
+              {rx.theme === 'light' && <Sun className="w-6 h-6" />}
+              {rx.theme === 'dark' && <Moon className="w-6 h-6" />}
+              {rx.theme === 'dim' && <EyeOff className="w-6 h-6" />}
+            </button>
+            <button
+              onClick={() => {
+                localStorage.clear();
+                window.location.reload();
+              }}
+              className="text-blue-200 hover:text-white transition"
+              title="Master Reset"
+            >
+              <RotateCcw className="w-6 h-6" />
+            </button>
+            <ShareButton className="text-blue-200 hover:text-white transition w-6 h-6" />
+            <Link
+              to="/about"
+              className="w-8 h-8 rounded-full border border-blue-400/30 overflow-hidden hover:border-white transition-colors"
+              title="About Developer"
+            >
+              <img 
+                src="https://unavatar.io/twitter/drn_dr" 
+                alt="Dr. Narendra Rathore" 
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            </Link>
+          </div>
           <button onClick={() => setOpen(false)} className="text-blue-200 hover:text-white transition" aria-label="Close">
             <XIcon />
           </button>

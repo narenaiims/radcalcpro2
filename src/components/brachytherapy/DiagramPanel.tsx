@@ -59,6 +59,55 @@ const DiagramPanel: React.FC<DiagramPanelProps> = ({ siteId, primaryColor, dimCo
     );
   }
 
+  if (siteId === "cervix") {
+    return (
+      <svg viewBox="0 0 400 300" className="w-full h-auto">
+        <ellipse cx="200" cy="100" rx="60" ry="80" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
+        <rect x="185" y="180" width="30" height="30" rx="4" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
+        <line x1="200" y1="50" x2="200" y2="220" stroke={primaryColor} strokeWidth="4" strokeLinecap="round" />
+        <circle cx="200" cy="52" r="6" fill={primaryColor} />
+        <ellipse cx="160" cy="205" rx="22" ry="14" fill="none" stroke="#FBBF24" strokeWidth="3" />
+        <ellipse cx="240" cy="205" rx="22" ry="14" fill="none" stroke="#FBBF24" strokeWidth="3" />
+        <circle cx="140" cy="175" r="8" fill="none" stroke="#A78BFA" strokeWidth="2" strokeDasharray="4 2" />
+        <circle cx="260" cy="175" r="8" fill="none" stroke="#A78BFA" strokeWidth="2" strokeDasharray="4 2" />
+        <path d="M150,250 Q200,280 250,250" stroke="#60A5FA" strokeWidth="2" strokeDasharray="4 4" />
+        <path d="M160,280 Q200,300 240,280" stroke="#F87171" strokeWidth="2" strokeDasharray="4 4" />
+      </svg>
+    );
+  }
+
+  if (siteId === "breast") {
+    return (
+      <svg viewBox="0 0 400 300" className="w-full h-auto">
+        <path d="M100,250 Q200,50 300,250" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
+        <circle cx="200" cy="180" r="40" fill="none" stroke={primaryColor} strokeWidth="3" strokeDasharray="8 4" />
+        {[
+          [180,160], [220,160], [170,185], [230,185], [190,210], [210,210]
+        ].map(([x,y], i) => (
+          <line key={i} x1={x} y1={y-20} x2={x} y2={y+20} stroke="#6366F1" strokeWidth="2" />
+        ))}
+        <path d="M100,260 L300,260" stroke="#F87171" strokeWidth="3" />
+        <path d="M120,240 Q200,230 280,240" stroke="#86EFAC" strokeWidth="2" strokeDasharray="4 2" />
+      </svg>
+    );
+  }
+
+  if (siteId === "esophagus" || siteId === "bronchus") {
+    const color = siteId === "esophagus" ? "#F97316" : "#86EFAC";
+    return (
+      <svg viewBox="0 0 400 300" className="w-full h-auto">
+        <rect x="175" y="20" width="50" height="260" rx="25" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
+        <line x1="200" y1="50" x2="200" y2="250" stroke={color} strokeWidth="4" strokeLinecap="round" />
+        {[80, 110, 140, 170, 200, 230].map((y, i) => (
+          <circle key={i} cx="200" cy={y} r="5" fill={color} className="animate-pulse" style={{ animationDelay: `${i*0.15}s` }} />
+        ))}
+        <circle cx="200" cy="150" r="40" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="1" strokeDasharray="4 4" />
+        <text x="250" y="155" fill={dimColor} fontSize="12" fontFamily="monospace">1 cm Rx</text>
+        <line x1="200" y1="150" x2="240" y2="150" stroke={dimColor} strokeWidth="1" strokeDasharray="2 2" />
+      </svg>
+    );
+  }
+
   return (
     <div style={{ height:"200px", display:"flex", alignItems:"center", justifyContent:"center", color:dimColor, fontSize:"12px", border:"1px dashed rgba(255,255,255,0.1)", borderRadius:"12px" }}>
       Diagram not available for this site.

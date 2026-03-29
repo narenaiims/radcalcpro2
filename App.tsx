@@ -1,5 +1,6 @@
 import React, { Component, Suspense, lazy } from 'react';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import Header from './components/Header';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import UpdateNotification from './components/UpdateNotification';
@@ -153,6 +154,7 @@ const App: React.FC = () => (
   <RadiobiologyProvider>
     <Router>
       <Layout />
+      <Analytics />
     </Router>
   </RadiobiologyProvider>
 );

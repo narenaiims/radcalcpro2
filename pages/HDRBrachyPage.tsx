@@ -319,7 +319,7 @@ const HDRBrachyPage: React.FC = () => {
   const valid = nDpf > 0 && nFx > 0 && nAb > 0;
 
   return (
-    <div className="space-y-4 fade-in pb-20 relative text-slate-200 px-4 pt-6">
+    <div className="space-y-4 fade-in pb-10 relative text-slate-200 px-4 pt-6">
       <KeyFactsSidebar 
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)} 

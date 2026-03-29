@@ -10,6 +10,7 @@ import { useReactToPrint } from 'react-to-print';
 import { ClinicalReport } from '@/src/components/ClinicalReport';
 import { useRxContext } from '@/src/context/RadiobiologyContext';
 import { saveHistory, saveSession, getSession } from '../src/lib/db';
+import { ClinicalAlert, checkClinicalAlerts } from '@/src/services/clinicalAlerts';
 const APP_VERSION = '0.0.0';
 const CALCULATOR_ID = 'eqd2';
 const CALCULATOR_NAME = 'BED & EQD2 Solver';

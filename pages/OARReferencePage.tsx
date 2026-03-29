@@ -399,6 +399,10 @@ const OARReferencePage: React.FC = () => {
   const isCustom = presetKey === 'Custom';
   const dFx      = isCustom ? ((parseFloat(totalDose) / parseFloat(fractions)) || 2.0) : (preset?.dosePerFx ?? 2.0);
   const nFx      = isCustom ? (parseInt(fractions)   || 25)  : (preset?.nFx       ?? 25);
+  
+  useEffect(() => {
+    console.log('Debug: isCustom=', isCustom, 'totalDose=', totalDose, 'fractions=', fractions, 'dFx=', dFx, 'nFx=', nFx);
+  }, [isCustom, totalDose, fractions, dFx, nFx]);
   const regimeKey = preset?.regime ?? 'conventional';
   const isRef2Gy  = Math.abs(dFx - 2.0) < 0.05;
 

@@ -1,488 +1,538 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import ShareButton from './ShareButton';
-import { CalcHistoryPanel } from '../src/components/CalcHistoryPanel';
+import { 
+  Calculator, 
+  Layout, 
+  Radio, 
+  BookOpen, 
+  GraduationCap,
+  Activity,
+  Zap,
+  Clock,
+  Layers,
+  Shield,
+  Target,
+  FileText,
+  Info,
+  History as HistoryIcon,
+  Search,
+  Settings,
+  User,
+  Share2,
+  Home,
+  Sun,
+  Moon,
+  EyeOff,
+  RotateCcw,
+  ArrowLeft,
+  X,
+  Menu,
+  ChevronRight,
+  Stethoscope,
+  Crosshair,
+  Dna,
+  FlaskConical,
+  Microscope,
+  Baby,
+  Scale,
+  ClipboardList,
+  AlertTriangle,
+  ZapOff,
+  Database,
+  Globe,
+  Award,
+  Atom,
+  Beaker
+} from 'lucide-react';
 import { useRxContext } from '../src/context/RadiobiologyContext';
+import { CalcHistoryPanel } from '../src/components/CalcHistoryPanel';
+import ShareButton from './ShareButton';
 
-import { RotateCcw, Home, History, Sun, Moon, EyeOff } from 'lucide-react';
-
-// ── Route manifest (single source of truth for nav) ──────────────────────
+// ── SECTION 1 — ROUTE MANIFEST ──────────────────────────────────────────
 export const ROUTES = [
-  // ── Calculators
-  { path: '/eqd2',           label: 'BED / EQD2',          group: 'Calculators',  short: 'BED/EQD2' },
-  { path: '/bed-eqd2',       label: 'BED ↔ EQD2 Convert',  group: 'Calculators',  short: 'BED↔EQD2' },
-  { path: '/frac-adjust',    label: 'Fractionation Adjust', group: 'Calculators',  short: 'Frac Adj' },
-  { path: '/hdr-brachy',     label: 'HDR Brachytherapy',    group: 'Calculators',  short: 'HDR' },
-  { path: '/ebrt-gap',       label: 'EBRT Gap (LQ)',        group: 'Calculators',  short: 'Gap LQ' },
-  { path: '/tdf',            label: 'TDF Factor',           group: 'Calculators',  short: 'TDF' },
-  { path: '/reirradiation',  label: 'Re-irradiation Calc',  group: 'Calculators',  short: 'Re-RT' },
-  { path: '/ntcp',           label: 'NTCP Calculator',      group: 'Calculators',  short: 'NTCP' },
-  { path: '/tcp',            label: 'TCP Calculator',       group: 'Calculators',  short: 'TCP' },
-  { path: '/ldr-brachy',     label: 'LDR Brachytherapy',    group: 'Calculators',  short: 'LDR' },
-  { path: '/cervix-dosimeter', label: 'Cervix Dosimeter',    group: 'Calculators',  short: 'Cervix EQD2' },
-  { path: '/isoeffect-chart',label: 'Isoeffect Chart',      group: 'Calculators',  short: 'Isoeffect' },
-  { path: '/repair-kinetics',label: 'Repair Kinetics',      group: 'Calculators',  short: 'Repair' },
-  { path: '/oerletrbe',      label: 'OER / LET / RBE',      group: 'Calculators',  short: 'OER/RBE' },
-  // ── References
-  { path: '/oar-limits',     label: 'OAR Dose Limits',      group: 'Reference',    short: 'OAR' },
-  { path: '/pediatric-constraints', label: 'Pediatric Constraints', group: 'Reference', short: 'Pediatric' },
-  { path: '/pediatric-scaling',     label: 'Pediatric Dose Scaling', group: 'Reference', short: 'Scaling' },
-  { path: '/clinical-trials',      label: 'Clinical Trials Ref',  group: 'Reference', short: 'Trials' },
-  { path: '/toxicity-grading',     label: 'RT Toxicity Grading',  group: 'Reference', short: 'Toxicity' },
-  { path: '/dose-rate-comparison', label: 'Brachy Dose Rates',    group: 'Reference', short: 'Brachy' },
-  { path: '/cervix-brachytherapy', label: 'Cervix Brachytherapy', group: 'Reference', short: 'Cervix' },
-  { path: '/brachytherapy-reference', label: 'Prostate, uterine & Surface brachytherapy', group: 'Reference', short: 'Brachy Ref' },
-  { path: '/adaptive-rt',    label: 'Adaptive RT Decision Tool', group: 'Reference', short: 'Adaptive RT' },
-  { path: '/contouring-atlas', label: 'Contouring Atlas', group: 'Reference', short: 'Atlas' },
-  { path: '/sbrt',           label: 'SBRT Constraints',     group: 'Reference',    short: 'SBRT' },
-  { path: '/guidelines',     label: 'Oncologic Emergencies',group: 'Reference',    short: 'Emergencies' },
-  { path: '/dose-exposures', label: 'Dose Exposure Ref',    group: 'Reference',    short: 'Exposure' },
-  { path: '/radiation-units',label: 'Radiation Units',      group: 'Reference',    short: 'Units' },
-  // ── Education
-  { path: '/radioactive-sources', label: 'Radioactive Sources', group: 'Education', short: 'Sources' },
-  { path: '/radioiodine-i131', label: 'Radioiodine I-131', group: 'Education', short: 'I-131' },
-  { path: '/icru',           label: 'ICRU Standards',      group: 'Education', short: 'ICRU' },
-  { path: '/named-effects',  label: 'Named Effects',       group: 'Education', short: 'Effects' },
-  { path: '/ionizing-radiation', label: 'Ionizing Radiation Effects', group: 'Education', short: 'Radiation' },
-  { path: '/radiation-mechanism', label: 'Radiation Mechanisms', group: 'Education', short: 'Mechanisms' },
-  { path: '/proton-therapy',     label: 'Proton Therapy Ref',  group: 'Education', short: 'Protons' },
-  { path: '/cell-survival',      label: 'Cell Survival Curves', group: 'Education', short: 'Survival' },
-  { path: '/viva-definitions',label: 'Viva Definitions',    group: 'Education',    short: 'Viva' },
-  { path: '/radiation-history',label: 'History of Oncology',group: 'Education',   short: 'History' },
-  { path: '/about',          label: 'About',                group: 'Education',    short: 'About' },
-] as const;
+  // ── Calculators ──────────────────────────────────────────────────────────
+  { path:'/eqd2',              label:'BED / EQD2',          group:'Calculators',   icon: Calculator,    keywords:['bed', 'eqd2', 'lq model', 'fractionation'] },
+  { path:'/bed-eqd2',          label:'BED ↔ EQD2 Convert',  group:'Calculators',   icon: Zap,           keywords:['convert', 'bed', 'eqd2'] },
+  { path:'/frac-adjust',       label:'Fractionation Adjust',group:'Calculators',   icon: Clock,         keywords:['adjust', 'fractionation', 'dose'] },
+  { path:'/hdr-brachy',        label:'HDR Brachytherapy',   group:'Calculators',   icon: Radio,         keywords:['hdr', 'brachy', 'dose'] },
+  { path:'/ebrt-gap',          label:'EBRT Gap (LQ)',       group:'Calculators',   icon: Layers,        keywords:['gap', 'ebrt', 'lq'] },
+  { path:'/tdf',               label:'TDF Factor',          group:'Calculators',   icon: Activity,      keywords:['tdf', 'time', 'dose', 'fractionation'] },
+  { path:'/reirradiation',     label:'Re-irradiation Calc', group:'Calculators',   icon: RotateCcw,     keywords:['re-rt', 're-irradiation', 'cumulative'] },
+  { path:'/ntcp',              label:'NTCP Calculator',     group:'Calculators',   icon: Shield,        keywords:['ntcp', 'normal', 'tissue', 'complication'] },
+  { path:'/tcp',               label:'TCP Calculator',      group:'Calculators',   icon: Target,        keywords:['tcp', 'tumor', 'control', 'probability'] },
+  { path:'/ldr-brachy',        label:'LDR Brachytherapy',   group:'Calculators',   icon: Radio,         keywords:['ldr', 'brachy', 'seeds'] },
+  { path:'/cervix-dosimeter',  label:'Cervix Dosimeter',    group:'Calculators',   icon: Stethoscope,   keywords:['cervix', 'dosimeter', 'eqd2'] },
+  { path:'/isoeffect-chart',   label:'Isoeffect Chart',     group:'Calculators',   icon: Layout,        keywords:['isoeffect', 'chart', 'nomogram'] },
+  { path:'/repair-kinetics',   label:'Repair Kinetics',     group:'Calculators',   icon: Dna,           keywords:['repair', 'kinetics', 'half-life'] },
+  { path:'/oerletrbe',         label:'OER / LET / RBE',     group:'Calculators',   icon: FlaskConical,  keywords:['oer', 'let', 'rbe', 'protons'] },
 
-type RouteGroup = 'Calculators' | 'Reference' | 'Education';
-const GROUP_ORDER: RouteGroup[] = ['Calculators', 'Reference', 'Education'];
+  // ── Planning ─────────────────────────────────────────────────────────────
+  { path:'/adaptive-rt',       label:'Adaptive RT',         group:'Planning',      icon: Crosshair,     keywords:['adaptive', 'art', 'replanning'] },
+  { path:'/contouring-atlas',  label:'Contouring Atlas',    group:'Planning',      icon: Microscope,    keywords:['atlas', 'contouring', 'anatomy'] },
+  { path:'/sbrt',              label:'SBRT Constraints',    group:'Planning',      icon: Target,        keywords:['sbrt', 'constraints', 'hypofractionation'] },
+  { path:'/oar-limits',        label:'OAR Dose Limits',     group:'Planning',      icon: Shield,        keywords:['oar', 'limits', 'constraints', 'quantec'] },
+  { path:'/pediatric-constraints', label:'Pediatric Constraints', group:'Planning', icon: Baby,        keywords:['pediatric', 'children', 'constraints'] },
+  { path:'/pediatric-scaling', label:'Pediatric Dose Scaling', group:'Planning',    icon: Scale,       keywords:['pediatric', 'scaling', 'dose'] },
 
-const GROUP_COLORS: Record<RouteGroup, string> = {
-  Calculators: 'text-blue-700',
-  Reference:   'text-teal-700',
-  Education:   'text-slate-500',
+  // ── Brachytherapy ────────────────────────────────────────────────────────
+  { path:'/cervix-brachytherapy', label:'Cervix Brachy',    group:'Brachytherapy', icon: Radio,         keywords:['cervix', 'brachy', 'tandem', 'ring'] },
+  { path:'/brachytherapy-reference', label:'Brachy Reference', group:'Brachytherapy', icon: BookOpen,   keywords:['prostate', 'uterine', 'surface', 'brachy'] },
+  { path:'/dose-rate-comparison', label:'Dose Rate Comparison', group:'Brachytherapy', icon: Activity,  keywords:['ldr', 'mdr', 'hdr', 'pdr'] },
+
+  // ── Reference ────────────────────────────────────────────────────────────
+  { path:'/clinical-trials',   label:'Clinical Trials',     group:'Reference',     icon: ClipboardList, keywords:['trials', 'protocols', 'rtog'] },
+  { path:'/toxicity-grading',  label:'Toxicity Grading',    group:'Reference',     icon: AlertTriangle, keywords:['toxicity', 'ctcae', 'grading'] },
+  { path:'/guidelines',        label:'Oncologic Emergencies', group:'Reference',   icon: Info,          keywords:['emergencies', 'guidelines', 'svc', 'cord'] },
+  { path:'/dose-exposures',    label:'Dose Exposure Ref',   group:'Reference',     icon: ZapOff,        keywords:['exposure', 'occupational', 'public'] },
+  { path:'/radiation-units',   label:'Radiation Units',     group:'Reference',     icon: Database,      keywords:['units', 'gray', 'sievert', 'becquerel'] },
+  { path:'/icru',              label:'ICRU Standards',      group:'Reference',     icon: Globe,         keywords:['icru', 'standards', 'reporting'] },
+
+  // ── Education ────────────────────────────────────────────────────────────
+  { path:'/radioactive-sources', label:'Radioactive Sources', group:'Education',     icon: Atom,          keywords:['sources', 'isotopes', 'half-life'] },
+  { path:'/radioiodine-i131',  label:'Radioiodine I-131',   group:'Education',     icon: Beaker,        keywords:['i-131', 'thyroid', 'radioiodine'] },
+  { path:'/named-effects',     label:'Named Effects',       icon: Award,           group:'Education',   keywords:['effects', 'bystander', 'abscopal'] },
+  { path:'/ionizing-radiation', label:'Radiation Effects',   group:'Education',     icon: Activity,      keywords:['biological', 'effects', 'stochastic'] },
+  { path:'/radiation-mechanism', label:'Radiation Mechanisms', group:'Education',    icon: Dna,           keywords:['mechanisms', 'direct', 'indirect'] },
+  { path:'/cell-survival',     label:'Cell Survival Curves', group:'Education',     icon: Activity,      keywords:['survival', 'curves', 'lq'] },
+  { path:'/proton-therapy',    label:'Proton Therapy Ref',  group:'Education',     icon: Zap,           keywords:['protons', 'bragg', 'peak'] },
+  { path:'/viva-definitions',  label:'Viva Definitions',    group:'Education',     icon: FileText,      keywords:['viva', 'definitions', 'exam'] },
+  { path:'/radiation-history', label:'History of Oncology', group:'Education',     icon: HistoryIcon,   keywords:['history', 'discovery', 'roentgen'] },
+  { path:'/about',             label:'About',               group:'Education',     icon: User,          keywords:['developer', 'contact', 'about'] },
+];
+
+export const GROUPS = {
+  Calculators:   { icon: Calculator, color: '#38bdf8', glow: 'rgba(56, 189, 248, 0.5)' },
+  Planning:      { icon: Layout,     color: '#f43f5e', glow: 'rgba(244, 63, 94, 0.5)' },
+  Brachytherapy: { icon: Radio,      color: '#fbbf24', glow: 'rgba(251, 191, 36, 0.5)' },
+  Reference:     { icon: BookOpen,   color: '#10b981', glow: 'rgba(16, 185, 129, 0.5)' },
+  Education:     { icon: GraduationCap, color: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.5)' },
 };
 
-const ACCENT_COLORS: Record<RouteGroup, { text: string; glow: string }> = {
-  Calculators: { text: 'text-blue-400', glow: 'via-blue-400/30' },
-  Reference:   { text: 'text-teal-400', glow: 'via-teal-400/30' },
-  Education:   { text: 'text-slate-400', glow: 'via-slate-400/30' },
-};
+type GroupName = keyof typeof GROUPS;
 
-// ── Magnetic Wrapper Component ──────────────────────────────────────────
-const Magnetic: React.FC<{ children: React.ReactElement }> = ({ children }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const { clientX, clientY } = e;
-    const { left, top, width, height } = ref.current?.getBoundingClientRect() || { left: 0, top: 0, width: 0, height: 0 };
-    const x = clientX - (left + width / 2);
-    const y = clientY - (top + height / 2);
-    setPosition({ x: x * 0.35, y: y * 0.35 });
-  };
-
-  const handleMouseLeave = () => {
-    setPosition({ x: 0, y: 0 });
-  };
-
+// ── UTILS ───────────────────────────────────────────────────────────────
+const fuzzyMatch = (query: string, item: typeof ROUTES[0]) => {
+  const q = query.toLowerCase().trim();
+  if (!q) return false;
   return (
-    <motion.div
-      ref={ref}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      animate={{ x: position.x, y: position.y }}
-      transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
-    >
-      {children}
-    </motion.div>
+    item.label.toLowerCase().includes(q) ||
+    item.group.toLowerCase().includes(q) ||
+    item.keywords.some(k => k.toLowerCase().includes(q))
   );
 };
 
-// ── Atom: close icon (Static for drawer) ──────────────────────────────────
-const XIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-  </svg>
-);
-
-// ── Atom: Menu/X Morph Icon ──────────────────────────────────────────────
-const MorphMenuIcon: React.FC<{ open: boolean }> = ({ open }) => {
-  return (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-      <motion.path
-        animate={open ? { d: "M 18 6 L 6 18" } : { d: "M 4 6 L 20 6" }}
-        transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        strokeLinecap="round"
-      />
-      <motion.path
-        animate={open ? { d: "M 6 6 L 18 18" } : { d: "M 4 12 L 20 12" }}
-        transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        strokeLinecap="round"
-      />
-      <motion.path
-        animate={open ? { opacity: 0, x: 10 } : { opacity: 1, x: 0, d: "M 4 18 L 20 18" }}
-        transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-};
-
-// ── Atom: radiation symbol (Enhanced & Continuous) ──────────────────────
+// ── ATOMS ───────────────────────────────────────────────────────────────
 const RadIcon = () => (
   <motion.svg 
-    className="w-5 h-5" 
+    className="w-6 h-6" 
     viewBox="0 0 24 24" 
     fill="none" 
     stroke="currentColor" 
-    strokeWidth="1.8"
+    strokeWidth="2"
     animate={{ rotate: 360 }}
-    transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
   >
-    <motion.circle 
-      cx="12" cy="12" r="2" 
-      fill="currentColor" stroke="none"
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      transition={{ type: "spring", delay: 0.2 }}
-    />
-    <motion.path 
-      d="M12 10 L8.5 4" 
-      strokeLinecap="round"
-      initial={{ pathLength: 0 }}
-      animate={{ pathLength: 1 }}
-      transition={{ duration: 0.8, ease: "easeInOut" }}
-    />
-    <motion.path 
-      d="M12 10 L15.5 4" 
-      strokeLinecap="round"
-      initial={{ pathLength: 0 }}
-      animate={{ pathLength: 1 }}
-      transition={{ duration: 0.8, ease: "easeInOut", delay: 0.1 }}
-    />
-    <motion.path 
-      d="M10.3 13 L4 15.5" 
-      strokeLinecap="round"
-      initial={{ pathLength: 0 }}
-      animate={{ pathLength: 1 }}
-      transition={{ duration: 0.8, ease: "easeInOut", delay: 0.2 }}
-    />
-    <motion.path 
-      d="M13.7 13 L20 15.5" 
-      strokeLinecap="round"
-      initial={{ pathLength: 0 }}
-      animate={{ pathLength: 1 }}
-      transition={{ duration: 0.8, ease: "easeInOut", delay: 0.3 }}
-    />
-    <motion.path 
-      d="M10.3 11 L4 8.5" 
-      strokeLinecap="round"
-      initial={{ pathLength: 0 }}
-      animate={{ pathLength: 1 }}
-      transition={{ duration: 0.8, ease: "easeInOut", delay: 0.4 }}
-    />
-    <motion.path 
-      d="M13.7 11 L20 8.5" 
-      strokeLinecap="round"
-      initial={{ pathLength: 0 }}
-      animate={{ pathLength: 1 }}
-      transition={{ duration: 0.8, ease: "easeInOut", delay: 0.5 }}
-    />
-    <motion.circle 
-      cx="12" cy="12" r="9.5" 
-      initial={{ pathLength: 0 }}
-      animate={{ pathLength: 1 }}
-      transition={{ duration: 1.5, ease: "circOut" }}
-    />
+    <circle cx="12" cy="12" r="2" fill="currentColor" />
+    <path d="M12 10 L8 4" strokeLinecap="round" />
+    <path d="M12 10 L16 4" strokeLinecap="round" />
+    <path d="M10 13 L4 16" strokeLinecap="round" />
+    <path d="M14 13 L20 16" strokeLinecap="round" />
+    <path d="M10 11 L4 8" strokeLinecap="round" />
+    <path d="M14 11 L20 8" strokeLinecap="round" />
+    <circle cx="12" cy="12" r="10" />
   </motion.svg>
 );
 
-// ── Back-button label helper ──────────────────────────────────────────────
-function usePageInfo(pathname: string): { label: string; group: string } | null {
-  const route = ROUTES.find(r => r.path === pathname);
-  return route ? { label: route.label, group: route.group } : null;
-}
+const MorphMenuIcon: React.FC<{ open: boolean }> = ({ open }) => (
+  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+    <motion.path
+      animate={open ? { d: "M 18 6 L 6 18" } : { d: "M 4 7 L 20 7" }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      strokeLinecap="round"
+    />
+    <motion.path
+      animate={open ? { d: "M 6 6 L 18 18" } : { d: "M 4 12 L 20 12" }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      strokeLinecap="round"
+    />
+    <motion.path
+      animate={open ? { opacity: 0, x: 10 } : { opacity: 1, x: 0, d: "M 4 17 L 20 17" }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      strokeLinecap="round"
+    />
+  </svg>
+);
 
-// ── Main Header ───────────────────────────────────────────────────────────
+// ── MAIN COMPONENT ──────────────────────────────────────────────────────
 const Header: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const [query, setQuery]   = useState('');
+  const { rx, setTheme } = useRxContext();
+  
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const { history, rx, setTheme } = useRxContext();
-  const drawerRef = useRef<HTMLDivElement>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeGroup, setActiveGroup] = useState<GroupName>('Calculators');
+
   const isHome = location.pathname === '/';
-  const pageInfo = usePageInfo(location.pathname);
+  const currentRoute = ROUTES.find(r => r.path === location.pathname);
+  const currentGroup = currentRoute?.group as GroupName || 'Calculators';
+  const groupConfig = GROUPS[currentGroup];
 
-  // Close drawer on route change
-  useEffect(() => { setOpen(false); setQuery(''); }, [location.pathname]);
-
-  // Close on outside click
+  // Sync active group on route change
   useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (drawerRef.current && !drawerRef.current.contains(e.target as Node)) {
-        setOpen(false);
+    if (currentRoute) setActiveGroup(currentRoute.group as GroupName);
+    setDrawerOpen(false);
+    setSearchOpen(false);
+  }, [location.pathname, currentRoute]);
+
+  // Cmd+K Shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [open]);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
-  // Trap body scroll when drawer open
+  // Lock body scroll
   useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [open]);
+    if (drawerOpen || searchOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [drawerOpen, searchOpen]);
 
-  // Filtered routes for search
-  const filteredRoutes = query.trim().length > 0
-    ? ROUTES.filter(r =>
-        r.label.toLowerCase().includes(query.toLowerCase()) ||
-        r.group.toLowerCase().includes(query.toLowerCase())
-      )
-    : null;
+  const searchResults = useMemo(() => {
+    return ROUTES.filter(r => fuzzyMatch(searchQuery, r));
+  }, [searchQuery]);
 
-  const currentAccent = pageInfo?.group ? ACCENT_COLORS[pageInfo.group as RouteGroup] : ACCENT_COLORS.Calculators;
+  const cycleTheme = () => {
+    const themes: ('light' | 'dark' | 'dim')[] = ['light', 'dark', 'dim'];
+    const nextIndex = (themes.indexOf(rx.theme) + 1) % themes.length;
+    setTheme(themes[nextIndex]);
+  };
 
   return (
     <>
-      {/* ── Top bar ──────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-[#0a1020]/85 backdrop-blur-xl text-white shadow-lg border-b border-white/5 overflow-hidden">
-        {/* Noise overlay */}
-        <div className="absolute inset-0 bg-noise pointer-events-none" />
-        {/* Shimmer line */}
-        <div className="absolute bottom-0 left-0 w-full h-[1px] animate-shimmer opacity-30" />
-        {/* Top glow */}
-        <div className={`absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent ${currentAccent.glow} to-transparent transition-all duration-500`} />
+      {/* ── HEADER BAR ────────────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 h-[52px] bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/10 flex items-center justify-between px-4 text-white overflow-hidden">
+        {/* Animated Accent Line */}
+        <motion.div 
+          className="absolute top-0 left-0 h-[2px] z-10"
+          initial={false}
+          animate={{ 
+            backgroundColor: GROUPS[currentGroup].color,
+            boxShadow: `0 0 10px ${GROUPS[currentGroup].glow}`,
+            width: '100%'
+          }}
+          transition={{ duration: 0.5 }}
+        />
 
-        <div className="flex items-center justify-between px-4 md:px-6 min-h-[4rem] py-3 relative z-10">
-
-          {/* Left: logo or back button */}
-          <div className="flex-1 min-w-0 mr-2">
-            {isHome ? (
-              <Link to="/" className="flex items-center gap-2.5 min-w-0 group hover-rotate">
-                <span className="text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)] shrink-0"><RadIcon /></span>
-                <div className="leading-none truncate">
-                  <span className="text-sm md:text-base font-bold tracking-tight font-display group-hover:text-blue-300 transition-colors">radcalcpro2</span>
-                  <span className="block text-[9px] md:text-[10px] text-blue-200/50 uppercase tracking-widest font-black truncate">
-                    RNT Medical College
-                  </span>
-                </div>
-              </Link>
-            ) : (
-              <button
+        {/* Left Section */}
+        <div className="flex items-center gap-3 min-w-0">
+          {isHome ? (
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="text-blue-400 group-hover:scale-110 transition-transform">
+                <RadIcon />
+              </div>
+              <div className="flex flex-col leading-tight">
+                <span className="text-sm font-bold tracking-tight">RadCalcPro</span>
+                <span className="text-[9px] text-white/40 uppercase tracking-widest font-medium">RNT Medical College</span>
+              </div>
+            </Link>
+          ) : (
+            <div className="flex items-center gap-2 min-w-0">
+              <button 
                 onClick={() => navigate(-1)}
-                className="group flex items-center gap-1.5 text-blue-200 hover:text-white transition-all min-w-0"
-                aria-label="Go back"
+                className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                aria-label="Back"
               >
-                <div className="p-1 rounded-lg group-hover:bg-white/10 transition-colors shrink-0">
-                  <svg className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </div>
-                <AnimatePresence mode="wait">
-                  <motion.div 
-                    key={location.pathname}
-                    initial={{ opacity: 0, x: -4 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 4 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="flex flex-col items-start leading-none min-w-0"
-                  >
-                    <span className={`text-[9px] font-black uppercase tracking-widest font-mono mb-0.5 ${currentAccent.text}/70 truncate max-w-full`}>
-                      {pageInfo?.group || 'Navigation'}
-                    </span>
-                    <span className="text-xs md:text-sm font-bold truncate max-w-[120px] sm:max-w-[200px] md:max-w-[300px] group-hover:translate-x-0.5 transition-transform">
-                      {pageInfo?.label || 'Back'}
-                    </span>
-                  </motion.div>
-                </AnimatePresence>
+                <ArrowLeft className="w-5 h-5" />
               </button>
-            )}
-          </div>
+              <div className="flex flex-col leading-tight min-w-0">
+                <span className="text-[9px] uppercase tracking-widest font-bold" style={{ color: groupConfig.color }}>
+                  {currentGroup}
+                </span>
+                <span className="text-sm font-bold truncate max-w-[150px] sm:max-w-[300px]">
+                  {currentRoute?.label || 'Tool'}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
 
-          {/* Right: home icon + menu button */}
-          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-            <Magnetic>
-              <button
-                onClick={() => setOpen(o => !o)}
-                className={`
-                  relative ml-1 px-3 py-1.5 md:py-2 rounded-xl transition-all flex items-center gap-2 min-w-[70px] md:min-w-[85px] justify-center group overflow-hidden shrink-0
-                  ${open 
-                    ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]' 
-                    : 'bg-white/10 text-blue-200 hover:text-white hover:bg-white/20'}
-                `}
-                aria-label="Open navigation"
-                aria-expanded={open}
-              >
-                {!open && <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br ${currentAccent.glow} blur-xl transition-opacity`} />}
-                <span className="hidden sm:inline text-[10px] font-black uppercase tracking-widest relative z-10">{open ? 'Close' : 'Menu'}</span>
-                <div className={`relative z-10 ${open ? 'animate-pulse-subtle' : ''}`}>
-                  <MorphMenuIcon open={open} />
-                </div>
-              </button>
-            </Magnetic>
-          </div>
+        {/* Right Section */}
+        <div className="flex items-center gap-1 sm:gap-2">
+          <ShareButton className="p-2 hover:bg-white/10 rounded-full transition-colors" />
+          <Link 
+            to="/about" 
+            className="w-8 h-8 rounded-full overflow-hidden border border-white/20 hover:border-blue-500 transition-colors"
+          >
+            <img 
+              src="https://unavatar.io/twitter/drn_dr" 
+              alt="Profile" 
+              className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+          </Link>
+          <button 
+            onClick={() => {
+              localStorage.clear();
+              window.location.reload();
+            }}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors text-red-400/60"
+            title="Reset App"
+          >
+            <RotateCcw className="w-5 h-5 opacity-60" />
+          </button>
+          <button 
+            onClick={() => setSearchOpen(true)}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors hidden sm:flex"
+            title="Search (Cmd+K)"
+          >
+            <Search className="w-5 h-5 opacity-60" />
+          </button>
+          
+          <button 
+            onClick={() => setHistoryOpen(true)}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors"
+            title="History"
+          >
+            <HistoryIcon className="w-5 h-5 opacity-60" />
+          </button>
+
+          <button 
+            onClick={cycleTheme}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors"
+            title="Toggle Theme"
+          >
+            {rx.theme === 'light' && <Sun className="w-5 h-5 opacity-60" />}
+            {rx.theme === 'dark' && <Moon className="w-5 h-5 opacity-60" />}
+            {rx.theme === 'dim' && <EyeOff className="w-5 h-5 opacity-60" />}
+          </button>
+
+          <button 
+            onClick={() => setDrawerOpen(!drawerOpen)}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors relative z-[100]"
+            aria-label="Menu"
+          >
+            <MorphMenuIcon open={drawerOpen} />
+          </button>
         </div>
       </header>
 
-      {/* ── Overlay ──────────────────────────────────────────────────────── */}
-      {open && (
-        <div
-          className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
-          aria-hidden="true"
-        />
-      )}
-
-      {/* ── Drawer ───────────────────────────────────────────────────────── */}
-      <div
-        ref={drawerRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Navigation menu"
-        className={`
-          fixed top-0 right-0 z-[70] h-full w-72 bg-white shadow-2xl
-          flex flex-col
-          transform transition-transform duration-200 ease-out
-          ${open ? 'translate-x-0' : 'translate-x-full'}
-        `}
-      >
-        {/* Drawer header */}
-        <div className="flex items-center justify-between px-4 py-3 bg-[#0a1020] text-white flex-shrink-0">
-          <div className="flex items-center gap-4">
-            <Link
-              to="/"
-              className="text-blue-200 hover:text-white transition"
-              title="Home"
-            >
-              <Home className="w-6 h-6" />
-            </Link>
-            <button
-              onClick={() => setHistoryOpen(o => !o)}
-              className="text-blue-200 hover:text-white transition"
-              title="Calculation History"
-            >
-              <History className="w-6 h-6" />
-            </button>
-            <button
-              onClick={() => {
-                const next: Record<string, 'light' | 'dark' | 'dim'> = {
-                  light: 'dark',
-                  dark: 'dim',
-                  dim: 'light'
-                };
-                setTheme(next[rx.theme]);
-              }}
-              className="text-blue-200 hover:text-white transition"
-              title={`Switch Theme (Current: ${rx.theme})`}
-            >
-              {rx.theme === 'light' && <Sun className="w-6 h-6" />}
-              {rx.theme === 'dark' && <Moon className="w-6 h-6" />}
-              {rx.theme === 'dim' && <EyeOff className="w-6 h-6" />}
-            </button>
-            <button
-              onClick={() => {
-                localStorage.clear();
-                window.location.reload();
-              }}
-              className="text-blue-200 hover:text-white transition"
-              title="Master Reset"
-            >
-              <RotateCcw className="w-6 h-6" />
-            </button>
-            <ShareButton className="text-blue-200 hover:text-white transition w-6 h-6" />
-            <Link
-              to="/about"
-              className="w-8 h-8 rounded-full border border-blue-400/30 overflow-hidden hover:border-white transition-colors"
-              title="About Developer"
-            >
-              <img 
-                src="https://unavatar.io/twitter/drn_dr" 
-                alt="Dr. Narendra Rathore" 
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-            </Link>
-          </div>
-          <button onClick={() => setOpen(false)} className="text-blue-200 hover:text-white transition" aria-label="Close">
-            <XIcon />
-          </button>
-        </div>
-
-        {/* Search */}
-        <div className="px-3 py-2 border-b border-slate-100 flex-shrink-0">
-          <input
-            type="search"
-            placeholder="Search tools…"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            className="w-full text-xs px-3 py-1.5 rounded border border-slate-200 bg-slate-50 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
-          />
-        </div>
-
-        {/* Nav links */}
-        <nav className="flex-1 overflow-y-auto overscroll-contain py-1">
-          {filteredRoutes ? (
-            /* Search results — flat list */
-            filteredRoutes.length > 0 ? (
-              <ul>
-                {filteredRoutes.map(r => (
-                  <li key={r.path}>
-                    <Link
-                      to={r.path}
-                      className={`flex items-center justify-between px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-800 transition
-                        ${location.pathname === r.path ? 'bg-blue-50 text-blue-800 font-semibold' : ''}`}
-                    >
-                      <span>{r.label}</span>
-                      <span className={`text-[10px] font-bold uppercase ${GROUP_COLORS[r.group as RouteGroup]}`}>
-                        {r.group}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-xs text-slate-400 text-center py-8">No tools found</p>
-            )
-          ) : (
-            /* Grouped nav */
-            GROUP_ORDER.map(group => (
-              <div key={group} className="mb-1">
-                <p className={`px-4 pt-3 pb-1 text-[10px] font-black uppercase tracking-widest ${GROUP_COLORS[group]}`}>
-                  {group}
-                </p>
-                <ul>
-                  {ROUTES.filter(r => r.group === group).map(r => (
-                    <li key={r.path}>
-                      <Link
-                        to={r.path}
-                        className={`flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-800 transition
-                          ${location.pathname === r.path
-                            ? 'bg-blue-50 text-blue-800 font-semibold border-l-2 border-blue-700'
-                            : 'border-l-2 border-transparent'}`}
-                      >
-                        {r.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+      {/* ── SEARCH OVERLAY ────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {searchOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[90] bg-[#0a0a0a]/95 backdrop-blur-xl p-4 sm:p-8 flex flex-col"
+          >
+            <div className="max-w-2xl mx-auto w-full flex flex-col h-full">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                  <input 
+                    autoFocus
+                    type="text"
+                    placeholder="Search clinical tools, references..."
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-lg text-white outline-none focus:border-blue-500/50 transition-colors"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <button 
+                  onClick={() => setSearchOpen(false)}
+                  className="p-3 hover:bg-white/10 rounded-2xl transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
               </div>
-            ))
-          )}
-        </nav>
 
-        {/* Drawer footer */}
-        <div className="px-4 py-3 border-t border-slate-100 flex-shrink-0 bg-slate-50">
-          <p className="text-[10px] text-slate-400 leading-relaxed">
-            <span className="font-bold text-slate-600">Dr. Narendra Rathore</span><br />
-            HoD Radiation Oncology · RNT MC Udaipur
-          </p>
-        </div>
-      </div>
+              <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
+                {searchQuery.trim() === '' ? (
+                  <div className="space-y-8">
+                    <div>
+                      <h3 className="text-xs font-bold text-white/30 uppercase tracking-widest mb-4">Suggested Categories</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {(Object.keys(GROUPS) as GroupName[]).map(g => (
+                          <button 
+                            key={g}
+                            onClick={() => setSearchQuery(g)}
+                            className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm hover:bg-white/10 transition-colors"
+                          >
+                            {g}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold text-white/30 uppercase tracking-widest mb-4">Popular Tools</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {ROUTES.slice(0, 6).map(r => (
+                          <Link 
+                            key={r.path}
+                            to={r.path}
+                            onClick={() => setSearchOpen(false)}
+                            className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+                          >
+                            <r.icon className="w-5 h-5 text-blue-400" />
+                            <span className="text-sm font-medium">{r.label}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {searchResults.length > 0 ? (
+                      searchResults.map(r => (
+                        <Link 
+                          key={r.path}
+                          to={r.path}
+                          onClick={() => setSearchOpen(false)}
+                          className="flex items-center justify-between p-4 rounded-2xl bg-white/5 hover:bg-white/10 transition-all group"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="p-2 rounded-lg bg-white/5 group-hover:bg-blue-500/20 transition-colors">
+                              <r.icon className="w-5 h-5 text-blue-400" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-base font-bold">{r.label}</span>
+                              <span className="text-xs text-white/40">{r.group}</span>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-5 h-5 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                        </Link>
+                      ))
+                    ) : (
+                      <div className="text-center py-20">
+                        <Search className="w-12 h-12 text-white/10 mx-auto mb-4" />
+                        <p className="text-white/40">No tools found matching "{searchQuery}"</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* ── Calculation History Panel ─────────────────────────────────── */}
+      {/* ── SIDE DRAWER ───────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {drawerOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDrawerOpen(false)}
+              className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 z-[80] h-full w-[300px] max-w-[90vw] bg-[#0f0f0f] border-l border-white/10 flex flex-col shadow-2xl"
+            >
+              {/* Drawer Header */}
+              <div className="p-4 border-b border-white/5">
+                <h2 className="text-lg font-bold mb-4 text-white">Navigation</h2>
+                
+                <div className="flex flex-col gap-1">
+                  <Link to="/" className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-white/60 hover:text-white transition-colors">
+                    <Home className="w-5 h-5 opacity-60" />
+                    <span className="text-sm font-medium">Home</span>
+                  </Link>
+                  <button onClick={() => setHistoryOpen(true)} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-white/60 hover:text-white transition-colors">
+                    <HistoryIcon className="w-5 h-5 opacity-60" />
+                    <span className="text-sm font-medium">History</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Group Switcher */}
+              <div className="px-4 py-4 border-b border-white/5">
+                <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1">
+                  {(Object.keys(GROUPS) as GroupName[]).map(g => {
+                    const Icon = GROUPS[g].icon;
+                    const isActive = activeGroup === g;
+                    return (
+                      <button 
+                        key={g}
+                        onClick={() => setActiveGroup(g)}
+                        className={`
+                          flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all
+                          ${isActive 
+                            ? 'bg-white text-black' 
+                            : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white'}
+                        `}
+                      >
+                        <Icon className="w-3 h-3" />
+                        {g}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Route List */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar py-4">
+                <AnimatePresence mode="wait">
+                  <motion.div 
+                    key={activeGroup}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="px-4 space-y-1"
+                  >
+                    {ROUTES.filter(r => r.group === activeGroup).map(r => (
+                      <Link 
+                        key={r.path}
+                        to={r.path}
+                        className={`
+                          flex items-center gap-3 p-3 rounded-xl transition-all group
+                          ${location.pathname === r.path 
+                            ? 'bg-blue-500/10 text-blue-400' 
+                            : 'hover:bg-white/5 text-white/60 hover:text-white'}
+                        `}
+                      >
+                        <r.icon className={`w-4 h-4 ${location.pathname === r.path ? 'text-blue-400' : 'opacity-40 group-hover:opacity-100'}`} />
+                        <span className="text-sm font-medium">{r.label}</span>
+                      </Link>
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Footer */}
+              <div className="p-6 bg-white/5 border-t border-white/5">
+                <div className="flex items-center gap-3">
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold">Dr. Narendra Rathore</span>
+                    <span className="text-[10px] text-white/40">HoD Radiation Oncology</span>
+                    <span className="text-[10px] text-white/40">RNT MC Udaipur</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ── HISTORY PANEL ─────────────────────────────────────────────────── */}
       <CalcHistoryPanel open={historyOpen} onClose={() => setHistoryOpen(false)} />
     </>
   );

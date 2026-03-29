@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ROUTES } from '../components/Header';
+import { ROUTES, GROUPS } from '../components/Header';
 import { Download, X, Share2 } from 'lucide-react';
 import { getDeferredPrompt, installPWA, incrementVisitCount } from '@/src/services/pwaService';
 
@@ -73,6 +73,16 @@ const GROUP_META: Record<string, { color: string; dot: string; desc: string }> =
     color: 'text-blue-700',
     dot: 'bg-blue-600',
     desc: 'LQ-model radiobiology calculators',
+  },
+  Planning: {
+    color: 'text-rose-700',
+    dot: 'bg-rose-600',
+    desc: 'Planning constraints and atlas',
+  },
+  Brachytherapy: {
+    color: 'text-amber-700',
+    dot: 'bg-amber-600',
+    desc: 'Brachytherapy dosimetry and reference',
   },
   Reference: {
     color: 'text-teal-700',
@@ -159,9 +169,14 @@ const Home: React.FC = () => {
   }, []);
 
   // Group routes preserving ROUTES order
-  const grouped = (['Calculators', 'Reference', 'Education'] as const).map(group => ({
+  const grouped = Object.keys(GROUPS).map(group => ({
     group,
     routes: ROUTES.filter(r => r.group === group),
+  }));
+
+  const stats = Object.keys(GROUPS).map(group => ({
+    val: ROUTES.filter(r => r.group === group).length.toString(),
+    label: group,
   }));
 
   return (
@@ -188,12 +203,8 @@ const Home: React.FC = () => {
         </div>
 
         {/* Stat strip */}
-        <div className="mt-3 grid grid-cols-3 gap-2 text-center border-t border-blue-800/60 pt-3">
-          {[
-            { val: '14', label: 'Calculators' },
-            { val: '15', label: 'References' },
-            { val: '11', label: 'Education' },
-          ].map(s => (
+        <div className="mt-3 grid grid-cols-5 gap-1 text-center border-t border-blue-800/60 pt-3">
+          {stats.map(s => (
             <div key={s.label}>
               <p className="text-base font-black num text-white">{s.val}</p>
               <p className="text-[9px] text-blue-200/60 uppercase tracking-wider">{s.label}</p>

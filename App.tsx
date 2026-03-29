@@ -84,14 +84,18 @@ class ErrorBoundary extends Component<{ children: React.ReactNode }, ErrState> {
 // ── App ───────────────────────────────────────────────────────────────────
 const Layout: React.FC = () => {
   const location = useLocation();
-  const isImmersive = ['/radiation-mechanism', '/cell-survival', '/eqd2', '/pediatric-constraints', '/pediatric-scaling', '/clinical-trials', '/toxicity-grading', '/dose-rate-comparison', '/cervix-brachytherapy', '/brachytherapy-reference', '/adaptive-rt', '/oar-limits', '/sbrt', '/ntcp', '/tcp', '/ldr-brachy', '/hdr-brachy', '/isoeffect-chart', '/repair-kinetics', '/proton-therapy', '/cervix-dosimeter', '/oerletrbe'].includes(location.pathname);
+  
+  // All clinical tools and references get the dark immersive background
+  const isHome = location.pathname === '/';
+  const isAbout = location.pathname === '/about';
+  const isImmersive = !isHome && !isAbout;
 
   return (
-    <div className={`flex flex-col min-h-screen ${isImmersive ? 'bg-slate-950' : 'bg-zinc-50'}`}>
+    <div className={`flex flex-col min-h-screen transition-colors duration-500 ${isImmersive ? 'bg-[#050505]' : 'bg-zinc-50'}`}>
       <Header />
       <PWAInstallPrompt />
       <UpdateNotification />
-      <main className={`flex-grow w-full ${isImmersive ? '' : 'max-w-3xl mx-auto px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10'}`}>
+      <main className={`flex-grow w-full relative ${isImmersive ? '' : 'max-w-3xl mx-auto px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10'}`}>
         <ErrorBoundary>
           <Suspense fallback={<PageLoader />}>
             <div className="w-full h-full">

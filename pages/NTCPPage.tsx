@@ -218,7 +218,7 @@ const NTCPPage: React.FC = () => {
   const reductionPercent = doseReductionNeeded ? ((gEUD - gEUD_target) / gEUD) * 100 : 0;
 
   return (
-    <div className="space-y-8 animate-slam pb-20">
+    <div className="space-y-8 animate-slam pb-10">
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/5 pb-6">
         <div className="space-y-1">

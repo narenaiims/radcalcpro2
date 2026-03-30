@@ -35,8 +35,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import { RadiobiologyData, getInterpretation } from '../src/data/radiobiologyData';
 import TumourSelector from '@/components/TumourSelector';
-import { useReactToPrint } from 'react-to-print';
-import { PrintReport } from '@/src/components/PrintReport';
+import { PDFReport } from '@/src/components/PDFReport';
+import { generatePDFBlob, sharePDF } from '@/src/lib/pdfUtils';
+import { Share2 } from 'lucide-react';
 
 // ── Quick reference sidebar data ──────────────────────────────────────────
 const QUICK_REF_DATA = [
@@ -169,8 +170,6 @@ const EBRTGapPage: React.FC = () => {
   const [step, setStep]                   = useState<WizardStep>('site');
   const [data, setData]                   = useState<GapState>(INITIAL_STATE);
   const [selectedTumour, setSelectedTumour] = useState<RadiobiologyData | null>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const reactToPrintFn = useReactToPrint({ contentRef });
 
   // Safe α/β accessor
   const getAB = (t: RadiobiologyData | null): number =>
@@ -497,8 +496,44 @@ const EBRTGapPage: React.FC = () => {
             <div className="p-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-slate-800">Analysis Results</h2>
-                <button onClick={() => reactToPrintFn()} className="no-print flex items-center gap-1.5 text-[10px] font-bold text-slate-500 hover:text-slate-800 transition">
-                  <Printer className="w-3 h-3" /> Print Report
+                <button
+                  onClick={async () => {
+                    const doc = (
+                      <PDFReport 
+                        title="EBRT Gap Correction Report"
+                        parameters={[
+                          { label: 'Tumour Site', value: selectedTumour?.subsite || 'N/A' },
+                          { label: 'Tumour', value: selectedTumour?.tumour || 'N/A' },
+                          { label: 'Total Dose', value: `${data.totalDose} Gy` },
+                          { label: 'Dose per Fx', value: `${data.dosePerFx} Gy` },
+                          { label: 'Fractions', value: `${totalFx} fx` },
+                          { label: 'α/β Ratio', value: `${results?.ab ?? '—'} Gy` },
+                          { label: 'k (repopulation)', value: `${results?.k?.toFixed(2) ?? '—'} Gy/day` },
+                          { label: 'Tk (kick-off)', value: `${results?.tk ?? '—'} days` },
+                          { label: 'Gap Duration', value: `${data.gapDays} days` },
+                          { label: 'Fractions at Gap', value: `${data.fxCompleted} completed` },
+                        ]}
+                        results={[
+                          { label: 'EQD2 Loss', value: results?.eqd2Loss.toFixed(2) || '0', unit: 'Gy' },
+                          { label: 'Effective Repop Days', value: results?.effectiveRepopDays.toString() || '0', unit: 'days' },
+                          { label: 'Strategy A: Extra Fx', value: results?.extraFxA.toString() || '0', unit: 'fx' },
+                          { label: 'Strategy A: New Total', value: results?.newTotalDoseA.toFixed(1) || '0', unit: 'Gy' },
+                          { label: 'Strategy C: BID Days', value: results?.bidDaysNeeded.toString() || '0', unit: 'BID days' },
+                        ]}
+                        clinicalInsight={
+                          results
+                            ? `${urgency.label} impact. ${getUrgencyMessage(results.eqd2Loss, results.eqd2Total, results.extraFxA, data.dosePerFx)} ${selectedTumour?.repopNote ?? ''}`
+                            : ''
+                        }
+                      />
+                    );
+                    const blob = await generatePDFBlob(doc);
+                    await sharePDF(blob, `RadOnc_Gap_Report.pdf`, `Clinical Report: ${selectedTumour?.subsite} Gap Correction Analysis.`);
+                  }}
+                  className="no-print flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-green-700 transition shadow-sm"
+                  title="Share Report via WhatsApp"
+                >
+                  <Share2 className="w-4 h-4" /> Share to WhatsApp
                 </button>
               </div>
 
@@ -762,40 +797,6 @@ const EBRTGapPage: React.FC = () => {
         data={SIDEBAR_DATA}
       />
 
-      {/* Print */}
-      <div className="sr-only">
-        <PrintReport
-          ref={contentRef}
-          title="EBRT Gap Correction Report"
-          parameters={[
-            { label: 'Tumour Site',    value: selectedTumour?.subsite || 'N/A' },
-            { label: 'Total Dose',     value: `${data.totalDose} Gy` },
-            { label: 'Dose per Fx',    value: `${data.dosePerFx} Gy` },
-            { label: 'Fx per Week',    value: String(data.fxPerWeek) },
-            { label: 'Gap Duration',   value: `${data.gapDays} days` },
-            { label: 'Fx Completed',   value: String(data.fxCompleted) },
-          ]}
-          results={[
-            { label: 'EQD2 Loss',      value: results?.eqd2Loss.toFixed(2) || '0',    unit: 'Gy' },
-            { label: 'Urgency',        value: results?.urgency.label || '—',            unit: '' },
-            { label: '% of Plan',      value: results?.urgency.relPct || '0',           unit: '%' },
-            { label: 'Strategy A',     value: `+${results?.extraFxA} fx`,              unit: '' },
-            { label: 'New Total (A)',   value: results?.newTotalDoseA.toFixed(1) || '0', unit: 'Gy' },
-          ]}
-          transparencyPanel={[
-            { label: 'α/β',  value: `${results?.ab} Gy` },
-            { label: 'Tk',   value: `${results?.tk} days` },
-            { label: 'k',    value: `${results?.k} Gy EQD2/day` },
-            { label: 'Source', value: selectedTumour?.repopNote || 'Standard LQ' },
-          ]}
-          compensationStrategies={[
-            { label: 'A: Extra Fractions',    value: `Add ${results?.extraFxA} × ${data.dosePerFx} Gy. New total: ${results?.newTotalDoseA.toFixed(1)} Gy` },
-            { label: 'B: Increase d/fx',      value: `New d/fx = ${results?.stratB_newDpf.toFixed(3)} Gy for ${results?.fxRemaining} remaining fractions` },
-            { label: 'C: BID (≥6h interval)', value: `Add ${results?.bidDaysNeeded} BID day(s) — inter-fraction interval ≥6h mandatory` },
-          ]}
-          clinicalInsight={results?.urgency.label + ': ' + getUrgencyMessage(results?.eqd2Loss ?? 0, results?.eqd2Total ?? 0, results?.extraFxA ?? 0, data.dosePerFx)}
-        />
-      </div>
     </div>
   );
 };

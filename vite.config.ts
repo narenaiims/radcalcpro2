@@ -54,6 +54,7 @@ export default defineConfig(({ mode }) => {
           workbox: {
             skipWaiting: false,
             clientsClaim: true,
+            maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
             globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
             runtimeCaching: [
               {
@@ -116,9 +117,9 @@ export default defineConfig(({ mode }) => {
       optimizeDeps: {
         include: [
           'react', 'react-dom', 'react-router-dom',
-          'lucide-react', 'react-to-print',
+          'lucide-react',
           'recharts', 'mathjs', 'date-fns',
-          'html2canvas', 'jspdf', 'idb', 'workbox-window'
+          'idb', 'workbox-window'
         ],
         exclude: ['motion']
       },
@@ -131,7 +132,7 @@ export default defineConfig(({ mode }) => {
               'react-vendor': ['react', 'react-dom', 'react-router-dom'],
               'chart-vendor': ['recharts'],
               'motion-vendor': ['motion'],
-              'pdf-vendor': ['html2canvas', 'jspdf'],
+              'pdf-vendor': ['@react-pdf/renderer'],
             }
           },
           onwarn(warning, warn) {

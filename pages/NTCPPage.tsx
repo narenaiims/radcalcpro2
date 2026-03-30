@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { Activity, Calculator, Printer, AlertTriangle, Info, BookOpen, Trash2, Plus, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
-import { useReactToPrint } from 'react-to-print';
-import { PrintReport } from '@/src/components/PrintReport';
+import { Share2 } from 'lucide-react';
+import { PDFReport } from '@/src/components/PDFReport';
+import { generatePDFBlob, sharePDF } from '@/src/lib/pdfUtils';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, ReferenceDot, Area, ComposedChart } from 'recharts';
 
 // ── LKB Parameters (QUANTEC 2010) ───────────────────────────────────────────
@@ -41,8 +42,6 @@ const NTCPPage: React.FC = () => {
   const [isPercent, setIsPercent] = useState<boolean>(false);
   const [isCumulative, setIsCumulative] = useState<boolean>(true);
   const [showLkbParams, setShowLkbParams] = useState<boolean>(false);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const reactToPrintFn = useReactToPrint({ contentRef });
 
   const oar = OAR_PARAMS[selectedOarIdx];
 
@@ -230,10 +229,6 @@ const NTCPPage: React.FC = () => {
           <p className="text-sm text-slate-500 font-serif italic">Lyman-Kutcher-Burman & Niemierko Models</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => reactToPrintFn()} className="btn-premium btn-primary py-2 flex items-center gap-2">
-            <Printer className="w-4 h-4" />
-            Export
-          </button>
         </div>
       </header>
 
@@ -417,7 +412,39 @@ const NTCPPage: React.FC = () => {
         {/* Right Column: Results */}
         <div className="lg:col-span-7 space-y-6">
           <section className="space-y-4">
-            <h2 className="label-micro opacity-40">Calculated Risk</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="label-micro opacity-40">Calculated Risk</h2>
+              <button
+                onClick={async () => {
+                  const doc = (
+                    <PDFReport 
+                      title="NTCP Calculation Report"
+                      parameters={[
+                        { label: 'Organ at Risk', value: oar.name },
+                        { label: 'Endpoint', value: oar.endpoint },
+                        { label: 'n (volume effect)', value: oar.n.toString() },
+                        { label: 'm (slope)', value: oar.m.toString() },
+                        { label: 'D50', value: `${oar.d50} Gy` },
+                        { label: 'DVH Points', value: `${dvhPoints.length} points` },
+                      ]}
+                      results={[
+                        { label: 'LKB NTCP', value: ntcpLKB.toFixed(1), unit: '%' },
+                        { label: '95% CI', value: `${ntcpLKB_lower.toFixed(1)}% - ${ntcpLKB_upper.toFixed(1)}%`, unit: '' },
+                        { label: 'gEUD', value: gEUD.toFixed(1), unit: 'Gy' },
+                        { label: 'u-value', value: uValue.toFixed(3), unit: '' },
+                      ]}
+                      clinicalInsight={doseReductionNeeded ? `Dose reduction target: ${gEUD_target.toFixed(1)} Gy.` : ''}
+                    />
+                  );
+                  const blob = await generatePDFBlob(doc);
+                  await sharePDF(blob, `RadOnc_NTCP_Report.pdf`, `Clinical Report: NTCP Analysis for ${oar.name}.`);
+                }}
+                className="no-print flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-green-700 transition shadow-sm"
+                title="Share Report via WhatsApp"
+              >
+                <Share2 className="w-4 h-4" /> Share to WhatsApp
+              </button>
+            </div>
             
             <div className={`card-premium p-8 border ${getTrafficLightBg(ntcpLKB)} flex flex-col items-center text-center transition-colors duration-500`}>
               <p className="label-micro opacity-60 mb-2">LKB Model NTCP</p>
@@ -592,26 +619,6 @@ const NTCPPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="sr-only">
-        <PrintReport
-          ref={contentRef}
-          title="NTCP Calculator Report"
-          parameters={[
-            { label: 'OAR', value: oar.name },
-            { label: 'Endpoint', value: oar.endpoint },
-            { label: 'n (Volume Effect)', value: oar.n.toString() },
-            { label: 'm (Slope)', value: oar.m.toString() },
-            { label: 'D50', value: `${oar.d50} Gy` },
-          ]}
-          results={[
-            { label: 'gEUD', value: gEUD.toFixed(2), unit: 'Gy' },
-            { label: 'LKB NTCP', value: ntcpLKB.toFixed(2), unit: '%' },
-            { label: '95% CI Lower', value: ntcpLKB_lower.toFixed(2), unit: '%' },
-            { label: '95% CI Upper', value: ntcpLKB_upper.toFixed(2), unit: '%' },
-            { label: 'Logistic NTCP', value: ntcpProbit.toFixed(2), unit: '%' },
-          ]}
-        />
-      </div>
     </div>
   );
 };

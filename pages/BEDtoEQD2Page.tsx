@@ -5,8 +5,9 @@ import { RadiobiologyData } from '@/src/data/radiobiologyData';
 import TumourSelector from '@/components/TumourSelector';
 import { BookOpen, ChevronRight, GraduationCap, Printer } from 'lucide-react';
 import { AnimatedNumber } from "@/src/components/AnimatedNumber";
-import { useReactToPrint } from 'react-to-print';
-import { PrintReport } from '@/src/components/PrintReport';
+import { Share2 } from 'lucide-react';
+import { PDFReport } from '@/src/components/PDFReport';
+import { generatePDFBlob, sharePDF } from '@/src/lib/pdfUtils';
 
 const STORAGE_KEY = 'radonco_bed_eqd2_state_v2';
 
@@ -72,8 +73,6 @@ const BEDtoEQD2Page: React.FC = () => {
   const [mode,  setMode]  = useState<'BED_TO_EQD2'|'EQD2_TO_BED'>('BED_TO_EQD2');
   const [selectedTumour, setSelectedTumour] = useState<RadiobiologyData | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const reactToPrintFn = useReactToPrint({ contentRef });
 
   const SIDEBAR_DATA: KeyFactSection[] = Object.entries(QUICK_REF_DATA).map(([key, items]) => ({
     title: key.charAt(0).toUpperCase() + key.slice(1),
@@ -224,13 +223,6 @@ const BEDtoEQD2Page: React.FC = () => {
             <p className="text-[10px] uppercase tracking-widest text-blue-200/60">
               {isBtoE ? 'EQD2' : 'BED'}<sub>{nAb}</sub> Result
             </p>
-            <button
-              onClick={() => reactToPrintFn()}
-              className="no-print text-[10px] font-bold flex items-center gap-1.5 text-blue-200/70 hover:text-white transition"
-            >
-              <Printer className="w-3 h-3" />
-              Print
-            </button>
           </div>
           <p className="text-4xl font-black num"><AnimatedNumber value={result} decimals={2} /></p>
           <p className="text-sm text-blue-200/60 mt-1">Gy</p>
@@ -372,20 +364,6 @@ const BEDtoEQD2Page: React.FC = () => {
         Ref: Fowler JF. Br J Radiol 1989. Hall &amp; Giaccia, Radiobiology for the Radiologist 8th ed.
         Ball DL et al. TROG 09.02. Lancet Oncol 2019. Timmerman R et al. RTOG 0236. JAMA 2010.
       </p>
-
-      <div className="sr-only">
-        <PrintReport
-          ref={contentRef}
-          title="BED ↔ EQD2 Converter Report"
-          parameters={[
-            { label: isBtoE ? 'BED input' : 'EQD2 input', value: `${input} Gy` },
-            { label: 'α/β Ratio', value: ab },
-          ]}
-          results={[
-            { label: isBtoE ? 'EQD2' : 'BED', value: result.toFixed(2), unit: 'Gy' },
-          ]}
-        />
-      </div>
     </div>
   );
 };

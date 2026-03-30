@@ -1,57 +1,31 @@
-let deferredPrompt: any = null;
+// Store the deferred prompt globally so any component can trigger install
+export interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
 
-const VISIT_COUNT_KEY = 'radcalc_visit_count';
-const CALC_DONE_KEY = 'radcalc_first_calc_done';
+let _deferredPrompt: BeforeInstallPromptEvent | null = null;
 
-export const incrementVisitCount = () => {
-  const count = parseInt(localStorage.getItem(VISIT_COUNT_KEY) || '0', 10);
-  localStorage.setItem(VISIT_COUNT_KEY, (count + 1).toString());
-  checkInstallTrigger();
-};
+export function getDeferredPrompt() { return _deferredPrompt; }
+export function setDeferredPrompt(e: BeforeInstallPromptEvent | null) {
+  _deferredPrompt = e;
+}
 
-export const markFirstCalculationDone = () => {
-  localStorage.setItem(CALC_DONE_KEY, 'true');
-  checkInstallTrigger();
-};
+export async function installPWA(): Promise<'accepted' | 'dismissed' | 'unavailable'> {
+  if (!_deferredPrompt) return 'unavailable';
+  _deferredPrompt.prompt();
+  const { outcome } = await _deferredPrompt.userChoice;
+  _deferredPrompt = null;
+  return outcome;
+}
 
-const checkInstallTrigger = () => {
-  const visits = parseInt(localStorage.getItem(VISIT_COUNT_KEY) || '0', 10);
-  const calcDone = localStorage.getItem(CALC_DONE_KEY) === 'true';
-
-  if (visits >= 3 || calcDone) {
-    window.dispatchEvent(new CustomEvent('pwa-trigger-prompt'));
-  }
-};
-
-export const setDeferredPrompt = (prompt: any) => {
-  deferredPrompt = prompt;
-  window.dispatchEvent(new CustomEvent('pwa-prompt-available'));
-  checkInstallTrigger();
-};
-
-export const getDeferredPrompt = () => deferredPrompt;
-
-export const clearDeferredPrompt = () => {
-  deferredPrompt = null;
-  window.dispatchEvent(new CustomEvent('pwa-prompt-cleared'));
-};
-
-export const installPWA = async () => {
-  if (!deferredPrompt) {
-    console.log('No install prompt available');
-    return false;
-  }
-
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  
-  if (outcome === 'accepted') {
-    clearDeferredPrompt();
-    return true;
-  }
-  
-  return false;
-};
+// Visit counter — increment each session, return current count
+export function incrementVisitCount(): number {
+  const key = 'pwa_visit_count';
+  const count = parseInt(localStorage.getItem(key) || '0', 10) + 1;
+  localStorage.setItem(key, String(count));
+  return count;
+}
 
 export const getDeepLinkParams = () => {
   const params = new URLSearchParams(window.location.search);

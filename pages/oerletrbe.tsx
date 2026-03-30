@@ -23,6 +23,7 @@ import {
   ChevronRight, CheckCircle, XCircle, Save
 } from 'lucide-react';
 import { useRxContext } from '@/src/context/RadiobiologyContext';
+import { saveHistory } from '../src/lib/db';
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -513,7 +514,6 @@ const Bar: React.FC<{ value: number; max: number; color: string; label?: string 
 
 const OERLETRBEPage: React.FC = () => {
   const { rx } = useRxContext();
-  const { logCalculation } = useRxContext();
   const [tab, setTab] = useState<TabType>('Calculator');
   const [selectedParticle, setSelectedParticle] = useState<string>('carbon');
   const [showQR, setShowQR] = useState(false);
@@ -645,7 +645,7 @@ const OERLETRBEPage: React.FC = () => {
       version: '0.0.0',
       timestamp: Date.now()
     });
-  }, [logCalculation, particleType, letVal, pO2Val, photonDose, fractions, calcRBE, calcOER_pO2]);
+  }, [particleType, letVal, pO2Val, photonDose, fractions, calcRBE, calcOER_pO2]);
 
   // Quiz filter
   const filteredQ = QUIZ.filter(q => qDiff === 'all' || q.difficulty === qDiff);

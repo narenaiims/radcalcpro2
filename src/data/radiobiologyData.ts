@@ -27,37 +27,29 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   // ── Head & Neck ──
   { id: 'hn-larynx', site: 'Head & Neck', subsite: 'Larynx', tumour: 'SCC', alphaBeta: 10, repopFootnote: 'Withers HR et al. Acta Oncol 1988' },
   { id: 'hn-naso', site: 'Head & Neck', subsite: 'Nasopharynx', tumour: 'SCC', alphaBeta: 10, repopFootnote: 'Withers HR et al. Acta Oncol 1988' },
-  { id: 'hn-oro-hpv-neg', site: 'Head & Neck', subsite: 'Oropharynx', tumour: 'SCC HPV-', alphaBeta: 10, repopFootnote: 'Withers HR et al. Acta Oncol 1988' },
-  { id: 'hn-oro-hpv-pos', site: 'Head & Neck', subsite: 'Oropharynx', tumour: 'SCC HPV+', alphaBeta: 10, abSource: 'Ang et al RTOG 0129', repopFootnote: 'Withers HR et al. Acta Oncol 1988' },
+  { id: 'hn-oro', site: 'Head & Neck', subsite: 'Oropharynx', tumour: 'SCC (HPV+/-)', alphaBeta: 10, abSource: 'Ang et al RTOG 0129', repopFootnote: 'Withers HR et al. Acta Oncol 1988' },
   { id: 'hn-oral-cavity', site: 'Head & Neck', subsite: 'Oral Cavity', tumour: 'SCC', alphaBeta: 10, repopFootnote: 'Withers HR et al. Acta Oncol 1988' },
   { id: 'hn-hypopharynx', site: 'Head & Neck', subsite: 'Hypopharynx', tumour: 'SCC', alphaBeta: 10, repopFootnote: 'Withers HR et al. Acta Oncol 1988' },
-  { id: 'hn-salivary-adeno', site: 'Head & Neck', subsite: 'Salivary Gland', tumour: 'Adenocarcinoma', alphaBeta: 8, repopFootnote: 'Extrapolated from SCC' },
-  { id: 'hn-salivary-acc', site: 'Head & Neck', subsite: 'Salivary Gland', tumour: 'Adenoid Cystic', alphaBeta: 8, repopFootnote: 'Extrapolated from SCC' },
-  { id: 'hn-thyroid-ana', site: 'Head & Neck', subsite: 'Thyroid', tumour: 'Anaplastic', alphaBeta: 10, repopFootnote: 'Extrapolated from SCC' },
-  { id: 'hn-thyroid-diff', site: 'Head & Neck', subsite: 'Thyroid', tumour: 'Differentiated', alphaBeta: 10, repopFootnote: 'Extrapolated from SCC' },
+  { id: 'hn-salivary', site: 'Head & Neck', subsite: 'Salivary Gland', tumour: 'Adeno/ACC', alphaBeta: 8, repopFootnote: 'Extrapolated from SCC' },
+  { id: 'hn-thyroid', site: 'Head & Neck', subsite: 'Thyroid', tumour: 'Anaplastic/Differentiated', alphaBeta: 10, repopFootnote: 'Extrapolated from SCC' },
   { id: 'hn-sinus', site: 'Head & Neck', subsite: 'Paranasal Sinus', tumour: 'SCC/Adeno', alphaBeta: 10, repopFootnote: 'Withers HR et al. Acta Oncol 1988' },
   { id: 'hn-cup', site: 'Head & Neck', subsite: 'Unknown Primary', tumour: 'SCC', alphaBeta: 10, repopFootnote: 'Withers HR et al. Acta Oncol 1988' },
   { id: 'hn-glomus', site: 'Head & Neck', subsite: 'Glomus Tumour', tumour: 'Paraganglioma', alphaBeta: 2, repopFootnote: 'Minimal repopulation' },
-  { id: 'hn-chordoma', site: 'Head & Neck', subsite: 'Base of Skull', tumour: 'Chordoma', alphaBeta: 2, repopFootnote: 'Minimal repopulation' },
-  { id: 'hn-chondrosarcoma', site: 'Head & Neck', subsite: 'Base of Skull', tumour: 'Chondrosarcoma', alphaBeta: 2, repopFootnote: 'Minimal repopulation' },
+  { id: 'hn-skull-base', site: 'Head & Neck', subsite: 'Base of Skull', tumour: 'Chordoma/Chondrosarcoma', alphaBeta: 2, repopFootnote: 'Minimal repopulation' },
 
   // ── Thoracic ──
-  { id: 'thor-nsclc-adeno', site: 'Thoracic', subsite: 'Lung', tumour: 'NSCLC Adeno', alphaBeta: 10 },
-  { id: 'thor-nsclc-scc', site: 'Thoracic', subsite: 'Lung', tumour: 'NSCLC SCC', alphaBeta: 10 },
-  { id: 'thor-sclc', site: 'Thoracic', subsite: 'Lung', tumour: 'SCLC', alphaBeta: 10 },
+  { id: 'thor-lung', site: 'Thoracic', subsite: 'Lung', tumour: 'NSCLC/SCLC', alphaBeta: 10 },
   { id: 'thor-meso', site: 'Thoracic', subsite: 'Mesothelioma', tumour: 'Pleural', alphaBeta: 10 },
   { id: 'thor-thymoma', site: 'Thoracic', subsite: 'Thymoma', tumour: 'Epithelial', alphaBeta: 10 },
   { id: 'thor-thymic-ca', site: 'Thoracic', subsite: 'Thymic Carcinoma', tumour: 'SCC', alphaBeta: 10 },
-  { id: 'thor-oes-scc', site: 'Thoracic', subsite: 'Oesophagus', tumour: 'SCC', alphaBeta: 10 },
-  { id: 'thor-oes-adeno', site: 'Thoracic', subsite: 'Oesophagus', tumour: 'Adenocarcinoma', alphaBeta: 10 },
+  { id: 'thor-oes', site: 'Thoracic', subsite: 'Oesophagus', tumour: 'SCC/Adenocarcinoma', alphaBeta: 10 },
   { id: 'thor-chest-wall', site: 'Thoracic', subsite: 'Chest Wall', tumour: 'Recurrence', alphaBeta: 4 },
   { id: 'thor-trachea', site: 'Thoracic', subsite: 'Trachea', tumour: 'SCC', alphaBeta: 10 },
 
   // ── Gastrointestinal ──
   { id: 'gi-stomach', site: 'Gastrointestinal', subsite: 'Stomach', tumour: 'Adenocarcinoma', alphaBeta: 10 },
   { id: 'gi-pancreas', site: 'Gastrointestinal', subsite: 'Pancreas', tumour: 'Adenocarcinoma', alphaBeta: 10 },
-  { id: 'gi-liver-hcc', site: 'Gastrointestinal', subsite: 'Liver', tumour: 'HCC', alphaBeta: 10 },
-  { id: 'gi-liver-chol', site: 'Gastrointestinal', subsite: 'Liver', tumour: 'Cholangiocarcinoma', alphaBeta: 10 },
+  { id: 'gi-liver', site: 'Gastrointestinal', subsite: 'Liver', tumour: 'HCC/Cholangiocarcinoma', alphaBeta: 10 },
   { id: 'gi-rectum', site: 'Gastrointestinal', subsite: 'Rectum', tumour: 'Adenocarcinoma', alphaBeta: 10 },
   { id: 'gi-anal', site: 'Gastrointestinal', subsite: 'Anal Canal', tumour: 'SCC', alphaBeta: 10 },
   { id: 'gi-colon', site: 'Gastrointestinal', subsite: 'Colon', tumour: 'Adenocarcinoma', alphaBeta: 10 },
@@ -71,27 +63,20 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'gi-omental', site: 'Gastrointestinal', subsite: 'Omentum', tumour: 'Omental Cake', alphaBeta: 10 },
 
   // ── Genitourinary ──
-  { id: 'gu-pros-low', site: 'Genitourinary', subsite: 'Prostate', tumour: 'Low risk', alphaBeta: 1.5, abLow: 1.0, abHigh: 1.85, uncertaintyFlag: true, abSource: 'Brenner & Hall IJROBP 1999; Fowler et al Radiother Oncol 2001; CHHiP (Dearnaley, Lancet Oncol 2016); PACE-B (Brand, Lancet Oncol 2019)' },
-  { id: 'gu-pros-int', site: 'Genitourinary', subsite: 'Prostate', tumour: 'Intermediate', alphaBeta: 1.5, abLow: 1.0, abHigh: 1.85, uncertaintyFlag: true, abSource: 'Brenner & Hall IJROBP 1999; Fowler et al Radiother Oncol 2001; CHHiP (Dearnaley, Lancet Oncol 2016); PACE-B (Brand, Lancet Oncol 2019)' },
-  { id: 'gu-pros-high', site: 'Genitourinary', subsite: 'Prostate', tumour: 'High risk', alphaBeta: 1.5, abLow: 1.0, abHigh: 1.85, uncertaintyFlag: true, abSource: 'Brenner & Hall IJROBP 1999; Fowler et al Radiother Oncol 2001; CHHiP (Dearnaley, Lancet Oncol 2016); PACE-B (Brand, Lancet Oncol 2019)' },
+  { id: 'gu-pros', site: 'Genitourinary', subsite: 'Prostate', tumour: 'Adenocarcinoma', alphaBeta: 1.5, abLow: 1.0, abHigh: 1.85, uncertaintyFlag: true, abSource: 'Brenner & Hall IJROBP 1999; Fowler et al Radiother Oncol 2001; CHHiP (Dearnaley, Lancet Oncol 2016); PACE-B (Brand, Lancet Oncol 2019)' },
   { id: 'gu-bladder', site: 'Genitourinary', subsite: 'Bladder', tumour: 'TCC', alphaBeta: 10 },
-  { id: 'gu-renal-clear', site: 'Genitourinary', subsite: 'Renal Cell', tumour: 'Clear cell', alphaBeta: 10 },
-  { id: 'gu-renal-nonclear', site: 'Genitourinary', subsite: 'Renal Cell', tumour: 'Non-clear', alphaBeta: 10 },
-  { id: 'gu-testis-semi', site: 'Genitourinary', subsite: 'Testis', tumour: 'Seminoma', alphaBeta: 10 },
-  { id: 'gu-testis-nonsemi', site: 'Genitourinary', subsite: 'Testis', tumour: 'Non-seminoma', alphaBeta: 10 },
+  { id: 'gu-renal', site: 'Genitourinary', subsite: 'Renal Cell', tumour: 'Carcinoma', alphaBeta: 10 },
+  { id: 'gu-testis', site: 'Genitourinary', subsite: 'Testis', tumour: 'Germ cell', alphaBeta: 10 },
   { id: 'gu-penile', site: 'Genitourinary', subsite: 'Penile', tumour: 'SCC', alphaBeta: 10 },
   { id: 'gu-ureter', site: 'Genitourinary', subsite: 'Ureter', tumour: 'TCC', alphaBeta: 10 },
   { id: 'gu-urethra', site: 'Genitourinary', subsite: 'Urethra', tumour: 'SCC', alphaBeta: 10 },
 
   // ── Gynaecological ──
-  { id: 'gyn-cervix-scc', site: 'Gynaecological', subsite: 'Cervix', tumour: 'SCC', alphaBeta: 10 },
-  { id: 'gyn-cervix-adeno', site: 'Gynaecological', subsite: 'Cervix', tumour: 'Adenocarcinoma', alphaBeta: 10 },
-  { id: 'gyn-endo-adeno', site: 'Gynaecological', subsite: 'Endometrium', tumour: 'Adenocarcinoma', alphaBeta: 10 },
-  { id: 'gyn-endo-serous', site: 'Gynaecological', subsite: 'Endometrium', tumour: 'Serous', alphaBeta: 10 },
+  { id: 'gyn-cervix', site: 'Gynaecological', subsite: 'Cervix', tumour: 'SCC/Adenocarcinoma', alphaBeta: 10 },
+  { id: 'gyn-endo', site: 'Gynaecological', subsite: 'Endometrium', tumour: 'Adenocarcinoma/Serous', alphaBeta: 10 },
   { id: 'gyn-vulva', site: 'Gynaecological', subsite: 'Vulva', tumour: 'SCC', alphaBeta: 10 },
   { id: 'gyn-vagina', site: 'Gynaecological', subsite: 'Vagina', tumour: 'SCC', alphaBeta: 10 },
-  { id: 'gyn-ovary-epi', site: 'Gynaecological', subsite: 'Ovary', tumour: 'Epithelial', alphaBeta: 10 },
-  { id: 'gyn-ovary-germ', site: 'Gynaecological', subsite: 'Ovary', tumour: 'Germ cell', alphaBeta: 10 },
+  { id: 'gyn-ovary', site: 'Gynaecological', subsite: 'Ovary', tumour: 'Epithelial/Germ cell', alphaBeta: 10 },
   { id: 'gyn-fallopian', site: 'Gynaecological', subsite: 'Fallopian Tube', tumour: 'Adenocarcinoma', alphaBeta: 10 },
   { id: 'gyn-chorioca', site: 'Gynaecological', subsite: 'Choriocarcinoma', tumour: 'Germ cell', alphaBeta: 10 },
   { id: 'gyn-gtn', site: 'Gynaecological', subsite: 'GTN', tumour: 'Trophoblastic', alphaBeta: 10 },
@@ -99,13 +84,7 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'gyn-uterine-sarc', site: 'Gynaecological', subsite: 'Uterus', tumour: 'LMS/Carcinosarcoma', alphaBeta: 4, uncertaintyFlag: true, notes: 'Sarcomatous uterine tumours; distinct from endometrial adenocarcinoma' },
 
   // ── Breast ──
-  { id: 'breast-whole', site: 'Breast', subsite: 'Whole Breast', tumour: 'Adjuvant', alphaBeta: 4, abSource: 'START trials/Haviland et al' },
-  { id: 'breast-partial', site: 'Breast', subsite: 'Partial Breast', tumour: 'APBI', alphaBeta: 4, abSource: 'START trials/Haviland et al' },
-  { id: 'breast-chest-wall', site: 'Breast', subsite: 'Chest Wall', tumour: 'Post-mastectomy', alphaBeta: 4, abSource: 'START trials/Haviland et al' },
-  { id: 'breast-dcis', site: 'Breast', subsite: 'DCIS', tumour: 'Intraductal', alphaBeta: 4, abSource: 'START trials/Haviland et al' },
-  { id: 'breast-inflammatory', site: 'Breast', subsite: 'Inflammatory', tumour: 'Adenocarcinoma', alphaBeta: 4, uncertaintyFlag: true, abSource: 'START trials/Haviland et al' },
-  { id: 'breast-recurrent', site: 'Breast', subsite: 'Recurrent', tumour: 'Adenocarcinoma', alphaBeta: 4, abSource: 'START trials/Haviland et al' },
-  { id: 'breast-male', site: 'Breast', subsite: 'Male Breast', tumour: 'Adenocarcinoma', alphaBeta: 4, abSource: 'START trials/Haviland et al' },
+  { id: 'breast-general', site: 'Breast', subsite: 'Breast (General)', tumour: 'Adenocarcinoma/DCIS', alphaBeta: 4, abSource: 'START trials/Haviland et al' },
   { id: 'breast-paget', site: 'Breast', subsite: 'Paget Disease', tumour: 'Nipple', alphaBeta: 10, abSource: 'START trials/Haviland et al' },
   { id: 'breast-tnbc', site: 'Breast', subsite: 'TNBC', tumour: 'Triple Negative', alphaBeta: 10, abSource: 'START trials/Haviland et al', notes: 'Behaves more like high-grade rapidly proliferating tumour. Based on START trials and Haviland et al.' },
   { id: 'breast-her2', site: 'Breast', subsite: 'HER2-enriched', tumour: 'HER2+', alphaBeta: 5, abLow: 4, abHigh: 6, uncertaintyFlag: true, abSource: 'START trials/Haviland et al', notes: 'Limited direct data. Based on START trials and Haviland et al.' },
@@ -113,8 +92,7 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'breast-luminal-b', site: 'Breast', subsite: 'Luminal B', tumour: 'Intermediate/High proliferative', alphaBeta: 5, abLow: 4, abHigh: 6, uncertaintyFlag: true, abSource: 'START trials/Haviland et al', notes: 'Limited direct data. Based on START trials and Haviland et al.' },
 
   // ── CNS ──
-  { id: 'cns-gbm', site: 'CNS', subsite: 'Brain', tumour: 'Glioblastoma', alphaBeta: 10 },
-  { id: 'cns-aa', site: 'CNS', subsite: 'Brain', tumour: 'Anaplastic Astrocytoma', alphaBeta: 10 },
+  { id: 'cns-hgg', site: 'CNS', subsite: 'Brain', tumour: 'High-grade glioma (GBM/AA)', alphaBeta: 10 },
   { id: 'cns-lgg', site: 'CNS', subsite: 'Brain', tumour: 'Low-grade glioma', alphaBeta: 2, abLow: 1.8, abHigh: 5, uncertaintyFlag: true, abSource: 'Extrapolated from CNS late-tissue; direct LGG data sparse (Gao et al. Radiother Oncol 2018)', notes: 'Often treated with 1.8 Gy/fx or 2.0 Gy/fx; α/β=2 is pragmatic assumption.' },
   { id: 'cns-meningioma-1', site: 'CNS', subsite: 'Meningioma', tumour: 'Grade I', alphaBeta: 2 },
   { id: 'cns-meningioma-2', site: 'CNS', subsite: 'Meningioma', tumour: 'Grade II/III', alphaBeta: 10 },
@@ -130,8 +108,7 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'cns-craniopharyngioma', site: 'CNS', subsite: 'Craniopharyngioma', tumour: 'Craniopharyngioma', alphaBeta: 2, notes: 'Two histological subtypes: Adamantinomatous (commonest, children) and Papillary (adults). Both α/β ≈ 2 Gy.' },
 
   // ── Skin ──
-  { id: 'skin-bcc', site: 'Skin', subsite: 'BCC', tumour: 'Basal Cell', alphaBeta: 10 },
-  { id: 'skin-scc', site: 'Skin', subsite: 'SCC', tumour: 'Squamous Cell', alphaBeta: 10 },
+  { id: 'skin-nmsc', site: 'Skin', subsite: 'Non-Melanoma', tumour: 'BCC/SCC', alphaBeta: 10 },
   { id: 'skin-melanoma', site: 'Skin', subsite: 'Melanoma', tumour: 'Malignant', alphaBeta: 0.6, abLow: 0.57, abHigh: 2.5, uncertaintyFlag: true, notes: 'Wide uncertainty. Historically considered radioresistant; α/β may be very low (0.57 Gy — Bentzen 1994) supporting hypofractionation.' },
   { id: 'skin-merkel', site: 'Skin', subsite: 'Merkel Cell', tumour: 'Neuroendocrine', alphaBeta: 10 },
   { id: 'skin-mf', site: 'Skin', subsite: 'Mycosis Fungoides', tumour: 'T-cell Lymphoma', alphaBeta: 10 },
@@ -140,8 +117,7 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'skin-sebaceous', site: 'Skin', subsite: 'Sebaceous Ca', tumour: 'Adnexal', alphaBeta: 10 },
 
   // ── Sarcoma ──
-  { id: 'sarc-sts-high', site: 'Sarcoma', subsite: 'Soft Tissue', tumour: 'High grade', alphaBeta: 4 },
-  { id: 'sarc-sts-low', site: 'Sarcoma', subsite: 'Soft Tissue', tumour: 'Low grade', alphaBeta: 4 },
+  { id: 'sarc-sts', site: 'Sarcoma', subsite: 'Soft Tissue', tumour: 'Sarcoma', alphaBeta: 4 },
   { id: 'sarc-lipo-well', site: 'Sarcoma', subsite: 'Liposarcoma', tumour: 'Well-diff', alphaBeta: 2 },
   { id: 'sarc-lipo-pleo', site: 'Sarcoma', subsite: 'Liposarcoma', tumour: 'Pleomorphic', alphaBeta: 4 },
   { id: 'sarc-angio', site: 'Sarcoma', subsite: 'Angiosarcoma', tumour: 'Vascular', alphaBeta: 4 },
@@ -152,14 +128,9 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'sarc-fibrosarc', site: 'Sarcoma', subsite: 'Fibrosarcoma', tumour: 'Fibroblastic', alphaBeta: 4 },
 
   // ── Lymphoma ──
-  { id: 'lym-hodgkin', site: 'Lymphoma', subsite: 'Hodgkin', tumour: 'HL', alphaBeta: 10 },
-  { id: 'lym-dlbcl', site: 'Lymphoma', subsite: 'DLBCL', tumour: 'NHL', alphaBeta: 10 },
-  { id: 'lym-follicular', site: 'Lymphoma', subsite: 'Follicular', tumour: 'NHL', alphaBeta: 10 },
-  { id: 'lym-mantle', site: 'Lymphoma', subsite: 'Mantle Cell', tumour: 'NHL', alphaBeta: 10 },
-  { id: 'lym-tcell', site: 'Lymphoma', subsite: 'T-cell', tumour: 'NHL', alphaBeta: 10 },
-  { id: 'lym-myeloma', site: 'Lymphoma', subsite: 'Multiple Myeloma', tumour: 'Plasma Cell', alphaBeta: 10 },
-  { id: 'lym-plasmacytoma', site: 'Lymphoma', subsite: 'Plasmacytoma', tumour: 'Plasma Cell', alphaBeta: 10 },
-  { id: 'lym-cll', site: 'Lymphoma', subsite: 'CLL/SLL', tumour: 'NHL', alphaBeta: 10 },
+  { id: 'lym-hl', site: 'Lymphoma', subsite: 'Hodgkin', tumour: 'HL', alphaBeta: 10 },
+  { id: 'lym-nhl', site: 'Lymphoma', subsite: 'Non-Hodgkin', tumour: 'NHL (DLBCL/Follicular/Mantle/T-cell/CLL)', alphaBeta: 10 },
+  { id: 'lym-plasma', site: 'Lymphoma', subsite: 'Plasma Cell', tumour: 'Myeloma/Plasmacytoma', alphaBeta: 10 },
 
   // ── Paediatric ──
   { id: 'peds-medullo', site: 'Paediatric', subsite: 'Medulloblastoma', tumour: 'PNET', alphaBeta: 10 },
@@ -182,8 +153,7 @@ export const MASTER_RADIOBIOLOGY_TABLE: RadiobiologyData[] = [
   { id: 'bone-spine-mets', site: 'Bone', subsite: 'Spine', tumour: 'Spinal Metastasis', alphaBeta: 10, notes: 'Generic spinal SBRT target; primary histology determines true α/β' },
 
   // ── Endocrine ──
-  { id: 'endo-thyroid-pap', site: 'Endocrine', subsite: 'Thyroid', tumour: 'Papillary', alphaBeta: 10 },
-  { id: 'endo-thyroid-fol', site: 'Endocrine', subsite: 'Thyroid', tumour: 'Follicular', alphaBeta: 10 },
+  { id: 'endo-thyroid', site: 'Endocrine', subsite: 'Thyroid', tumour: 'Papillary/Follicular', alphaBeta: 10 },
   { id: 'endo-adrenal-cort', site: 'Endocrine', subsite: 'Adrenal', tumour: 'Cortical', alphaBeta: 10 },
   { id: 'endo-pituitary-non', site: 'Endocrine', subsite: 'Pituitary', tumour: 'Adenoma', alphaBeta: 2, notes: 'Covers both functioning and non-functioning adenomas' },
   { id: 'endo-parathyroid', site: 'Endocrine', subsite: 'Parathyroid', tumour: 'Adenoma', alphaBeta: 10 },

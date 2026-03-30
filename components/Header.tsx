@@ -446,75 +446,40 @@ const Header: React.FC = () => {
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className="fixed top-0 right-0 z-[80] h-full w-[300px] max-w-[90vw] bg-[#0f0f0f] border-l border-white/10 flex flex-col shadow-2xl"
             >
-              {/* Drawer Header */}
-              <div className="p-4 border-b border-white/5">
-                <h2 className="text-lg font-bold mb-4 text-white">Navigation</h2>
-                
-                <div className="flex flex-col gap-1">
-                  <Link to="/" className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-white/60 hover:text-white transition-colors">
-                    <Home className="w-5 h-5 opacity-60" />
-                    <span className="text-sm font-medium">Home</span>
-                  </Link>
-                  <button onClick={() => setHistoryOpen(true)} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-white/60 hover:text-white transition-colors">
-                    <HistoryIcon className="w-5 h-5 opacity-60" />
-                    <span className="text-sm font-medium">History</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Group Switcher */}
-              <div className="px-4 py-4 border-b border-white/5">
-                <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1">
-                  {(Object.keys(GROUPS) as GroupName[]).map(g => {
-                    const Icon = GROUPS[g].icon;
-                    const isActive = activeGroup === g;
-                    return (
-                      <button 
-                        key={g}
-                        onClick={() => setActiveGroup(g)}
-                        className={`
-                          flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all
-                          ${isActive 
-                            ? 'bg-white text-black' 
-                            : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white'}
-                        `}
-                      >
-                        <Icon className="w-3 h-3" />
-                        {g}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
               {/* Route List */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar py-4">
-                <AnimatePresence mode="wait">
-                  <motion.div 
-                    key={activeGroup}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="px-4 space-y-1"
-                  >
-                    {ROUTES.filter(r => r.group === activeGroup).map(r => (
-                      <Link 
-                        key={r.path}
-                        to={r.path}
-                        className={`
-                          flex items-center gap-3 p-3 rounded-xl transition-all group
-                          ${location.pathname === r.path 
-                            ? 'bg-blue-500/10 text-blue-400' 
-                            : 'hover:bg-white/5 text-white/60 hover:text-white'}
-                        `}
-                      >
-                        <r.icon className={`w-4 h-4 ${location.pathname === r.path ? 'text-blue-400' : 'opacity-40 group-hover:opacity-100'}`} />
-                        <span className="text-sm font-medium">{r.label}</span>
-                      </Link>
-                    ))}
-                  </motion.div>
-                </AnimatePresence>
+              <div className="flex-1 overflow-y-auto custom-scrollbar py-4 px-4 space-y-6">
+                {(Object.keys(GROUPS) as GroupName[]).map(g => {
+                  const Icon = GROUPS[g].icon;
+                  const groupRoutes = ROUTES.filter(r => r.group === g);
+                  if (groupRoutes.length === 0) return null;
+                  
+                  return (
+                    <div key={g} className="space-y-2">
+                      <div className="flex items-center gap-2 px-2 text-white/40 mb-2">
+                        <Icon className="w-4 h-4" />
+                        <h3 className="text-xs font-bold uppercase tracking-wider">{g}</h3>
+                      </div>
+                      <div className="space-y-1">
+                        {groupRoutes.map(r => (
+                          <Link 
+                            key={r.path}
+                            to={r.path}
+                            onClick={() => setDrawerOpen(false)}
+                            className={`
+                              flex items-center gap-3 p-3 rounded-xl transition-all group
+                              ${location.pathname === r.path 
+                                ? 'bg-blue-500/10 text-blue-400' 
+                                : 'hover:bg-white/5 text-white/60 hover:text-white'}
+                            `}
+                          >
+                            <r.icon className={`w-4 h-4 ${location.pathname === r.path ? 'text-blue-400' : 'opacity-40 group-hover:opacity-100'}`} />
+                            <span className="text-sm font-medium">{r.label}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Footer */}

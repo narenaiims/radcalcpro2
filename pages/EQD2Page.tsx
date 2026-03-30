@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, ChevronRight, GraduationCap, Calculator, Activity, AlertTriangle, Printer, Info, ShieldAlert, Share2, Plus, X, Layers } from 'lucide-react';
-import { GoogleGenAI } from '@google/genai';
 import { RadiobiologyData } from '../src/data/radiobiologyData';
 import TumourSelector from '@/components/TumourSelector';
 import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';

@@ -270,54 +270,6 @@ const Header: React.FC = () => {
 
         {/* Right Section */}
         <div className="flex items-center gap-1 sm:gap-2">
-          <ShareButton className="p-2 hover:bg-white/10 rounded-full transition-colors" />
-          <Link 
-            to="/about" 
-            className="w-8 h-8 rounded-full overflow-hidden border border-white/20 hover:border-blue-500 transition-colors"
-          >
-            <img 
-              src="https://unavatar.io/twitter/drn_dr" 
-              alt="Profile" 
-              className="w-full h-full object-cover"
-              referrerPolicy="no-referrer"
-            />
-          </Link>
-          <button 
-            onClick={() => {
-              localStorage.clear();
-              window.location.reload();
-            }}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors text-red-400/60"
-            title="Reset App"
-          >
-            <RotateCcw className="w-5 h-5 opacity-60" />
-          </button>
-          <button 
-            onClick={() => setSearchOpen(true)}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors hidden sm:flex"
-            title="Search (Cmd+K)"
-          >
-            <Search className="w-5 h-5 opacity-60" />
-          </button>
-          
-          <button 
-            onClick={() => setHistoryOpen(true)}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors"
-            title="History"
-          >
-            <HistoryIcon className="w-5 h-5 opacity-60" />
-          </button>
-
-          <button 
-            onClick={cycleTheme}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors"
-            title="Toggle Theme"
-          >
-            {rx.theme === 'light' && <Sun className="w-5 h-5 opacity-60" />}
-            {rx.theme === 'dark' && <Moon className="w-5 h-5 opacity-60" />}
-            {rx.theme === 'dim' && <EyeOff className="w-5 h-5 opacity-60" />}
-          </button>
-
           <button 
             onClick={() => setDrawerOpen(!drawerOpen)}
             className="p-2 hover:bg-white/10 rounded-full transition-colors relative z-[100]"
@@ -483,13 +435,56 @@ const Header: React.FC = () => {
               </div>
 
               {/* Footer */}
-              <div className="p-6 bg-white/5 border-t border-white/5">
-                <div className="flex items-center gap-3">
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold">Dr. Narendra Rathore</span>
-                    <span className="text-[10px] text-white/40">HoD Radiation Oncology</span>
-                    <span className="text-[10px] text-white/40">RNT MC Udaipur</span>
-                  </div>
+              <div className="p-6 bg-white/5 border-t border-white/5 flex items-center justify-between">
+                <Link to="/" className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/60 hover:text-white">
+                  <Home className="w-5 h-5" />
+                </Link>
+                <div className="flex items-center gap-1">
+                  <ShareButton className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/60 hover:text-white" />
+                  <button
+                    onClick={() => {
+                      localStorage.clear();
+                      window.location.reload();
+                    }}
+                    className="p-2 hover:bg-white/10 rounded-full transition-colors text-red-400/60 hover:text-red-400"
+                    title="Reset App"
+                  >
+                    <RotateCcw className="w-5 h-5 opacity-60" />
+                  </button>
+                  <button 
+                    onClick={() => { setSearchOpen(true); setDrawerOpen(false); }}
+                    className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/60 hover:text-white"
+                    title="Search"
+                  >
+                    <Search className="w-5 h-5 opacity-60" />
+                  </button>
+                  <button 
+                    onClick={() => { setHistoryOpen(true); setDrawerOpen(false); }}
+                    className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/60 hover:text-white"
+                    title="History"
+                  >
+                    <HistoryIcon className="w-5 h-5 opacity-60" />
+                  </button>
+                  <button 
+                    onClick={cycleTheme}
+                    className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/60 hover:text-white"
+                    title="Toggle Theme"
+                  >
+                    {rx.theme === 'light' && <Sun className="w-5 h-5 opacity-60" />}
+                    {rx.theme === 'dark' && <Moon className="w-5 h-5 opacity-60" />}
+                    {rx.theme === 'dim' && <EyeOff className="w-5 h-5 opacity-60" />}
+                  </button>
+                  <Link
+                    to="/about"
+                    className="w-8 h-8 rounded-full overflow-hidden border border-white/20 hover:border-blue-500 transition-colors"
+                  >
+                    <img
+                      src="https://unavatar.io/twitter/drn_dr"
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  </Link>
                 </div>
               </div>
             </motion.div>

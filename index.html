@@ -19,13 +19,7 @@
   <link rel="manifest" href="/manifest.json" />
 
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js', { scope: '/' })
-          .then(r => console.log('SW:', r.scope))
-          .catch(e => console.warn('SW:', e));
-      });
-    }
+    // Service worker registration removed to prevent 429 errors during development.
   </script>
 
   <meta property="og:type" content="website" />

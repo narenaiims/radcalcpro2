@@ -29,14 +29,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import {
   ChevronRight, ChevronLeft, CheckCircle, Info, Calculator,
-  RotateCcw, Calendar, Activity, AlertTriangle,
+  RotateCcw, Calendar, Activity, AlertTriangle, Zap,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import { RadiobiologyData, getInterpretation } from '../src/data/radiobiologyData';
 import TumourSelector from '@/components/TumourSelector';
-import { PDFReport } from '@/src/components/PDFReport';
-import { generatePDFBlob, sharePDF } from '@/src/lib/pdfUtils';
+import { ExportButton, ClinicalReport } from '@/src/components/ClinicalPDFExport';
 import { Share2 } from 'lucide-react';
 
 import { NumberInput } from '../src/components/NumberInput';
@@ -511,49 +510,56 @@ const EBRTGapPage: React.FC = () => {
         {/* STEP 4: RESULTS */}
         {step === 'results' && results && (() => {
           const urgency = results.urgency;
+          const reportData: ClinicalReport = {
+            title: "EBRT Gap Correction Report",
+            toolName: "EBRT Gap Correction",
+            parameters: [
+              { label: 'Tumour Site', value: selectedTumour?.subsite || 'N/A' },
+              { label: 'Tumour', value: selectedTumour?.tumour || 'N/A' },
+              { label: 'Total Dose', value: `${data.totalDose} Gy` },
+              { label: 'Dose per Fx', value: `${data.dosePerFx} Gy` },
+              { label: 'Fractions', value: `${totalFx} fx` },
+              { label: 'α/β Ratio', value: `${results?.ab ?? '—'} Gy` },
+              { label: 'k (repopulation)', value: `${results?.k?.toFixed(2) ?? '—'} Gy/day` },
+              { label: 'Tk (kick-off)', value: `${results?.tk ?? '—'} days` },
+              { label: 'Gap Duration', value: `${data.gapDays} days` },
+              { label: 'Fractions at Gap', value: `${data.fxCompleted} completed` },
+            ],
+            results: [
+              { label: 'EQD2 Loss', value: results?.eqd2Loss.toFixed(2) || '0', unit: 'Gy' },
+              { label: 'Effective Repop Days', value: results?.effectiveRepopDays.toString() || '0', unit: 'days' },
+              { label: 'Strategy A: Extra Fx', value: results?.extraFxA.toString() || '0', unit: 'fx' },
+              { label: 'Strategy A: New Total', value: results?.newTotalDoseA.toFixed(1) || '0', unit: 'Gy' },
+              { label: 'Strategy C: BID Days', value: results?.bidDaysNeeded.toString() || '0', unit: 'BID days' },
+            ],
+            interpretation: results
+              ? `${urgency.label} impact. ${getUrgencyMessage(results.eqd2Loss, results.eqd2Total, results.extraFxA, data.dosePerFx)} ${selectedTumour?.repopNote ?? ''}`
+              : '',
+            urgencyLabel: urgency.label,
+          };
           return (
             <div className="p-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-slate-800">Analysis Results</h2>
-                <button
-                  onClick={async () => {
-                    const doc = (
-                      <PDFReport 
-                        title="EBRT Gap Correction Report"
-                        parameters={[
-                          { label: 'Tumour Site', value: selectedTumour?.subsite || 'N/A' },
-                          { label: 'Tumour', value: selectedTumour?.tumour || 'N/A' },
-                          { label: 'Total Dose', value: `${data.totalDose} Gy` },
-                          { label: 'Dose per Fx', value: `${data.dosePerFx} Gy` },
-                          { label: 'Fractions', value: `${totalFx} fx` },
-                          { label: 'α/β Ratio', value: `${results?.ab ?? '—'} Gy` },
-                          { label: 'k (repopulation)', value: `${results?.k?.toFixed(2) ?? '—'} Gy/day` },
-                          { label: 'Tk (kick-off)', value: `${results?.tk ?? '—'} days` },
-                          { label: 'Gap Duration', value: `${data.gapDays} days` },
-                          { label: 'Fractions at Gap', value: `${data.fxCompleted} completed` },
-                        ]}
-                        results={[
-                          { label: 'EQD2 Loss', value: results?.eqd2Loss.toFixed(2) || '0', unit: 'Gy' },
-                          { label: 'Effective Repop Days', value: results?.effectiveRepopDays.toString() || '0', unit: 'days' },
-                          { label: 'Strategy A: Extra Fx', value: results?.extraFxA.toString() || '0', unit: 'fx' },
-                          { label: 'Strategy A: New Total', value: results?.newTotalDoseA.toFixed(1) || '0', unit: 'Gy' },
-                          { label: 'Strategy C: BID Days', value: results?.bidDaysNeeded.toString() || '0', unit: 'BID days' },
-                        ]}
-                        clinicalInsight={
-                          results
-                            ? `${urgency.label} impact. ${getUrgencyMessage(results.eqd2Loss, results.eqd2Total, results.extraFxA, data.dosePerFx)} ${selectedTumour?.repopNote ?? ''}`
-                            : ''
-                        }
-                      />
-                    );
-                    const blob = await generatePDFBlob(doc);
-                    await sharePDF(blob, `RadOnc_Gap_Report.pdf`, `Clinical Report: ${selectedTumour?.subsite} Gap Correction Analysis.`);
-                  }}
-                  className="no-print flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-green-700 transition shadow-sm"
-                  title="Share Report via WhatsApp"
-                >
-                  <Share2 className="w-4 h-4" /> Share to WhatsApp
-                </button>
+              </div>
+
+              {/* Premium Export Card */}
+              <div className="p-6 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl shadow-lg border border-blue-400/30 text-white relative overflow-hidden group mb-6">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl -mr-8 -mt-8 group-hover:scale-110 transition-transform duration-500" />
+                <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                      <Zap className="w-5 h-5 text-yellow-300 fill-yellow-300" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold">Premium Export</h3>
+                      <p className="text-[10px] text-blue-100">High-quality clinical reports & instant sharing</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <ExportButton report={reportData} />
+                  </div>
+                </div>
               </div>
 
               {/* Urgency Banner */}

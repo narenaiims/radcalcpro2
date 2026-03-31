@@ -183,7 +183,7 @@ const BEDtoEQD2Page: React.FC = () => {
               </label>
               <NumberInput  step="0.5" value={input}
                 onChange={e => setInput(e.target.value)}
-                className="input-clinical num" />
+                className="w-full p-3 rounded-xl border border-slate-300 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none" />
             </div>
           </div>
           
@@ -211,7 +211,7 @@ const BEDtoEQD2Page: React.FC = () => {
                   onChange={e => {
                     setAb(e.target.value);
                     setSelectedTumour(null);
-                  }} className="input-clinical num" />
+                  }} className="w-full p-3 rounded-xl border border-slate-300 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
             )}
           </div>

@@ -1,4 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
+// @ts-ignore
+import * as reactWindow from "react-window";
+// @ts-ignore
+import { AutoSizer } from "react-virtualized-auto-sizer";
 import { motion, AnimatePresence } from "motion/react";
 import { BookOpen, ChevronRight, BarChart3, Info, Calculator, ArrowRightLeft } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
@@ -408,8 +412,7 @@ function TagPill({ tag }: { tag: string }) {
   );
 }
 
-function TrialCard({ trial, index }: { trial: typeof TRIALS[0]; index: number }) {
-  const [expanded, setExpanded] = useState(false);
+function TrialCard({ trial, index, expanded, onToggle }: { trial: typeof TRIALS[0]; index: number; expanded: boolean; onToggle: () => void }) {
   const siteColor = SITE_META[trial.site]?.color || "#94A3B8";
   const siteBg    = SITE_META[trial.site]?.bg    || "rgba(255,255,255,0.04)";
 
@@ -435,7 +438,7 @@ function TrialCard({ trial, index }: { trial: typeof TRIALS[0]; index: number })
     >
       {/* ── Card Header ── */}
       <button
-        onClick={() => setExpanded(o => !o)}
+        onClick={onToggle}
         style={{
           width: "100%", display: "flex", gap: "12px",
           padding: "16px", background: "none", border: "none",
@@ -681,6 +684,56 @@ export default function ClinicalTrials() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("year");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const listRef = useRef<any>(null);
+
+  const toggleExpand = (id: string) => {
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const filtered = useMemo(() => {
+    let t = TRIALS;
+    if (activeSite !== "All") t = t.filter(x => x.site === activeSite);
+    if (search.trim()) {
+      const s = search.toLowerCase();
+      t = t.filter(x =>
+        x.name.toLowerCase().includes(s) ||
+        x.question.toLowerCase().includes(s) ||
+        x.result.toLowerCase().includes(s) ||
+        x.impact.toLowerCase().includes(s) ||
+        x.tags.some(tag => tag.includes(s)) ||
+        x.subsite.toLowerCase().includes(s)
+      );
+    }
+    if (sortBy === "year") return [...t].sort((a, b) => b.year - a.year);
+    if (sortBy === "site") return [...t].sort((a, b) => a.site.localeCompare(b.site));
+    if (sortBy === "name") return [...t].sort((a, b) => a.name.localeCompare(b.name));
+    return t;
+  }, [activeSite, search, sortBy]);
+
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.resetAfterIndex(0);
+    }
+  }, [expandedIds, filtered]);
+
+  const getItemSize = (index: number) => {
+    const trial = filtered[index];
+    if (expandedIds.has(trial.id)) {
+      // Estimate expanded height based on content
+      const baseHeight = 180;
+      const armHeight = trial.arms.length * 25;
+      const resultHeight = trial.result.length * 0.5;
+      const impactHeight = trial.impact.length * 0.5;
+      return baseHeight + armHeight + resultHeight + impactHeight + 100;
+    }
+    return 160; // Collapsed height
+  };
 
   // Comparison Tool State
   const [selectedRefId, setSelectedRefId] = useState(REFERENCE_ARMS[0].id);
@@ -719,25 +772,22 @@ export default function ClinicalTrials() {
     ];
   }, [selectedRef, customDose, customFracs, customABTumour, customABLate]);
 
-  const filtered = useMemo(() => {
-    let t = TRIALS;
-    if (activeSite !== "All") t = t.filter(x => x.site === activeSite);
-    if (search.trim()) {
-      const s = search.toLowerCase();
-      t = t.filter(x =>
-        x.name.toLowerCase().includes(s) ||
-        x.question.toLowerCase().includes(s) ||
-        x.result.toLowerCase().includes(s) ||
-        x.impact.toLowerCase().includes(s) ||
-        x.tags.some(tag => tag.includes(s)) ||
-        x.subsite.toLowerCase().includes(s)
-      );
-    }
-    if (sortBy === "year") return [...t].sort((a, b) => b.year - a.year);
-    if (sortBy === "site") return [...t].sort((a, b) => a.site.localeCompare(b.site));
-    if (sortBy === "name") return [...t].sort((a, b) => a.name.localeCompare(b.name));
-    return t;
-  }, [activeSite, search, sortBy]);
+  const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
+    const trial = filtered[index];
+    return (
+      <div style={{ ...style, paddingRight: "8px" }}>
+        <TrialCard 
+          trial={trial} 
+          index={index} 
+          expanded={expandedIds.has(trial.id)}
+          onToggle={() => toggleExpand(trial.id)}
+        />
+      </div>
+    );
+  };
+
+  const AutoSizerAny = AutoSizer as any;
+  const VariableSizeListAny = (reactWindow as any).VariableSizeList;
 
   return (
     <div style={{
@@ -874,7 +924,23 @@ export default function ClinicalTrials() {
             No trials found for "{search}"
           </div>
         ) : (
-          filtered.map((trial, i) => <TrialCard key={trial.id} trial={trial} index={i} />)
+          <div style={{ height: "calc(100vh - 350px)", width: "100%" }}>
+            <AutoSizerAny>
+              {({ height, width }: any) => (
+                <VariableSizeListAny
+                  ref={listRef}
+                  height={height}
+                  width={width}
+                  itemCount={filtered.length}
+                  itemSize={getItemSize}
+                  itemData={filtered}
+                  className="chip-scroll"
+                >
+                  {Row}
+                </VariableSizeListAny>
+              )}
+            </AutoSizerAny>
+          </div>
         )}
       </>
     ) : (

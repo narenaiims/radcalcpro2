@@ -242,7 +242,15 @@ const EQD2CalculatorPage: React.FC = () => {
                     <div className="space-y-2">
                       <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">EQD2 Value</p>
                       <div className="flex items-baseline gap-2">
-                        <span className="text-6xl font-black text-white num">{results.eqd2.toFixed(1)}</span>
+                        <motion.span 
+                          key={results.eqd2}
+                          initial={{ scale: 0.9, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                          className="text-6xl font-black text-white num"
+                        >
+                          {results.eqd2.toFixed(1)}
+                        </motion.span>
                         <span className="text-2xl font-bold text-slate-600">Gy</span>
                       </div>
                       <p className="text-[10px] text-slate-500 font-medium italic">Normalized to 2.0 Gy/fx baseline</p>
@@ -251,7 +259,15 @@ const EQD2CalculatorPage: React.FC = () => {
                     <div className="space-y-2">
                       <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">BED Value</p>
                       <div className="flex items-baseline gap-2">
-                        <span className="text-6xl font-black text-emerald-400 num">{results.bed.toFixed(1)}</span>
+                        <motion.span 
+                          key={results.bed}
+                          initial={{ scale: 0.9, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 10, delay: 0.1 }}
+                          className="text-6xl font-black text-emerald-400 num"
+                        >
+                          {results.bed.toFixed(1)}
+                        </motion.span>
                         <span className="text-2xl font-bold text-emerald-900/50">Gy<sub>{nAb}</sub></span>
                       </div>
                       <p className="text-[10px] text-slate-500 font-medium italic">Total biological dose delivered</p>
@@ -260,7 +276,14 @@ const EQD2CalculatorPage: React.FC = () => {
 
                   <div className="pt-6 border-t border-slate-700/50 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${nDpf > 2.2 ? 'bg-amber-500' : nDpf < 1.8 ? 'bg-cyan-500' : 'bg-emerald-500'}`} />
+                      <motion.div 
+                        animate={{ 
+                          scale: nDpf > 2.2 ? [1, 1.2, 1] : 1,
+                          opacity: nDpf > 2.2 ? [0.6, 1, 0.6] : 1
+                        }}
+                        transition={{ repeat: Infinity, duration: 2 }}
+                        className={`w-2 h-2 rounded-full ${nDpf > 2.2 ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : nDpf < 1.8 ? 'bg-cyan-500' : 'bg-emerald-500'}`} 
+                      />
                       <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                         {nDpf > 2.2 ? 'Hypofractionated' : nDpf < 1.8 ? 'Hyperfractionated' : 'Conventional'} Schedule
                       </span>

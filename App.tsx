@@ -49,9 +49,20 @@ const RepairKineticsPage         = lazy(() => import('./pages/RepairKineticsPage
 const ProtonTherapyPage          = lazy(() => import('./pages/ProtonTherapyPage'));
 
 // ── Minimal inline spinner — no external deps ─────────────────────────────
-const PageLoader: React.FC = () => (
-  <PageSkeleton />
-);
+const PageLoader: React.FC = () => {
+  const location = useLocation();
+  const path = location.pathname;
+
+  let type: 'default' | 'calculator' | 'list' = 'default';
+
+  if (['/eqd2', '/ebrt-gap', '/hdr-brachy', '/bed-eqd2', '/frac-adjust', '/tdf', '/reirradiation', '/ntcp', '/tcp', '/repair-kinetics'].includes(path)) {
+    type = 'calculator';
+  } else if (['/oar-limits', '/clinical-trials', '/toxicity-grading', '/brachytherapy-reference', '/contouring-atlas', '/guidelines'].includes(path)) {
+    type = 'list';
+  }
+
+  return <PageSkeleton type={type} />;
+};
 
 // ── Global error boundary ─────────────────────────────────────────────────
 interface ErrState { hasError: boolean; message: string }

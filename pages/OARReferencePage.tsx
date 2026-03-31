@@ -17,6 +17,10 @@ import { NumberInput } from '../src/components/NumberInput';
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
+// @ts-ignore
+import * as reactWindow from 'react-window';
+// @ts-ignore
+import { AutoSizer } from 'react-virtualized-auto-sizer';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   BookOpen, ChevronRight, GraduationCap, ChevronDown, ChevronUp,
@@ -561,6 +565,9 @@ const OARReferencePage: React.FC = () => {
   ];
 
   // ─── JSX ──────────────────────────────────────────────────────────────────
+  const AutoSizerAny = AutoSizer as any;
+  const FixedSizeListAny = (reactWindow as any).FixedSizeList;
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-4 sm:py-8 space-y-4 sm:space-y-8 min-h-screen relative">
       <div className="atmosphere-bg" />
@@ -752,36 +759,81 @@ const OARReferencePage: React.FC = () => {
                     <Shield className="w-4 h-4 text-teal" />
                     <h3 className="label-micro opacity-40">Organs in {region}</h3>
                   </div>
-                  <div className="flex lg:block lg:space-y-2 gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 no-scrollbar lg:max-h-[50vh] lg:overflow-y-auto pr-2 custom-scrollbar">
-                    {oars.map(oar => (
-                      <button
-                        key={oar.id}
-                        onClick={() => setSelId(oar.id)}
-                        className={`min-w-[140px] lg:min-w-0 text-left p-3 rounded-xl border transition-all group flex-shrink-0 lg:flex-shrink ${
-                          selId === oar.id
-                            ? 'bg-teal/10 border-teal/50 shadow-md shadow-teal/5'
-                            : 'bg-white/5 border-white/5 hover:bg-white/10'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <p className={`text-sm font-bold truncate ${selId === oar.id ? 'text-white' : 'text-slate-400'}`}>
-                            {oar.name}
-                          </p>
-                          <ChevronRight className={`w-3 h-3 transition-transform hidden lg:block ${selId === oar.id ? 'text-teal translate-x-1' : 'text-slate-600 opacity-0 group-hover:opacity-100'}`} />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[9px] px-1.5 py-0.5 bg-white/5 rounded text-slate-500 uppercase">
-                            {oar.type}
-                          </span>
-                          {metrics[oar.id] && (
-                            <div className={`w-1.5 h-1.5 rounded-full ${
-                              checkerResults.find(r => r.oar.id === oar.id)?.status === 'fail' ? 'bg-red-500' :
-                              checkerResults.find(r => r.oar.id === oar.id)?.status === 'warn' ? 'bg-amber-500' : 'bg-emerald-500'
-                            }`} />
-                          )}
-                        </div>
-                      </button>
-                    ))}
+                  <div className="flex lg:block lg:space-y-2 gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 no-scrollbar lg:h-[50vh] pr-2 custom-scrollbar">
+                    {/* Mobile View: Horizontal Scroll (Simple Map) */}
+                    <div className="flex lg:hidden gap-2">
+                      {oars.map(oar => (
+                        <button
+                          key={oar.id}
+                          onClick={() => setSelId(oar.id)}
+                          className={`min-w-[140px] text-left p-3 rounded-xl border transition-all group flex-shrink-0 ${
+                            selId === oar.id
+                              ? 'bg-teal/10 border-teal/50 shadow-md shadow-teal/5'
+                              : 'bg-white/5 border-white/5 hover:bg-white/10'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <p className={`text-sm font-bold truncate ${selId === oar.id ? 'text-white' : 'text-slate-400'}`}>
+                              {oar.name}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] px-1.5 py-0.5 bg-white/5 rounded text-slate-500 uppercase">
+                              {oar.type}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Desktop View: Virtualized Vertical List */}
+                    <div className="hidden lg:block h-full w-full">
+                      <AutoSizerAny>
+                        {({ height, width }: any) => (
+                          <FixedSizeListAny
+                            height={height}
+                            width={width}
+                            itemCount={oars.length}
+                            itemSize={72} // Height of each OAR item
+                            className="custom-scrollbar"
+                          >
+                            {({ index, style }: any) => {
+                              const oar = oars[index];
+                              return (
+                                <div style={{ ...style, paddingBottom: "8px" }}>
+                                  <button
+                                    onClick={() => setSelId(oar.id)}
+                                    className={`w-full text-left p-3 rounded-xl border transition-all group ${
+                                      selId === oar.id
+                                        ? 'bg-teal/10 border-teal/50 shadow-md shadow-teal/5'
+                                        : 'bg-white/5 border-white/5 hover:bg-white/10'
+                                    }`}
+                                  >
+                                    <div className="flex items-center justify-between mb-1">
+                                      <p className={`text-sm font-bold truncate ${selId === oar.id ? 'text-white' : 'text-slate-400'}`}>
+                                        {oar.name}
+                                      </p>
+                                      <ChevronRight className={`w-3 h-3 transition-transform ${selId === oar.id ? 'text-teal translate-x-1' : 'text-slate-600 opacity-0 group-hover:opacity-100'}`} />
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[9px] px-1.5 py-0.5 bg-white/5 rounded text-slate-500 uppercase">
+                                        {oar.type}
+                                      </span>
+                                      {metrics[oar.id] && (
+                                        <div className={`w-1.5 h-1.5 rounded-full ${
+                                          checkerResults.find(r => r.oar.id === oar.id)?.status === 'fail' ? 'bg-red-500' :
+                                          checkerResults.find(r => r.oar.id === oar.id)?.status === 'warn' ? 'bg-amber-500' : 'bg-emerald-500'
+                                        }`} />
+                                      )}
+                                    </div>
+                                  </button>
+                                </div>
+                              );
+                            }}
+                          </FixedSizeListAny>
+                        )}
+                      </AutoSizerAny>
+                    </div>
                   </div>
                 </div>
 

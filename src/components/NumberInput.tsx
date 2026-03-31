@@ -62,7 +62,7 @@ export const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
         type="number"
         inputMode="decimal"
         {...rest}
-        className="w-full min-h-[44px] px-12 sm:px-14 text-center bg-transparent border-none focus:ring-0"
+        className="w-full min-h-[44px] px-10 sm:px-12 text-center bg-transparent border-none focus:ring-0 text-base sm:text-lg font-mono"
         style={{ appearance: 'textfield', MozAppearance: 'textfield' }}
       />
       

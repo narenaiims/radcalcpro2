@@ -390,43 +390,45 @@ const NTCPPage: React.FC = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-12 gap-2 mb-2">
-                <div className="col-span-5 label-micro">Dose (Gy)</div>
-                <div className="col-span-5 label-micro">Volume Fraction</div>
+              <div className="grid grid-cols-12 gap-3 mb-2 px-2">
+                <div className="col-span-5 label-micro opacity-40">Dose (Gy)</div>
+                <div className="col-span-5 label-micro opacity-40">Volume Fraction</div>
                 <div className="col-span-2"></div>
               </div>
               
-              {dvhPoints.map((pt, i) => (
-                <div key={i} className="grid grid-cols-12 gap-2 items-center">
-                  <div className="col-span-5">
-                    <NumberInput 
-                       inputMode="decimal" step="0.1" min="0"
-                      value={pt.dose} 
-                      onChange={(e) => handleDvhChange(i, 'dose', e.target.value)}
-                      className="input-premium w-full"
-                      placeholder="e.g. 50"
-                    />
+              <div className="space-y-3">
+                {dvhPoints.map((pt, i) => (
+                  <div key={i} className="grid grid-cols-12 gap-3 items-center group">
+                    <div className="col-span-5">
+                      <NumberInput 
+                        inputMode="decimal" step="0.1" min="0"
+                        value={pt.dose} 
+                        onChange={(e) => handleDvhChange(i, 'dose', e.target.value)}
+                        className="input-premium w-full !px-4"
+                        placeholder="e.g. 50"
+                      />
+                    </div>
+                    <div className="col-span-5">
+                      <NumberInput 
+                        inputMode="decimal" step="0.01" min="0" max="1"
+                        value={pt.vol} 
+                        onChange={(e) => handleDvhChange(i, 'vol', e.target.value)}
+                        className="input-premium w-full !px-4"
+                        placeholder="e.g. 0.2"
+                      />
+                    </div>
+                    <div className="col-span-2 flex justify-end">
+                      <button 
+                        onClick={() => removeDvhPoint(i)}
+                        className="p-2 text-slate-600 hover:text-rose-400 transition-all rounded-xl hover:bg-rose-400/10 opacity-0 group-hover:opacity-100"
+                        disabled={dvhPoints.length <= 1}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="col-span-5">
-                    <NumberInput 
-                       inputMode="decimal" step="0.01" min="0" max="1"
-                      value={pt.vol} 
-                      onChange={(e) => handleDvhChange(i, 'vol', e.target.value)}
-                      className="input-premium w-full"
-                      placeholder="e.g. 0.2"
-                    />
-                  </div>
-                  <div className="col-span-2 flex justify-end">
-                    <button 
-                      onClick={() => removeDvhPoint(i)}
-                      className="p-2 text-slate-500 hover:text-red-400 transition-colors rounded-lg hover:bg-red-400/10"
-                      disabled={dvhPoints.length <= 1}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
               <p className="text-[10px] text-slate-500 mt-4 italic">
                 Enter differential DVH points. Volume fractions should sum to ≤ 1.0 (or ≤ 100 if using percentages). Remaining volume is assumed to receive 0 Gy.
               </p>

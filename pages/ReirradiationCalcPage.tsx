@@ -676,13 +676,13 @@ ${'─'.repeat(50)}
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Time Interval</p>
           </div>
           <div className="px-3 py-3">
-            <div className="flex items-end gap-3">
-              <div className="flex-1 max-w-[120px]">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+              <div className="w-full sm:max-w-[120px]">
                 <label className="block text-[11px] font-semibold text-slate-500 mb-1">Months since Course 1</label>
                 <NumberInput  step="1" min="0" value={months}
                   onChange={e => setMonths(e.target.value)} className="input-clinical num" />
               </div>
-              <div className={`flex-1 px-3 py-2 rounded-lg text-center border ${
+              <div className={`px-3 py-2 rounded-lg text-center border ${
                 mo < (oar.recoveryThresholdMonths || 6)
                   ? 'bg-amber-50 border-amber-200'
                   : 'bg-emerald-50 border-emerald-200'
@@ -694,7 +694,7 @@ ${'─'.repeat(50)}
                   BED recovery
                 </p>
               </div>
-              <div className="flex-1 px-3 py-2 rounded-lg text-center border bg-slate-50 border-slate-200">
+              <div className="px-3 py-2 rounded-lg text-center border bg-slate-50 border-slate-200">
                 <p className="text-lg font-black text-slate-700 num">{res.effBed1.toFixed(1)}</p>
                 <p className="text-[10px] text-slate-400">Effective BED₁ (Gy₂)</p>
               </div>

@@ -877,27 +877,26 @@ const OARReferencePage: React.FC = () => {
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-4">
-                          <div className="text-right">
-                            <p className="label-micro opacity-40">Plan Metric</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <NumberInput
-                                 step="0.1"
-                                placeholder="Enter value"
-                                value={metrics[selOAR.id] ?? ''}
-                                onChange={e => setMetrics(m => ({ ...m, [selOAR.id]: e.target.value }))}
-                                className="bg-white/5 border border-white/10 rounded px-3 py-2 text-sm font-mono w-24 text-center text-white focus:outline-none focus:ring-1 focus:ring-teal"
-                              />
-                              {metrics[selOAR.id] && (
-                                <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
-                                  checkerResults.find(r => r.oar.id === selOAR.id)?.status === 'fail' ? 'bg-red-500/20 text-red-400' :
-                                  checkerResults.find(r => r.oar.id === selOAR.id)?.status === 'warn' ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'
-                                }`}>
-                                  {checkerResults.find(r => r.oar.id === selOAR.id)?.status}
-                                </div>
-                              )}
-                            </div>
+                        <div className="flex flex-col sm:items-end gap-2">
+                          <p className="label-micro opacity-40">Plan Metric Check</p>
+                          <div className="flex items-center gap-2">
+                            <NumberInput
+                              step="0.1"
+                              placeholder="Enter value"
+                              value={metrics[selOAR.id] ?? ''}
+                              onChange={e => setMetrics(m => ({ ...m, [selOAR.id]: e.target.value }))}
+                              className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm font-mono w-full sm:w-32 text-center text-white focus:outline-none focus:ring-1 focus:ring-teal"
+                            />
+                            {metrics[selOAR.id] && (
+                              <div className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${
+                                checkerResults.find(r => r.oar.id === selOAR.id)?.status === 'fail' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                                checkerResults.find(r => r.oar.id === selOAR.id)?.status === 'warn' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                              }`}>
+                                {checkerResults.find(r => r.oar.id === selOAR.id)?.status}
+                              </div>
+                            )}
                           </div>
+                          <p className="text-[10px] text-slate-500 font-mono uppercase tracking-tighter">Units: {selOAR.constraints[0]?.unit || 'Gy'}</p>
                         </div>
                       </div>
 

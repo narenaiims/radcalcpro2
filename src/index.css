@@ -17,6 +17,15 @@
   --color-clinical-red: #b91c1c;
   --color-clinical-green: #15803d;
   --color-clinical-surface: #f1f5f9;
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-muted: var(--text-muted);
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent-color);
 }
 
 :root {
@@ -143,6 +152,18 @@ button,
 }
 
 /* Components */
+.input-premium {
+  @apply bg-white/5 border border-white/10 rounded-xl px-4 py-3 transition-all duration-300;
+  @apply focus:bg-white/10 focus:border-white/20 focus:ring-2 focus:ring-sky-500/50 outline-none;
+  color: var(--text-primary);
+  @apply font-mono text-lg;
+}
+
+.dark .input-premium {
+  @apply bg-slate-900/50 border-slate-800 text-slate-100;
+  @apply focus:bg-slate-900 focus:border-sky-500/50;
+}
+
 .station {
   background-color: var(--surface-glass);
   backdrop-blur: 24px;

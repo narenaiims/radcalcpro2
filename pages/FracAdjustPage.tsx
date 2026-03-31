@@ -29,8 +29,9 @@ import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
 import {
   Calculator, Info, RefreshCw, ChevronRight,
   TrendingUp, AlertTriangle, CheckCircle2,
-  BookOpen, GraduationCap, ShieldAlert,
+  BookOpen, GraduationCap, ShieldAlert, Zap,
 } from 'lucide-react';
+import { ExportButton, ClinicalReport } from '@/src/components/ClinicalPDFExport';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot,
 } from 'recharts';
@@ -259,6 +260,25 @@ const FracAdjustPage: React.FC = () => {
     return pts;
   }, [baseBED, nAb]);
 
+  const reportData: ClinicalReport = {
+    title: "Fractionation Adjustment Report",
+    toolName: "FracAdjust",
+    parameters: [
+      { label: 'Tumour Site', value: selectedTumour?.site || 'Custom' },
+      { label: 'Original Dose', value: `${nOrigDose} Gy` },
+      { label: 'Original Dose/Fx', value: `${nOrigDpf} Gy` },
+      { label: 'Original Fractions', value: `${origFx}` },
+      { label: 'New Dose/Fx', value: `${nNewDpf} Gy` },
+      { label: 'α/β Ratio', value: `${nAb} Gy` },
+    ],
+    results: [
+      { label: 'New Total Dose', value: newTotal.toFixed(1), unit: 'Gy' },
+      { label: 'New Fractions', value: newFx.toFixed(2), unit: 'fx' },
+      { label: 'BED Preserved', value: baseBED.toFixed(1), unit: `Gy${nAb}` },
+    ],
+    interpretation: `Fractionation adjustment from ${nOrigDose} Gy in ${origFx} fx to ${nNewDpf} Gy/fx. New total dose: ${newTotal.toFixed(1)} Gy in ${newFx.toFixed(2)} fractions. BED preserved: ${baseBED.toFixed(1)} Gy${nAb}.`
+  };
+
   const valid = nAb > 0 && nOrigDose > 0 && nOrigDpf > 0 && nNewDpf > 0;
 
   return (
@@ -270,155 +290,286 @@ const FracAdjustPage: React.FC = () => {
         data={SIDEBAR_DATA}
       />
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-base font-extrabold text-slate-900 tracking-tight">Fractionation Adjustment</h1>
-          <p className="text-sm text-slate-500">Iso-BED schedule conversion · LQ model</p>
+      {/* ── Header ───────────────────────────────────────────────────── */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-1">
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <Calculator className="w-6 h-6 text-blue-600" />
+            Fractionation Adjustment
+          </h1>
+          <button
+            onClick={() => setShowFormula(f => !f)}
+            className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border border-slate-200 text-slate-400 hover:bg-slate-100 transition"
+          >
+            {showFormula ? 'Hide Formula' : 'Show Formula'}
+          </button>
         </div>
-        <button
-          onClick={() => setShowFormula(f => !f)}
-          className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded border border-slate-200 text-slate-500 hover:bg-slate-100 transition"
-        >
-          {showFormula ? 'Hide' : 'Formula'}
-        </button>
+        <p className="text-sm text-slate-500">Iso-BED schedule conversion · LQ model validity check</p>
       </div>
 
       {/* Formula */}
-      {showFormula && (
-        <div className="bg-slate-900 rounded-lg px-3 py-2.5 font-mono text-[11px] text-slate-200 space-y-1">
-          <p className="text-[9px] text-slate-500 font-sans font-black uppercase tracking-widest mb-1">Iso-BED Formula</p>
-          <p><span className="text-blue-300">BED_orig</span> = D × (1 + d_orig / α/β)</p>
-          <p><span className="text-emerald-300">D_new</span> = BED_orig / (1 + d_new / α/β)</p>
-          <p><span className="text-amber-300">n_new</span> = D_new / d_new</p>
-          <p><span className="text-rose-300">EQD2_OAR</span> = D_new × (d_new + α/β_OAR) / (2 + α/β_OAR)</p>
-          <p className="text-slate-500 text-[9px] mt-1">
-            Fractions must be rounded — then recalculate d_new to maintain exact BED.
-            OAR EQD2 must be checked at new d/fx against QUANTEC limits.
-          </p>
-        </div>
-      )}
+      <AnimatePresence>
+        {showFormula && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden mb-6"
+          >
+            <div className="bg-slate-900 rounded-2xl px-4 py-4 font-mono text-[11px] text-slate-300 space-y-2 border border-slate-800 shadow-inner">
+              <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Iso-BED Mathematical Framework</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
+                <p><span className="text-blue-400">BED_orig</span> = D × (1 + d_orig / α/β)</p>
+                <p><span className="text-emerald-400">D_new</span> = BED_orig / (1 + d_new / α/β)</p>
+                <p><span className="text-amber-400">n_new</span> = D_new / d_new</p>
+                <p><span className="text-rose-400">EQD2_OAR</span> = D_new × (d_new + α/β_OAR) / (2 + α/β_OAR)</p>
+              </div>
+              <p className="text-slate-500 text-[10px] mt-2 leading-relaxed italic border-t border-slate-800 pt-2">
+                Note: Fractions must be rounded to integers. The tool then recalculates the exact dose/fraction to maintain the target BED.
+                OAR EQD2 is computed at the new dose/fraction to ensure late-tissue safety.
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Original Schedule */}
-      <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-        <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Original Schedule</p>
-        </div>
-        <div className="px-3 py-3 grid grid-cols-3 gap-3">
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Total Dose (Gy)</label>
-            <NumberInput  step="0.5" value={origDose}
-              onChange={e => setOrigDose(e.target.value)} className="input-clinical num" />
-          </div>
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Dose/Fx (Gy)</label>
-            <NumberInput  step="0.1" value={origDpf}
-              onChange={e => setOrigDpf(e.target.value)} className="input-clinical num" />
-          </div>
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Fractions</label>
-            <div className="input-clinical num bg-slate-50 text-slate-500 cursor-default">{origFx}</div>
-          </div>
-          <div className="col-span-3 text-[11px] text-slate-400 bg-slate-50 rounded px-2 py-1.5 num">
-            BED{nAb} = {baseBED.toFixed(2)} Gy &nbsp;·&nbsp; EQD2 = {baseEQD2.toFixed(2)} Gy
-          </div>
-        </div>
-      </div>
-
-      {/* New Schedule Parameters */}
-      <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-        <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">New Schedule Parameters</p>
-        </div>
-        <div className="px-3 py-3 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-500 mb-1">New Dose/Fx (Gy)</label>
-              <NumberInput  step="0.1" value={newDpf}
-                onChange={e => setNewDpf(e.target.value)} className="input-clinical num" />
+      {/* ── Input Section ─────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="lg:col-span-7 space-y-6">
+          {/* Original Schedule */}
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+            <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Original Schedule (Baseline)</p>
+              <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">α/β = {ab} Gy</span>
+            </div>
+            <div className="p-5 space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500">Total Dose (Gy)</label>
+                  <NumberInput 
+                    step="0.5" 
+                    value={origDose}
+                    onChange={e => setOrigDose(e.target.value)} 
+                    className="w-full rounded-xl border border-slate-200 text-lg font-mono font-medium focus-within:ring-2 focus-within:ring-blue-500 outline-none transition-all" 
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500">Dose/Fx (Gy)</label>
+                  <NumberInput 
+                    step="0.1" 
+                    value={origDpf}
+                    onChange={e => setOrigDpf(e.target.value)} 
+                    className="w-full rounded-xl border border-slate-200 text-lg font-mono font-medium focus-within:ring-2 focus-within:ring-blue-500 outline-none transition-all" 
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                <div className="space-y-0.5">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Planned Fractions</p>
+                  <p className="text-2xl font-black text-slate-800 font-mono">{origFx} <span className="text-sm font-normal text-slate-400">fx</span></p>
+                </div>
+                <div className="text-right space-y-0.5">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Baseline BED</p>
+                  <p className="text-2xl font-black text-blue-600 font-mono">{baseBED.toFixed(1)} <span className="text-sm font-normal text-slate-400">Gy<sub>{nAb}</sub></span></p>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* ISS-03: LQ validity warning */}
-          {lqValidity.level !== 'ok' && (
-            <div className={`p-2.5 rounded-lg border flex items-start gap-2 ${
-              lqValidity.level === 'warning'
-                ? 'bg-red-50 border-red-300'
-                : 'bg-amber-50 border-amber-200'
-            }`}>
-              <AlertTriangle className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${
-                lqValidity.level === 'warning' ? 'text-red-600' : 'text-amber-600'
-              }`} />
-              <p className={`text-[10px] leading-relaxed ${
-                lqValidity.level === 'warning' ? 'text-red-800' : 'text-amber-800'
+          {/* New Parameters */}
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+            <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">New Schedule Parameters</p>
+            </div>
+            <div className="p-5 space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500">Target Dose/Fx (Gy)</label>
+                  <NumberInput 
+                    step="0.1" 
+                    value={newDpf}
+                    onChange={e => setNewDpf(e.target.value)} 
+                    className="w-full rounded-xl border border-slate-200 text-lg font-mono font-medium focus-within:ring-2 focus-within:ring-blue-500 outline-none transition-all" 
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500">OAR α/β (Gy)</label>
+                  <NumberInput 
+                    step="0.5" 
+                    value={oarAb}
+                    onChange={e => setOarAb(e.target.value)} 
+                    className="w-full rounded-xl border border-slate-200 text-lg font-mono font-medium focus-within:ring-2 focus-within:ring-blue-500 outline-none transition-all" 
+                  />
+                </div>
+              </div>
+
+              {/* Tumour Selector */}
+              <div className="space-y-3">
+                <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500">Tumour Site & Radiobiology</label>
+                <TumourSelector
+                  selectedEntry={selectedTumour}
+                  onSelect={(entry) => {
+                    setSelectedTumour(entry);
+                    setAb(entry.ab.toString());
+                  }}
+                  onClear={() => setSelectedTumour(null)}
+                />
+                
+                {!selectedTumour && (
+                  <div className="pt-2">
+                    <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1.5">Manual α/β Ratio (Gy)</label>
+                    <NumberInput 
+                      step="0.5" 
+                      value={ab}
+                      onChange={e => { setAb(e.target.value); setSelectedTumour(null); }}
+                      className="w-full rounded-xl border border-slate-200 text-lg font-mono font-medium focus-within:ring-2 focus-within:ring-blue-500 outline-none transition-all" 
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* LQ validity warning */}
+              <AnimatePresence>
+                {lqValidity.level !== 'ok' && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`p-4 rounded-xl border flex items-start gap-3 ${
+                      lqValidity.level === 'warning'
+                        ? 'bg-red-50 border-red-200 shadow-sm'
+                        : 'bg-amber-50 border-amber-200 shadow-sm'
+                    }`}
+                  >
+                    <AlertTriangle className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
+                      lqValidity.level === 'warning' ? 'text-red-600' : 'text-amber-600'
+                    }`} />
+                    <div className="space-y-1">
+                      <p className={`text-xs font-bold ${
+                        lqValidity.level === 'warning' ? 'text-red-800' : 'text-amber-800'
+                      }`}>
+                        {lqValidity.level === 'warning' ? 'LQ Model Validity Exceeded' : 'LQ Model Caution'}
+                      </p>
+                      <p className={`text-[11px] leading-relaxed ${
+                        lqValidity.level === 'warning' ? 'text-red-700' : 'text-amber-700'
+                      }`}>
+                        {lqValidity.message}
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Results Column ────────────────────────────────────────────── */}
+        <div className="lg:col-span-5 space-y-6">
+          {valid ? (
+            <>
+              {/* Primary Result Card */}
+              <div className="bg-[#1e3a5f] rounded-2xl text-white p-6 shadow-xl border border-blue-800/50 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16" />
+                
+                <p className="text-[10px] font-black uppercase tracking-widest text-blue-300/70 mb-6 flex items-center gap-2">
+                  <TrendingUp className="w-3 h-3" />
+                  Iso-BED Conversion Result
+                </p>
+                
+                <div className="grid grid-cols-2 gap-6 mb-8">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-blue-200/60">New Total Dose</p>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-black num">{newTotal.toFixed(1)}</span>
+                      <span className="text-sm font-bold text-blue-300/50">Gy</span>
+                    </div>
+                    <p className={`text-[10px] font-bold ${doseChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {doseChange >= 0 ? '+' : ''}{doseChange.toFixed(1)} Gy vs original
+                    </p>
+                  </div>
+                  <div className="space-y-1 text-right">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-blue-200/60">New Fractions</p>
+                    <div className="flex items-baseline justify-end gap-1">
+                      <span className="text-4xl font-black num text-amber-400">{newFx.toFixed(2)}</span>
+                      <span className="text-sm font-bold text-amber-400/50">fx</span>
+                    </div>
+                    <p className="text-[10px] text-blue-200/40 italic">Exact mathematical value</p>
+                  </div>
+                </div>
+
+                <div className="pt-6 border-t border-blue-800/50 flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] font-bold text-blue-300/50 uppercase tracking-widest">BED Preserved</p>
+                    <p className="text-xl font-black text-emerald-400 font-mono">{baseBED.toFixed(1)} <span className="text-xs font-normal opacity-60">Gy<sub>{nAb}</sub></span></p>
+                  </div>
+                  <div className="text-right space-y-0.5">
+                    <p className="text-[10px] font-bold text-blue-300/50 uppercase tracking-widest">Schedule Type</p>
+                    <p className="text-xs font-bold text-white uppercase tracking-wider">
+                      {isHypo ? 'Hypofractionated' : 'Hyperfractionated'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Premium Export Card */}
+              <div className="p-6 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl shadow-lg border border-blue-400/30 text-white relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl -mr-8 -mt-8 group-hover:scale-110 transition-transform duration-500" />
+                <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                      <Zap className="w-5 h-5 text-yellow-300 fill-yellow-300" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold">Premium Export</h3>
+                      <p className="text-[10px] text-blue-100">High-quality clinical reports & instant sharing</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <ExportButton report={reportData} />
+                  </div>
+                </div>
+              </div>
+
+              {/* OAR Quick Status */}
+              <div className={`p-4 rounded-2xl border flex items-center justify-between ${
+                hasOarFail ? 'bg-rose-50 border-rose-200' : hasOarWarn ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-200'
               }`}>
-                {lqValidity.message}
-              </p>
+                <div className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    hasOarFail ? 'bg-rose-500 text-white' : hasOarWarn ? 'bg-amber-500 text-white' : 'bg-emerald-500 text-white'
+                  }`}>
+                    {hasOarFail ? <ShieldAlert className="w-4 h-4" /> : hasOarWarn ? <AlertTriangle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+                  </div>
+                  <div>
+                    <p className={`text-xs font-bold ${hasOarFail ? 'text-rose-800' : hasOarWarn ? 'text-amber-800' : 'text-emerald-800'}`}>
+                      OAR Constraint Status
+                    </p>
+                    <p className={`text-[10px] ${hasOarFail ? 'text-rose-600' : hasOarWarn ? 'text-amber-600' : 'text-emerald-600'}`}>
+                      {hasOarFail ? 'Critical violation detected' : hasOarWarn ? 'Caution: Near limits' : 'All constraints within tolerance'}
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowOarDetail(true)}
+                  className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition"
+                >
+                  View Details
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center p-10 text-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+              <Calculator className="w-12 h-12 text-slate-300 mb-4" />
+              <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Awaiting Parameters</p>
+              <p className="text-xs text-slate-400 mt-2">Enter original and new fractionation details to begin analysis.</p>
             </div>
           )}
-
-          {/* Tumour Selector */}
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">
-              Tumour Site & α/β
-            </label>
-            <TumourSelector
-              selectedEntry={selectedTumour}
-              onSelect={(entry) => {
-                setSelectedTumour(entry);
-                setAb(entry.ab.toString());
-              }}
-              onClear={() => setSelectedTumour(null)}
-            />
-            {!selectedTumour && (
-              <div className="mt-2">
-                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
-                  Or manually set α/β Ratio (Gy)
-                </label>
-                <NumberInput  step="0.5" value={ab}
-                  onChange={e => { setAb(e.target.value); setSelectedTumour(null); }}
-                  className="input-clinical num" />
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Custom OAR α/β (Gy)</label>
-            <NumberInput  step="0.5" value={oarAb}
-              onChange={e => setOarAb(e.target.value)} className="input-clinical num" />
-          </div>
         </div>
       </div>
 
-      {/* Results */}
+      {/* ── Detailed Analysis Tabs ────────────────────────────────────── */}
       {valid && (
-        <div className="bg-[#1e3a5f] rounded-lg text-white px-4 py-3">
-          <p className="text-[10px] font-black uppercase tracking-widest text-blue-200/70 mb-3">
-            Iso-BED Result — {isHypo ? 'Hypofractionated' : 'Hyperfractionated'}
-          </p>
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div>
-              <p className="text-[9px] uppercase tracking-wider text-blue-200/60">New Total Dose</p>
-              <p className="text-2xl font-black num">{newTotal.toFixed(1)}</p>
-              <p className="text-[9px] text-blue-200/50">Gy
-                <span className={`ml-1 text-[10px] font-bold ${doseChange >= 0 ? 'text-green-300' : 'text-red-300'}`}>
-                  ({doseChange >= 0 ? '+' : ''}{doseChange.toFixed(1)})
-                </span>
-              </p>
-            </div>
-            <div className="border-x border-blue-800/60">
-              <p className="text-[9px] uppercase tracking-wider text-blue-200/60">New Fractions</p>
-              <p className="text-2xl font-black num text-amber-300">{newFx.toFixed(2)}</p>
-              <p className="text-[9px] text-blue-200/50">(exact — round below)</p>
-            </div>
-            <div>
-              <p className="text-[9px] uppercase tracking-wider text-blue-200/60">BED preserved</p>
-              <p className="text-2xl font-black num text-emerald-300">{baseBED.toFixed(1)}</p>
-              <p className="text-[9px] text-blue-200/50">Gy{nAb}</p>
-            </div>
-          </div>
-        </div>
-      )}
+        <div className="mt-8 space-y-6">
 
       {/* ── ISS-01: Full OAR Constraint Check Panel ──────────────────────── */}
       {valid && oarCheckResults.length > 0 && (
@@ -714,6 +865,8 @@ const FracAdjustPage: React.FC = () => {
         Dearnaley D et al. Lancet Oncol 2016 (CHHiP). Murray Brunt A et al. Lancet 2020 (FAST-Forward).
         QUANTEC 2010 (Bentzen et al.). Park C et al. IJROBP 2008 (LQ model limits).
       </p>
+        </div>
+      )}
     </div>
   );
 };

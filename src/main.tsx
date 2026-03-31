@@ -5,30 +5,11 @@ import { RadiobiologyProvider } from './context/RadiobiologyContext';
 import './index.css';
 
 // Register Service Worker for PWA
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
       .then(reg => {
         console.log('SW registered:', reg);
-        
-        // Check for updates on registration
-        reg.onupdatefound = () => {
-          const installingWorker = reg.installing;
-          if (installingWorker) {
-            installingWorker.onstatechange = () => {
-              if (installingWorker.state === 'installed') {
-                if (navigator.serviceWorker.controller) {
-                  // New content is available; please refresh.
-                  console.log('New content is available; please refresh.');
-                  window.dispatchEvent(new CustomEvent('sw-update-available'));
-                } else {
-                  // Content is cached for offline use.
-                  console.log('Content is cached for offline use.');
-                }
-              }
-            };
-          }
-        };
       })
       .catch(err => console.log('SW registration failed:', err));
   });

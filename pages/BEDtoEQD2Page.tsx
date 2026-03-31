@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import { RadiobiologyData } from '@/src/data/radiobiologyData';
 import TumourSelector from '@/components/TumourSelector';
-import { BookOpen, ChevronRight, GraduationCap, Printer } from 'lucide-react';
+import { BookOpen, ChevronRight, GraduationCap, Printer, Zap, Share2 } from 'lucide-react';
 import { AnimatedNumber } from "@/src/components/AnimatedNumber";
-import { Share2 } from 'lucide-react';
+import { ExportButton, ClinicalReport } from '@/src/components/ClinicalPDFExport';
 import { PDFReport } from '@/src/components/PDFReport';
 import { generatePDFBlob, sharePDF } from '@/src/lib/pdfUtils';
 
@@ -171,25 +171,28 @@ const BEDtoEQD2Page: React.FC = () => {
       </div>
 
       {/* ── Inputs ───────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-        <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
           <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Parameters</p>
         </div>
-        <div className="px-3 py-3 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-500 mb-1">
+        <div className="p-5 space-y-5">
+          <div className="grid grid-cols-1 gap-5">
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500">
                 {isBtoE ? 'BED input (Gy)' : 'EQD2 input (Gy)'}
               </label>
-              <NumberInput  step="0.5" value={input}
+              <NumberInput  
+                step="0.5" 
+                value={input}
                 onChange={e => setInput(e.target.value)}
-                className="w-full p-3 rounded-xl border border-slate-300 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none" />
+                className="w-full p-3 rounded-xl border border-slate-200 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
+              />
             </div>
           </div>
           
           {/* Tumour Selector */}
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">
+          <div className="space-y-3">
+            <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500">
               Tumour Site & α/β
             </label>
             <TumourSelector
@@ -203,15 +206,19 @@ const BEDtoEQD2Page: React.FC = () => {
             
             {/* Fallback if no tumour selected */}
             {!selectedTumour && (
-              <div className="mt-2">
-                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
+              <div className="pt-2">
+                <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1.5">
                   Or manually set α/β Ratio (Gy)
                 </label>
-                <NumberInput  step="0.5" value={ab}
+                <NumberInput  
+                  step="0.5" 
+                  value={ab}
                   onChange={e => {
                     setAb(e.target.value);
                     setSelectedTumour(null);
-                  }} className="w-full p-3 rounded-xl border border-slate-300 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none" />
+                  }} 
+                  className="w-full p-3 rounded-xl border border-slate-200 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
+                />
               </div>
             )}
           </div>
@@ -220,19 +227,62 @@ const BEDtoEQD2Page: React.FC = () => {
 
       {/* ── Result ───────────────────────────────────────────────────── */}
       {valid && (
-        <div className="bg-[#1e3a5f] rounded-lg text-white px-4 py-4 text-center">
-          <div className="flex justify-between items-center mb-1">
-            <p className="text-[10px] uppercase tracking-widest text-blue-200/60">
-              {isBtoE ? 'EQD2' : 'BED'}<sub>{nAb}</sub> Result
-            </p>
+        <div className="space-y-6">
+          <div className="bg-[#1e3a5f] rounded-2xl text-white p-6 shadow-xl border border-blue-800/50 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16" />
+            
+            <div className="flex justify-between items-center mb-6">
+              <p className="text-[10px] font-black uppercase tracking-widest text-blue-300/70">
+                {isBtoE ? 'EQD2' : 'BED'}<sub>{nAb}</sub> Result
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <p className="text-5xl font-black num mb-2">
+                <AnimatedNumber value={result} decimals={2} />
+              </p>
+              <p className="text-sm font-bold text-blue-300/50 uppercase tracking-widest">Gray (Gy)</p>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-blue-800/50 text-[11px] font-mono text-blue-300/40 text-center leading-relaxed">
+              {isBtoE
+                ? `${nInput.toFixed(1)} / (1 + 2/${nAb}) = ${nInput.toFixed(1)} / ${(1 + 2/nAb).toFixed(3)} = ${result.toFixed(2)} Gy`
+                : `${nInput.toFixed(1)} × (1 + 2/${nAb}) = ${nInput.toFixed(1)} × ${(1 + 2/nAb).toFixed(3)} = ${result.toFixed(2)} Gy`
+              }
+            </div>
           </div>
-          <p className="text-4xl font-black num"><AnimatedNumber value={result} decimals={2} /></p>
-          <p className="text-sm text-blue-200/60 mt-1">Gy</p>
-          <div className="mt-3 pt-3 border-t border-blue-800/40 text-[11px] font-mono text-blue-200/50">
-            {isBtoE
-              ? `${nInput.toFixed(1)} / (1 + 2/${nAb}) = ${nInput.toFixed(1)} / ${(1 + 2/nAb).toFixed(3)} = ${result.toFixed(2)} Gy`
-              : `${nInput.toFixed(1)} × (1 + 2/${nAb}) = ${nInput.toFixed(1)} × ${(1 + 2/nAb).toFixed(3)} = ${result.toFixed(2)} Gy`
-            }
+
+          {/* Premium Export Card */}
+          <div className="p-6 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl shadow-lg border border-blue-400/30 text-white relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl -mr-8 -mt-8 group-hover:scale-110 transition-transform duration-500" />
+            <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <Zap className="w-5 h-5 text-yellow-300 fill-yellow-300" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold">Premium Export</h3>
+                  <p className="text-[10px] text-blue-100">High-quality clinical reports & instant sharing</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <ExportButton report={{
+                  title: "BED-EQD2 Conversion Report",
+                  toolName: "BED-EQD2",
+                  patientRef: "BED-EQD2-CONV",
+                  interpretation: `${isBtoE ? 'BED to EQD2' : 'EQD2 to BED'} Conversion. Radiobiological calculations are estimates based on the LQ model. Clinical judgment is required.`,
+                  parameters: [
+                    { label: "Input Dose", value: `${nInput} Gy` },
+                    { label: "α/β Ratio", value: `${nAb} Gy` },
+                    { label: "Mode", value: isBtoE ? "BED to EQD2" : "EQD2 to BED" }
+                  ],
+                  results: [
+                    { label: isBtoE ? "Resulting EQD2" : "Resulting BED", value: `${result.toFixed(2)} Gy`, highlight: true },
+                    { label: "Conversion Factor", value: (1 + 2/nAb).toFixed(3) }
+                  ]
+                }} />
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -208,7 +208,7 @@ const TDFPage: React.FC = () => {
           <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Schedule Parameters</p>
         </div>
         <div className="px-3 py-3 space-y-3">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Dose/Fx (Gy)</label>
               <NumberInput  step="0.1" min="0.1" max="30"

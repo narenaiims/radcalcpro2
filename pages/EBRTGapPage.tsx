@@ -38,6 +38,9 @@ import TumourSelector from '@/components/TumourSelector';
 import { ExportButton, ClinicalReport } from '@/src/components/ClinicalPDFExport';
 import { Share2 } from 'lucide-react';
 
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Legend
+} from 'recharts';
 import { NumberInput } from '../src/components/NumberInput';
 
 // ── Quick reference sidebar data ──────────────────────────────────────────
@@ -287,6 +290,60 @@ const EBRTGapPage: React.FC = () => {
     const interpretation = getInterpretation(k);
     const urgency        = getUrgency(eqd2Loss, eqd2Total);
 
+    // ── Chart Data for Step-and-Shoot Accumulation ────────────────────────
+    const chartData = [];
+    let currentEqd2Ideal = 0;
+    let currentEqd2Actual = 0;
+    let fxCountIdeal = 0;
+    let fxCountActual = 0;
+    
+    const totalDaysIdeal = estimatedOverallTime;
+    const gapStartDay = daysElapsedAtGapStart;
+    const gapEndDay = gapStartDay + data.gapDays;
+    const totalDaysActual = totalDaysIdeal + data.gapDays;
+    
+    const eqd2PerFx = calcEQD2(dpf, dpf, ab);
+
+    for (let day = 0; day <= Math.max(totalDaysIdeal, totalDaysActual + 5); day++) {
+      // Ideal schedule
+      if (day > 0 && fxCountIdeal < totalFx) {
+        const dayOfWeek = day % 7;
+        if (dayOfWeek > 0 && dayOfWeek <= fxPerWeek) {
+          currentEqd2Ideal += eqd2PerFx;
+          fxCountIdeal++;
+        }
+      }
+      
+      // Actual schedule
+      if (day > 0 && fxCountActual < totalFx) {
+        const isGap = day > gapStartDay && day <= gapEndDay;
+        if (!isGap) {
+          const dayOfWeek = day % 7;
+          if (dayOfWeek > 0 && dayOfWeek <= fxPerWeek) {
+            currentEqd2Actual += eqd2PerFx;
+            fxCountActual++;
+          }
+        }
+      }
+      
+      // Apply repopulation loss
+      let repopLossIdeal = 0;
+      if (day > tk) {
+        repopLossIdeal = (day - tk) * k;
+      }
+      
+      let repopLossActual = 0;
+      if (day > tk) {
+        repopLossActual = (day - tk) * k;
+      }
+      
+      chartData.push({
+        day,
+        ideal: Math.max(0, currentEqd2Ideal - repopLossIdeal),
+        actual: Math.max(0, currentEqd2Actual - repopLossActual),
+      });
+    }
+
     return {
       ab, k, tk,
       eqd2Total, bedTotal,
@@ -308,6 +365,7 @@ const EBRTGapPage: React.FC = () => {
       tkReachedBeforeGap,
       estimatedOverallTime,
       fxPerWeek,
+      chartData,
     };
   }, [data, selectedTumour, doseDelivered, totalFx]);
 
@@ -616,6 +674,66 @@ const EBRTGapPage: React.FC = () => {
                     </p>
                   )}
                 </div>
+              </div>
+
+              {/* Step-and-Shoot Accumulation Graph */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm mb-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Step-and-Shoot Accumulation</h3>
+                </div>
+                <div className="h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={results.chartData} margin={{ top: 5, right: 20, bottom: 20, left: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis 
+                        dataKey="day" 
+                        fontSize={10} 
+                        tick={{fill: '#94a3b8'}} 
+                        axisLine={false}
+                        tickLine={false}
+                        label={{ value: 'Time (Days)', position: 'insideBottom', offset: -15, fontSize: 10, fill: '#94a3b8' }}
+                      />
+                      <YAxis 
+                        fontSize={10} 
+                        tick={{fill: '#94a3b8'}} 
+                        axisLine={false}
+                        tickLine={false}
+                        label={{ value: 'Effective EQD2 (Gy)', angle: -90, position: 'insideLeft', fontSize: 10, fill: '#94a3b8' }}
+                      />
+                      <Tooltip 
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                        labelStyle={{ fontWeight: 'bold', color: '#1e293b' }}
+                        formatter={(value: number, name: string) => [
+                          `${value.toFixed(1)} Gy`, 
+                          name === 'ideal' ? 'Ideal Plan' : 'Actual (Uncompensated)'
+                        ]}
+                      />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
+                      <ReferenceLine x={results.daysElapsedAtGapStart.toString()} stroke="#f59e0b" strokeDasharray="3 3" label={{ value: 'Gap Start', position: 'top', fill: '#f59e0b', fontSize: 10 }} />
+                      <ReferenceLine x={(results.daysElapsedAtGapStart + data.gapDays).toString()} stroke="#f59e0b" strokeDasharray="3 3" label={{ value: 'Gap End', position: 'top', fill: '#f59e0b', fontSize: 10 }} />
+                      <Line 
+                        name="Ideal Plan"
+                        type="stepAfter" 
+                        dataKey="ideal" 
+                        stroke="#94a3b8" 
+                        strokeWidth={2} 
+                        strokeDasharray="5 5"
+                        dot={false}
+                      />
+                      <Line 
+                        name="Actual (Uncompensated)"
+                        type="stepAfter" 
+                        dataKey="actual" 
+                        stroke="#ef4444" 
+                        strokeWidth={3} 
+                        dot={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-4 text-center">
+                  The plateau in the red line shows the gap. The downward slope after Tk represents repopulation loss.
+                </p>
               </div>
 
               {/* Compensation Strategy Tabs */}

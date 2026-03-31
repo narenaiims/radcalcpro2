@@ -557,17 +557,18 @@ const CellCycleWheel: React.FC = () => {
 // ─── Main Interactive Survival Curve SVG ──────────────────────────────────────
 
 const SurvivalGraph: React.FC<{
+  cellLines: CellLine[];
   visible: Set<string>;
   showComponents: boolean;
   showCross: boolean;
   cursorDose: number;
-}> = ({ visible, showComponents, showCross, cursorDose }) => {
-  const primary = CELL_LINES.find(c => c.id === 'hnscc');
+}> = ({ cellLines, visible, showComponents, showCross, cursorDose }) => {
+  const primary = cellLines.find(c => c.id === 'hnscc');
 
   return (
     <svg viewBox={`0 0 ${GW} ${GH}`} className="w-full" style={{ maxHeight: 240 }}>
       <defs>
-        {CELL_LINES.map(cl => (
+        {cellLines.map(cl => (
           <filter key={cl.id} id={`glow-${cl.id}`} x="-20%" y="-20%" width="140%" height="140%">
             <feGaussianBlur stdDeviation="2.5" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
@@ -607,14 +608,14 @@ const SurvivalGraph: React.FC<{
         transform={`rotate(-90,9,${(GH + PAD.t) / 2})`}>log₁₀ SF</text>
 
       {/* α=β crossover dot (for first visible line) */}
-      {showCross && CELL_LINES.find(c => visible.has(c.id)) && CELL_LINES.find(c => visible.has(c.id))!.alphaBeta <= MAX_D && (
+      {showCross && cellLines.find(c => visible.has(c.id)) && cellLines.find(c => visible.has(c.id))!.alphaBeta <= MAX_D && (
         <g>
-          <line x1={dx(CELL_LINES.find(c => visible.has(c.id))!.alphaBeta)} y1={PAD.t} x2={dx(CELL_LINES.find(c => visible.has(c.id))!.alphaBeta)} y2={GH - PAD.b}
+          <line x1={dx(cellLines.find(c => visible.has(c.id))!.alphaBeta)} y1={PAD.t} x2={dx(cellLines.find(c => visible.has(c.id))!.alphaBeta)} y2={GH - PAD.b}
             stroke="#fbbf24" strokeWidth="0.8" strokeDasharray="4 3" opacity="0.7" />
-          <circle cx={dx(CELL_LINES.find(c => visible.has(c.id))!.alphaBeta)} cy={dy(sf(CELL_LINES.find(c => visible.has(c.id))!.alphaBeta, CELL_LINES.find(c => visible.has(c.id))!.alpha, CELL_LINES.find(c => visible.has(c.id))!.beta))} r={5} fill="#fbbf24" opacity="0.25" />
-          <circle cx={dx(CELL_LINES.find(c => visible.has(c.id))!.alphaBeta)} cy={dy(sf(CELL_LINES.find(c => visible.has(c.id))!.alphaBeta, CELL_LINES.find(c => visible.has(c.id))!.alpha, CELL_LINES.find(c => visible.has(c.id))!.beta))} r={3} fill="#fbbf24" />
-          <text x={dx(CELL_LINES.find(c => visible.has(c.id))!.alphaBeta) + 6} y={dy(sf(CELL_LINES.find(c => visible.has(c.id))!.alphaBeta, CELL_LINES.find(c => visible.has(c.id))!.alpha, CELL_LINES.find(c => visible.has(c.id))!.beta)) - 5} fill="#fbbf24" fontSize="7" fontFamily="monospace">
-            α=β ({CELL_LINES.find(c => visible.has(c.id))!.alphaBeta.toFixed(1)} Gy)
+          <circle cx={dx(cellLines.find(c => visible.has(c.id))!.alphaBeta)} cy={dy(sf(cellLines.find(c => visible.has(c.id))!.alphaBeta, cellLines.find(c => visible.has(c.id))!.alpha, cellLines.find(c => visible.has(c.id))!.beta))} r={5} fill="#fbbf24" opacity="0.25" />
+          <circle cx={dx(cellLines.find(c => visible.has(c.id))!.alphaBeta)} cy={dy(sf(cellLines.find(c => visible.has(c.id))!.alphaBeta, cellLines.find(c => visible.has(c.id))!.alpha, cellLines.find(c => visible.has(c.id))!.beta))} r={3} fill="#fbbf24" />
+          <text x={dx(cellLines.find(c => visible.has(c.id))!.alphaBeta) + 6} y={dy(sf(cellLines.find(c => visible.has(c.id))!.alphaBeta, cellLines.find(c => visible.has(c.id))!.alpha, cellLines.find(c => visible.has(c.id))!.beta)) - 5} fill="#fbbf24" fontSize="7" fontFamily="monospace">
+            α=β ({cellLines.find(c => visible.has(c.id))!.alphaBeta.toFixed(1)} Gy)
           </text>
         </g>
       )}
@@ -626,19 +627,19 @@ const SurvivalGraph: React.FC<{
       )}
 
       {/* Alpha / Beta component curves for first visible line */}
-      {showComponents && CELL_LINES.find(c => visible.has(c.id)) && (
+      {showComponents && cellLines.find(c => visible.has(c.id)) && (
         <>
-          <path d={alphaPath(CELL_LINES.find(c => visible.has(c.id))!.alpha)} fill="none" stroke="#38bdf8" strokeWidth="1.3"
+          <path d={alphaPath(cellLines.find(c => visible.has(c.id))!.alpha)} fill="none" stroke="#38bdf8" strokeWidth="1.3"
             strokeDasharray="5 3" opacity="0.65" />
-          <path d={betaPath(CELL_LINES.find(c => visible.has(c.id))!.beta)} fill="none" stroke="#a78bfa" strokeWidth="1.3"
+          <path d={betaPath(cellLines.find(c => visible.has(c.id))!.beta)} fill="none" stroke="#a78bfa" strokeWidth="1.3"
             strokeDasharray="3 2" opacity="0.65" />
-          <text x={dx(9)} y={dy(Math.exp(-CELL_LINES.find(c => visible.has(c.id))!.alpha * 9)) - 6} fill="#38bdf8" fontSize="6.5" fontFamily="monospace">α·D</text>
-          <text x={dx(7)} y={dy(Math.exp(-CELL_LINES.find(c => visible.has(c.id))!.beta * 49)) + 9} fill="#a78bfa" fontSize="6.5" fontFamily="monospace">β·D²</text>
+          <text x={dx(9)} y={dy(Math.exp(-cellLines.find(c => visible.has(c.id))!.alpha * 9)) - 6} fill="#38bdf8" fontSize="6.5" fontFamily="monospace">α·D</text>
+          <text x={dx(7)} y={dy(Math.exp(-cellLines.find(c => visible.has(c.id))!.beta * 49)) + 9} fill="#a78bfa" fontSize="6.5" fontFamily="monospace">β·D²</text>
         </>
       )}
 
       {/* Survival curves */}
-      {CELL_LINES.map(cl => {
+      {cellLines.map(cl => {
         if (!visible.has(cl.id)) return null;
         return (
           <motion.path
@@ -657,7 +658,7 @@ const SurvivalGraph: React.FC<{
       })}
 
       {/* Cursor SF dots */}
-      {cursorDose > 0 && CELL_LINES.filter(c => visible.has(c.id)).map(cl => {
+      {cursorDose > 0 && cellLines.filter(c => visible.has(c.id)).map(cl => {
         const sfv = sf(cursorDose, cl.alpha, cl.beta);
         const y = dy(sfv);
         if (y < PAD.t || y > GH - PAD.b) return null;
@@ -872,7 +873,7 @@ const CellSurvivalPage: React.FC = () => {
                 </div>
               </div>
               <div className="px-2 pt-2">
-                <SurvivalGraph visible={visible} showComponents={showComponents} showCross={showCross} cursorDose={cursorDose} />
+                <SurvivalGraph cellLines={CELL_LINES} visible={visible} showComponents={showComponents} showCross={showCross} cursorDose={cursorDose} />
               </div>
               {/* Dose cursor */}
               <div className="px-3 pb-3">

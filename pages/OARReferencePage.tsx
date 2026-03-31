@@ -23,7 +23,9 @@ import {
   AlertTriangle, CheckCircle, XCircle, Info, Activity, Shield,
   RefreshCw, BarChart2, Zap
 } from 'lucide-react';
-import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, ReferenceLine, Label } from 'recharts';
+import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
+import { RadialGauge } from '../src/components/RadialGauge';
 import {
 
   OAR_DATABASE,
@@ -444,6 +446,27 @@ const OARReferencePage: React.FC = () => {
     }
     return { ...scaleLimit(c.limit, c.metricType, ab, dFx), isSBRTSpecific: false, ab };
   }
+
+  const sigmoidData = useMemo(() => {
+    if (!selOAR) return [];
+    const data = [];
+    const maxDose = selOAR.constraints.reduce((max, c) => Math.max(max, typeof c.limit === 'number' ? c.limit : 0), 0) * 1.5 || 100;
+    
+    // Simplified LKB NTCP model for visualization
+    const m = 0.15; // Slope parameter
+    const TD50 = maxDose * 0.8; // Assume TD50 is 80% of max displayed dose for demo
+    
+    for (let dose = 0; dose <= maxDose; dose += maxDose / 50) {
+      // Probit approximation for sigmoid
+      const t = (dose - TD50) / (m * TD50);
+      const prob = 1 / (1 + Math.exp(-t * 1.702)); // Logistic approximation of normal CDF
+      data.push({
+        dose: Number(dose.toFixed(1)),
+        prob: Number((prob * 100).toFixed(1))
+      });
+    }
+    return data;
+  }, [selOAR]);
 
   // Plan checker
   const checkerResults = useMemo(() => {
@@ -980,6 +1003,17 @@ const OARReferencePage: React.FC = () => {
                                       </p>
                                       <p className="text-[9px] text-slate-500">α/β: {ab}</p>
                                     </div>
+                                    {metrics[selOAR.id] && !isNaN(Number(limitToShow)) && (
+                                      <div className="mt-2 ml-auto flex justify-end">
+                                        <RadialGauge
+                                          value={Number(metrics[selOAR.id])}
+                                          max={Number(limitToShow)}
+                                          size={40}
+                                          strokeWidth={4}
+                                          showPercentage={true}
+                                        />
+                                      </div>
+                                    )}
                                   </td>
                                 </tr>
                               );
@@ -1030,9 +1064,55 @@ const OARReferencePage: React.FC = () => {
                                   </p>
                                 </div>
                               </div>
+                              {metrics[selOAR.id] && !isNaN(Number(limitToShow)) && (
+                                <div className="pt-2 flex justify-end">
+                                  <RadialGauge
+                                    value={Number(metrics[selOAR.id])}
+                                    max={Number(limitToShow)}
+                                    size={40}
+                                    strokeWidth={4}
+                                    showPercentage={true}
+                                  />
+                                </div>
+                              )}
                             </div>
                           );
                         })}
+                      </div>
+                    </section>
+
+                    {/* Sigmoid Dose-Response Curve */}
+                    <section className="card-premium overflow-hidden">
+                      <div className="px-6 py-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Activity className="w-4 h-4 text-teal" />
+                          <h2 className="label-micro">NTCP Dose-Response Curve (LKB Model Approximation)</h2>
+                        </div>
+                      </div>
+                      <div className="p-6">
+                        <div className="h-64 w-full">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={sigmoidData} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                              <XAxis dataKey="dose" type="number" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} axisLine={false} tickLine={false}>
+                                <Label value={`Dose (${selOAR.constraints[0]?.unit || 'Gy'})`} offset={-5} position="insideBottom" style={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} />
+                              </XAxis>
+                              <YAxis tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} axisLine={false} tickLine={false} domain={[0, 100]} />
+                              <Tooltip 
+                                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', fontSize: '12px' }}
+                                formatter={(value: number) => [`${value}%`, 'Probability']}
+                                labelFormatter={(label: number) => `Dose: ${label} ${selOAR.constraints[0]?.unit || 'Gy'}`}
+                              />
+                              <Line type="monotone" dataKey="prob" stroke="#14b8a6" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#14b8a6' }} />
+                              {metrics[selOAR.id] && !isNaN(Number(metrics[selOAR.id])) && (
+                                <ReferenceLine x={Number(metrics[selOAR.id])} stroke="#f59e0b" strokeDasharray="3 3" label={{ position: 'top', value: 'Current', fill: '#f59e0b', fontSize: 10 }} />
+                              )}
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                        <p className="text-[10px] text-slate-500 mt-4 italic text-center">
+                          * This is a simplified visualization of the Lyman-Kutcher-Burman (LKB) Normal Tissue Complication Probability (NTCP) model. Actual clinical probability depends on specific plan dosimetry (DVH) and patient factors.
+                        </p>
                       </div>
                     </section>
 

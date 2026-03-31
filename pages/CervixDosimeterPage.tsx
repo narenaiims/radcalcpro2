@@ -10,7 +10,9 @@ import {
   ShieldAlert,
   GraduationCap
 } from 'lucide-react';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
+import { RadialGauge } from '../src/components/RadialGauge';
 
 import { NumberInput } from '../src/components/NumberInput';
 
@@ -138,6 +140,33 @@ const CervixDosimeterPage: React.FC = () => {
 
     return { remainingFractions, maxD90, maxBladder };
   }, [ebrtDosePerFx, ebrtFx, fractions, results]);
+
+  const radarData = useMemo(() => {
+    return results.map(res => ({
+      subject: res.name.replace(' D2cc', '').replace(' D90', ''),
+      EQD2: Number(res.total.toFixed(1)),
+      Goal: res.goal,
+      Limit: res.limit,
+      fullMark: Math.max(res.limit + 10, res.total + 5),
+    }));
+  }, [results]);
+
+  const barData = useMemo(() => {
+    return results.map(res => {
+      const structure = STRUCTURES.find(s => s.name === res.name)!;
+      const ebrtEQD2 = ebrtFx * calcEQD2(ebrtDosePerFx, structure.ab);
+      const dataPoint: any = { 
+        name: res.name.replace(' D2cc', '').replace(' D90', ''),
+        EBRT: Number(ebrtEQD2.toFixed(1)),
+      };
+      fractions.forEach((fx, i) => {
+        const key = STRUCTURE_KEY_MAP[structure.name];
+        const dose = Number(fx[key]) || 0;
+        dataPoint[`Fx${i + 1}`] = Number(calcEQD2(dose, structure.ab).toFixed(1));
+      });
+      return dataPoint;
+    });
+  }, [results, ebrtFx, ebrtDosePerFx, fractions]);
 
   const SIDEBAR_DATA: KeyFactSection[] = [
     {
@@ -350,25 +379,26 @@ const CervixDosimeterPage: React.FC = () => {
               <div className="p-6 space-y-4">
                 {results.map(res => (
                   <div key={res.name} className="space-y-2">
-                    <div className="flex justify-between items-end">
+                    <div className="flex justify-between items-center">
                       <div className="space-y-0.5">
                         <p className="label-micro opacity-40">{res.name}</p>
                         <p className="text-xs text-slate-500 italic">Target: {res.goal} Gy</p>
                       </div>
-                      <div className="text-right">
-                        <p className={`text-2xl font-black font-mono leading-none ${res.total >= res.goal ? 'text-emerald-400' : 'text-amber-400'}`}>
-                          {res.total.toFixed(1)}
-                        </p>
-                        <p className="text-[10px] text-slate-500 uppercase font-bold">Gy EQD2</p>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className={`text-2xl font-black font-mono leading-none ${res.total >= res.goal ? 'text-emerald-400' : 'text-amber-400'}`}>
+                            {res.total.toFixed(1)}
+                          </p>
+                          <p className="text-[10px] text-slate-500 uppercase font-bold">Gy EQD2</p>
+                        </div>
+                        <RadialGauge
+                          value={res.total}
+                          max={res.limit}
+                          size={40}
+                          strokeWidth={4}
+                          showPercentage={true}
+                        />
                       </div>
-                    </div>
-                    
-                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${Math.min(100, (res.total / res.limit) * 100)}%` }}
-                        className={`h-full ${res.total >= res.limit ? 'bg-rose-500' : res.total >= res.goal ? 'bg-emerald-500' : 'bg-amber-500'}`}
-                      />
                     </div>
 
                     {res.hasMappingError && (
@@ -379,6 +409,53 @@ const CervixDosimeterPage: React.FC = () => {
                     )}
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Visualizations Station */}
+            <div className="station !bg-slate-900 border-white/10">
+              <div className="station-head border-b border-white/5">
+                <div className="stn-num !bg-indigo-500">V</div>
+                <div className="stn-name text-white">Visualizations</div>
+              </div>
+              <div className="p-6 space-y-8">
+                {/* Radar Chart */}
+                <div className="space-y-2">
+                  <p className="label-micro opacity-40 text-center">OAR & Target Balance (EQD2)</p>
+                  <div className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                        <PolarGrid stroke="rgba(255,255,255,0.1)" />
+                        <PolarAngleAxis dataKey="subject" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} />
+                        <PolarRadiusAxis angle={30} domain={[0, 'dataMax']} tick={false} axisLine={false} />
+                        <Radar name="Current Plan" dataKey="EQD2" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.4} />
+                        <Radar name="Goal" dataKey="Goal" stroke="#10b981" fill="none" strokeDasharray="3 3" />
+                        <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', fontSize: '12px' }} />
+                        <Legend wrapperStyle={{ fontSize: '10px', opacity: 0.7 }} />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Stacked Bar Chart */}
+                <div className="space-y-2">
+                  <p className="label-micro opacity-40 text-center">Fraction Contribution (EQD2)</p>
+                  <div className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                        <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                        <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', fontSize: '12px' }} />
+                        <Legend wrapperStyle={{ fontSize: '10px', opacity: 0.7 }} />
+                        <Bar dataKey="EBRT" stackId="a" fill="#64748b" />
+                        {fractions.map((_, i) => (
+                          <Bar key={`Fx${i+1}`} dataKey={`Fx${i+1}`} stackId="a" fill={`hsl(200, 100%, ${40 + i * 10}%)`} />
+                        ))}
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
               </div>
             </div>
 

@@ -6,11 +6,11 @@ export interface NumberInputProps extends React.InputHTMLAttributes<HTMLInputEle
 }
 
 export const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>((props, ref) => {
-  const { className, style, buttonClassName, ...rest } = props;
+  const { className, style, buttonClassName, onChange, ...rest } = props;
   
   const handleIncrement = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!props.onChange) return;
+    if (!onChange) return;
     
     const step = parseFloat(props.step as string) || 1;
     const currentVal = parseFloat(props.value as string) || 0;
@@ -24,12 +24,12 @@ export const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
       currentTarget: { value: String(newVal) }
     } as React.ChangeEvent<HTMLInputElement>;
     
-    props.onChange(event);
+    onChange(event);
   };
 
   const handleDecrement = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!props.onChange) return;
+    if (!onChange) return;
     
     const step = parseFloat(props.step as string) || 1;
     const currentVal = parseFloat(props.value as string) || 0;
@@ -43,7 +43,15 @@ export const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
       currentTarget: { value: String(newVal) }
     } as React.ChangeEvent<HTMLInputElement>;
     
-    props.onChange(event);
+    onChange(event);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Allow only numbers, decimals, and minus sign
+    const val = e.target.value;
+    if (val === '' || /^-?\d*\.?\d*$/.test(val)) {
+      if (onChange) onChange(e);
+    }
   };
 
   return (
@@ -59,8 +67,10 @@ export const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
       
       <input
         ref={ref}
-        type="number"
+        type="text"
         inputMode="decimal"
+        pattern="[0-9\.\-]*"
+        onChange={handleChange}
         {...rest}
         className="w-full min-h-[44px] px-10 sm:px-12 text-center bg-transparent border-none focus:ring-0 text-base sm:text-lg font-mono"
         style={{ appearance: 'textfield', MozAppearance: 'textfield' }}

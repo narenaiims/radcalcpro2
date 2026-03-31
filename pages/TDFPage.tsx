@@ -18,6 +18,7 @@
 import React, { useState, useMemo } from 'react';
 import { BookOpen, ChevronRight, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer } from 'recharts';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import TumourSelector from '../components/TumourSelector';
 import { RadiobiologyData } from '../src/data/radiobiologyData';
@@ -109,6 +110,38 @@ const VIVA_POINTS = [
     a: 'TDF represents the historical development of fractionation theory — understanding it demonstrates knowledge of radiobiology evolution. It also illustrates dose-rate and time-factor effects which are still relevant in brachytherapy dose-rate considerations.',
   },
 ];
+
+// ── Gauge Component ─────────────────────────────────────────────────────────
+const Gauge = ({ value, max, label, sublabel, color, size = 100, strokeWidth = 8 }: { value: number, max: number, label: React.ReactNode, sublabel: string, color: string, size?: number, strokeWidth?: number }) => {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const pct = Math.min(100, Math.max(0, (value / max) * 100));
+  const offset = circumference - (pct / 100) * circumference;
+  
+  return (
+    <div className="flex flex-col items-center justify-center">
+      <div className="relative" style={{ width: size, height: size }}>
+        <svg className="transform -rotate-90 w-full h-full">
+          <circle cx={size/2} cy={size/2} r={radius} stroke="currentColor" strokeWidth={strokeWidth} fill="transparent" className="text-blue-900/30" />
+          <motion.circle 
+            cx={size/2} cy={size/2} r={radius} 
+            stroke={color} strokeWidth={strokeWidth} fill="transparent" 
+            strokeDasharray={circumference} strokeDashoffset={offset}
+            strokeLinecap="round"
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset: offset }}
+            transition={{ duration: 1, ease: "easeOut" }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-xl font-black num" style={{ color }}>{value.toFixed(1)}</span>
+        </div>
+      </div>
+      <p className="text-[11px] uppercase tracking-wider text-blue-200/60 mt-2">{label}</p>
+      <p className="text-[10px] text-blue-200/40">{sublabel}</p>
+    </div>
+  );
+};
 
 // ── Main component ────────────────────────────────────────────────────────
 const TDFPage: React.FC = () => {
@@ -285,29 +318,13 @@ const TDFPage: React.FC = () => {
       {/* ── Results ──────────────────────────────────────────────────── */}
       {valid && (
         <>
-          <div className="bg-[#1e3a5f] rounded-lg text-white px-4 py-3">
-            <p className="text-[11px] font-black uppercase tracking-widest text-blue-200/70 mb-3">Results</p>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-center">
-              <div className="border-r border-blue-800/40">
-                <p className="text-[11px] uppercase tracking-wider text-blue-200/60">TDF</p>
-                <p className="text-3xl font-black num text-amber-300">{tdf.toFixed(2)}</p>
-                <p className="text-[11px] text-blue-200/50">Orton-Ellis</p>
-              </div>
-              <div className="border-r border-blue-800/40">
-                <p className="text-[11px] uppercase tracking-wider text-blue-200/60">Total Dose</p>
-                <p className="text-xl font-black num">{D.toFixed(1)}</p>
-                <p className="text-[11px] text-blue-200/50">Gy</p>
-              </div>
-              <div className="border-r border-blue-800/40">
-                <p className="text-[11px] uppercase tracking-wider text-blue-200/60">BED<sub>{ab}</sub></p>
-                <p className="text-xl font-black num text-emerald-300">{bed.toFixed(1)}</p>
-                <p className="text-[11px] text-blue-200/50">Gy (LQ)</p>
-              </div>
-              <div>
-                <p className="text-[11px] uppercase tracking-wider text-blue-200/60">EQD2<sub>{ab}</sub></p>
-                <p className="text-xl font-black num text-blue-200">{eqd2.toFixed(1)}</p>
-                <p className="text-[11px] text-blue-200/50">Gy (LQ)</p>
-              </div>
+          <div className="bg-[#1e3a5f] rounded-lg text-white px-4 py-4">
+            <p className="text-[11px] font-black uppercase tracking-widest text-blue-200/70 mb-4">Results</p>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <Gauge value={tdf} max={120} label="TDF" sublabel="Orton-Ellis" color="#fcd34d" />
+              <Gauge value={D} max={80} label="Total Dose" sublabel="Gy" color="#f8fafc" />
+              <Gauge value={bed} max={120} label={<span>BED<sub>{ab}</sub></span>} sublabel="Gy (LQ)" color="#6ee7b7" />
+              <Gauge value={eqd2} max={80} label={<span>EQD2<sub>{ab}</sub></span>} sublabel="Gy (LQ)" color="#bfdbfe" />
             </div>
           </div>
 

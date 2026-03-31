@@ -29,6 +29,7 @@ import {
   Zap, Clock, Shield, Activity,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 
 import { NumberInput } from '../src/components/NumberInput';
@@ -428,6 +429,34 @@ const ReirradiationCalcPage: React.FC = () => {
     });
   }, [n1, dpf1, n2, dpf2, mo]);
 
+  // ── Chart Data Preparation ──────────────────────────────────────────────
+  const bedDecayData = useMemo(() => {
+    const data = [];
+    for (let m = 0; m <= 60; m += 6) {
+      const recPct = getRecovery(oar, m);
+      const effBed1 = res.bed1 * (1 - recPct);
+      data.push({
+        months: m,
+        'Effective BED1': Number(effBed1.toFixed(1)),
+        'Cumulative BED': Number((effBed1 + res.bed2).toFixed(1)),
+        Limit: bedLimit
+      });
+    }
+    return data;
+  }, [res.bed1, res.bed2, oar, bedLimit]);
+
+  const headroomData = useMemo(() => {
+    return [
+      {
+        name: 'BED (Gy₂)',
+        'Course 1 (Effective)': Number(res.effBed1.toFixed(1)),
+        'Course 2': Number(res.bed2.toFixed(1)),
+        'Headroom': Number(Math.max(0, res.headroom).toFixed(1)),
+        'Exceedance': Number(Math.max(0, res.cumBED - bedLimit).toFixed(1))
+      }
+    ];
+  }, [res.effBed1, res.bed2, res.headroom, res.cumBED, bedLimit]);
+
   // ── Nieder criteria checklist ───────────────────────────────────────────
   const niederChecks = useMemo(() => {
     const singleMax = 98;
@@ -792,6 +821,48 @@ ${'─'.repeat(50)}
               {res.headroom.toFixed(1)}
             </p>
             <p className="text-[9px] text-slate-500 uppercase tracking-widest">Headroom (Gy₂)</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Visualizations ────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* BED Decay Line Chart */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 text-center">BED Decay Over Time</p>
+          <div className="h-48 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={bedDecayData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                <XAxis dataKey="months" tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ backgroundColor: '#fff', borderColor: '#e2e8f0', fontSize: '12px' }} />
+                <Legend wrapperStyle={{ fontSize: '10px' }} />
+                <Line type="monotone" dataKey="Cumulative BED" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="Effective BED1" stroke="#94a3b8" strokeWidth={2} strokeDasharray="4 4" dot={false} />
+                <Line type="monotone" dataKey="Limit" stroke="#ef4444" strokeWidth={1} strokeDasharray="3 3" dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Safe Headroom Stacked Bar Chart */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 text-center">Safe Headroom</p>
+          <div className="h-48 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={headroomData} layout="vertical" margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
+                <XAxis type="number" domain={[0, Math.max(bedLimit, res.cumBED) + 10]} tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} width={80} />
+                <Tooltip contentStyle={{ backgroundColor: '#fff', borderColor: '#e2e8f0', fontSize: '12px' }} />
+                <Legend wrapperStyle={{ fontSize: '10px' }} />
+                <Bar dataKey="Course 1 (Effective)" stackId="a" fill="#60a5fa" />
+                <Bar dataKey="Course 2" stackId="a" fill="#f97316" />
+                <Bar dataKey="Headroom" stackId="a" fill="#34d399" />
+                <Bar dataKey="Exceedance" stackId="a" fill="#ef4444" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>

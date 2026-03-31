@@ -222,7 +222,7 @@ const Header: React.FC = () => {
   return (
     <>
       {/* ── HEADER BAR ────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 h-[52px] bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/10 flex items-center justify-between px-4 text-white overflow-hidden">
+      <header className="sticky top-0 z-50 min-h-[52px] pt-[env(safe-area-inset-top)] bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/10 flex items-center justify-between px-4 text-white overflow-hidden">
         {/* Animated Accent Line */}
         <motion.div 
           className="absolute top-0 left-0 h-[2px] z-10"
@@ -287,7 +287,7 @@ const Header: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[90] bg-[#0a0a0a]/95 backdrop-blur-xl p-4 sm:p-8 flex flex-col"
+            className="fixed inset-0 z-[90] bg-[#0a0a0a]/95 backdrop-blur-xl p-4 sm:p-8 flex flex-col pt-[calc(1rem+env(safe-area-inset-top))]"
           >
             <div className="max-w-2xl mx-auto w-full flex flex-col h-full">
               <div className="flex items-center gap-4 mb-8">
@@ -399,7 +399,7 @@ const Header: React.FC = () => {
               className="fixed top-0 right-0 z-[80] h-full w-[300px] max-w-[90vw] bg-[#0f0f0f] border-l border-white/10 flex flex-col shadow-2xl"
             >
               {/* Route List */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar py-4 px-4 space-y-6">
+              <div className="flex-1 overflow-y-auto custom-scrollbar py-4 px-4 space-y-6 pt-[calc(1rem+env(safe-area-inset-top))]">
                 {(Object.keys(GROUPS) as GroupName[]).map(g => {
                   const Icon = GROUPS[g].icon;
                   const groupRoutes = ROUTES.filter(r => r.group === g);

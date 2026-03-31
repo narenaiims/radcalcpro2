@@ -562,7 +562,7 @@ const OARReferencePage: React.FC = () => {
 
   // ─── JSX ──────────────────────────────────────────────────────────────────
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 space-y-8 min-h-screen relative">
+    <div className="max-w-7xl mx-auto px-4 py-4 sm:py-8 space-y-4 sm:space-y-8 min-h-screen relative">
       <div className="atmosphere-bg" />
       <div className="mesh-grid" />
 
@@ -717,11 +717,11 @@ const OARReferencePage: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="space-y-8"
+            className="space-y-4 sm:space-y-8"
           >
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 items-start">
               {/* ── Left Column: Region & OAR List ────────────────── */}
-              <div className="lg:col-span-3 space-y-6 sticky top-[72px] lg:top-8 z-30 bg-[#060810]/80 backdrop-blur-md lg:bg-transparent -mx-4 px-4 py-4 lg:mx-0 lg:px-0 lg:py-0 border-b border-white/5 lg:border-none">
+              <div className="lg:col-span-3 space-y-6 sticky top-[calc(52px+env(safe-area-inset-top))] lg:top-8 z-30 bg-[#060810]/80 backdrop-blur-md lg:bg-transparent -mx-4 px-4 py-4 lg:mx-0 lg:px-0 lg:py-0 border-b border-white/5 lg:border-none">
                 {/* Region Selector inside Left Column */}
                 <section className="space-y-3">
                   <div className="flex items-center gap-2 px-2">
@@ -785,7 +785,7 @@ const OARReferencePage: React.FC = () => {
                   </div>
                 </div>
 
-                <section className="card-premium p-4 space-y-4 hidden lg:block">
+                <section className="card-premium space-y-4 hidden lg:block">
                   <div className="flex items-center justify-between">
                     <h3 className="label-micro opacity-40">Active Regime</h3>
                     <div className="flex items-center gap-2">
@@ -816,7 +816,7 @@ const OARReferencePage: React.FC = () => {
                           
                           value={totalDose}
                           onChange={e => setTotalDose(e.target.value)}
-                          className="w-full bg-slate-800 border border-white/10 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-teal"
+                          className="w-full bg-slate-800 border border-white/10 rounded px-2 py-1 text-base text-white focus:outline-none focus:border-teal"
                         />
                       </div>
                       <div className="space-y-1">
@@ -825,7 +825,7 @@ const OARReferencePage: React.FC = () => {
                           
                           value={fractions}
                           onChange={e => setFractions(e.target.value)}
-                          className="w-full bg-slate-800 border border-white/10 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-teal"
+                          className="w-full bg-slate-800 border border-white/10 rounded px-2 py-1 text-base text-white focus:outline-none focus:border-teal"
                         />
                       </div>
                     </div>
@@ -834,10 +834,10 @@ const OARReferencePage: React.FC = () => {
               </div>
 
               {/* ── Right Column: OAR Details & Constraints ────────────────── */}
-              <div className="lg:col-span-9 space-y-6">
+              <div className="lg:col-span-9 space-y-4 sm:space-y-6">
                 {/* Mobile Fractionation - only visible on mobile */}
                 <div className="lg:hidden mt-6">
-                  <section className="card-premium p-4 space-y-4">
+                  <section className="card-premium space-y-4">
                     <div className="flex items-center justify-between">
                       <h3 className="label-micro opacity-40">Active Regime</h3>
                       <div className="flex items-center gap-2">
@@ -867,7 +867,7 @@ const OARReferencePage: React.FC = () => {
                             
                             value={totalDose}
                             onChange={e => setTotalDose(e.target.value)}
-                            className="w-full bg-slate-800 border border-white/10 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-teal"
+                            className="w-full bg-slate-800 border border-white/10 rounded px-2 py-1 text-base text-white focus:outline-none focus:border-teal"
                           />
                         </div>
                         <div className="space-y-1">
@@ -876,7 +876,7 @@ const OARReferencePage: React.FC = () => {
                             
                             value={fractions}
                             onChange={e => setFractions(e.target.value)}
-                            className="w-full bg-slate-800 border border-white/10 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-teal"
+                            className="w-full bg-slate-800 border border-white/10 rounded px-2 py-1 text-base text-white focus:outline-none focus:border-teal"
                           />
                         </div>
                       </div>
@@ -885,12 +885,12 @@ const OARReferencePage: React.FC = () => {
                 </div>
 
                 {selOAR ? (
-                  <div className="space-y-6">
-                    <section className="card-premium p-6 space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
+                    <section className="card-premium space-y-6">
                       <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                         <div className="space-y-2">
                           <div className="flex items-center gap-3">
-                            <h2 className="text-3xl font-black text-white uppercase tracking-tight">{selOAR.name}</h2>
+                            <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight">{selOAR.name}</h2>
                             <span className="px-3 py-1 bg-teal/10 border border-teal/50 rounded-full text-[10px] font-bold text-teal uppercase tracking-widest">
                               {selOAR.type}
                             </span>
@@ -908,7 +908,7 @@ const OARReferencePage: React.FC = () => {
                               placeholder="Enter value"
                               value={metrics[selOAR.id] ?? ''}
                               onChange={e => setMetrics(m => ({ ...m, [selOAR.id]: e.target.value }))}
-                              className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm font-mono w-full sm:w-32 text-center text-white focus:outline-none focus:ring-1 focus:ring-teal"
+                              className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-base font-mono w-full sm:w-32 text-center text-white focus:outline-none focus:ring-1 focus:ring-teal"
                             />
                             {metrics[selOAR.id] && (
                               <div className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${

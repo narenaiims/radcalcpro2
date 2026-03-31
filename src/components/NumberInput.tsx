@@ -59,10 +59,10 @@ export const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
       <button 
         type="button"
         onClick={handleDecrement}
-        className={`absolute left-1.5 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg shadow-sm border transition-all active:scale-95 ${buttonClassName || 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 dark:border-slate-700'}`}
+        className={`absolute left-1 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-lg shadow-sm border transition-all active:scale-95 ${buttonClassName || 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 dark:border-slate-700'}`}
         tabIndex={-1}
       >
-        <Minus size={18} strokeWidth={2.5} />
+        <Minus size={16} strokeWidth={2.5} />
       </button>
       
       <input
@@ -72,17 +72,17 @@ export const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
         pattern="[0-9\.\-]*"
         onChange={handleChange}
         {...rest}
-        className="w-full min-h-[44px] px-10 sm:px-12 text-center bg-transparent border-none focus:ring-0 text-base sm:text-lg font-mono"
+        className="w-full min-h-[40px] sm:min-h-[44px] px-9 sm:px-12 text-center bg-transparent border-none focus:ring-0 text-base sm:text-lg font-mono"
         style={{ appearance: 'textfield', MozAppearance: 'textfield' }}
       />
       
       <button 
         type="button"
         onClick={handleIncrement}
-        className={`absolute right-1.5 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg shadow-sm border transition-all active:scale-95 ${buttonClassName || 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 dark:border-slate-700'}`}
+        className={`absolute right-1 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-lg shadow-sm border transition-all active:scale-95 ${buttonClassName || 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 dark:border-slate-700'}`}
         tabIndex={-1}
       >
-        <Plus size={18} strokeWidth={2.5} />
+        <Plus size={16} strokeWidth={2.5} />
       </button>
     </div>
   );

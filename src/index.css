@@ -139,12 +139,19 @@ button,
   pointer-events: none;
 }
 
+.input-clinical {
+  @apply w-full px-4 py-3 bg-white border border-slate-200 rounded-xl transition-all duration-300;
+  @apply focus:border-clinical-blue focus:ring-2 focus:ring-clinical-blue/10 outline-none;
+  color: #0f172a;
+  font-size: 16px !important; /* Prevent iOS auto-zoom */
+}
+
 /* Glassmorphism */
 .card-premium {
   background-color: var(--surface-glass);
   backdrop-filter: blur(24px);
   border: 1px solid var(--surface-border);
-  @apply rounded-2xl transition-all duration-300;
+  @apply rounded-2xl transition-all duration-300 p-4 sm:p-6;
 }
 
 .glass-hover {
@@ -166,13 +173,13 @@ button,
 
 .station {
   background-color: var(--surface-glass);
-  backdrop-blur: 24px;
+  backdrop-filter: blur(24px);
   border: 1px solid var(--surface-border);
   @apply rounded-2xl overflow-hidden mb-4 transition-all duration-300;
 }
 
 .station-head {
-  @apply p-4 flex items-center gap-4 cursor-pointer hover:bg-white/5 transition-colors;
+  @apply p-3 sm:p-4 flex items-center gap-4 cursor-pointer hover:bg-white/5 transition-colors;
 }
 
 .stn-num {

@@ -183,8 +183,8 @@ const CervixDosimeterPage: React.FC = () => {
     <div className="min-h-screen bg-[#080c14] text-slate-200 pb-20">
       <KeyFactsSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} onOpen={() => setIsSidebarOpen(true)} data={SIDEBAR_DATA} />
       
-      <div className="max-w-6xl mx-auto px-4 pt-8">
-        <header className="mb-12 border-b border-white/5 pb-8">
+      <div className="max-w-6xl mx-auto px-4 pt-4 sm:pt-8">
+        <header className="mb-6 sm:mb-12 border-b border-white/5 pb-4 sm:pb-8">
           <div className="flex items-center gap-2 mb-2">
             <Target className="w-5 h-5 text-sky-400" />
             <p className="label-micro text-sky-400">GEC-ESTRO EMBRACE II</p>
@@ -193,15 +193,15 @@ const CervixDosimeterPage: React.FC = () => {
           <p className="text-slate-500 font-serif italic">Combined EBRT + Brachytherapy EQD2 accumulation</p>
         </header>
 
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-          <div className="xl:col-span-8 space-y-8">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 xl:gap-8">
+          <div className="xl:col-span-8 space-y-4 sm:space-y-8">
             {/* EBRT Station */}
             <div className="station">
               <div className="station-head">
                 <div className="stn-num">01</div>
                 <div className="stn-name">EBRT Component</div>
               </div>
-              <div className="p-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <label className="label-micro opacity-60">Total Dose (Gy)</label>
                   <NumberInput 
@@ -332,7 +332,7 @@ const CervixDosimeterPage: React.FC = () => {
                 <div className="stn-num">03</div>
                 <div className="stn-name">ICRU 89 & Legacy Parameters</div>
               </div>
-              <div className="p-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <label className="label-micro opacity-60">IR-CTV D98 (Gy)</label>
                   <NumberInput 
@@ -386,7 +386,7 @@ const CervixDosimeterPage: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
-                          <p className={`text-2xl font-black font-mono leading-none ${res.total >= res.goal ? 'text-emerald-400' : 'text-amber-400'}`}>
+                          <p className={`text-xl sm:text-2xl font-black font-mono leading-none ${res.total >= res.goal ? 'text-emerald-400' : 'text-amber-400'}`}>
                             {res.total.toFixed(1)}
                           </p>
                           <p className="text-[10px] text-slate-500 uppercase font-bold">Gy EQD2</p>
@@ -418,7 +418,7 @@ const CervixDosimeterPage: React.FC = () => {
                 <div className="stn-num !bg-indigo-500">V</div>
                 <div className="stn-name text-white">Visualizations</div>
               </div>
-              <div className="p-6 space-y-8">
+              <div className="p-4 sm:p-6 space-y-8">
                 {/* Radar Chart */}
                 <div className="space-y-2">
                   <p className="label-micro opacity-40 text-center">OAR & Target Balance (EQD2)</p>

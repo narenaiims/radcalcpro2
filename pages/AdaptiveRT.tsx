@@ -4,6 +4,8 @@ import { BookOpen, ChevronRight, Activity, Target, Layers, Zap, Calculator, Chec
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import { AnimatedNumber } from '../src/components/AnimatedNumber';
 
+import { NumberInput } from '../src/components/NumberInput';
+
 // --- DATA ---
 const ART_TYPES = [
   {
@@ -404,8 +406,8 @@ export default function AdaptiveRT() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-zinc-400 uppercase">Weight Loss (%)</label>
-                        <input 
-                          type="number" 
+                        <NumberInput 
+                           
                           value={calcState.weightLoss}
                           onChange={e => setCalcState({...calcState, weightLoss: Number(e.target.value)})}
                           className="w-full bg-zinc-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-cyan-500"
@@ -413,8 +415,8 @@ export default function AdaptiveRT() {
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-zinc-400 uppercase">CBCT Shift (mm)</label>
-                        <input 
-                          type="number" 
+                        <NumberInput 
+                           
                           value={calcState.cbctShift}
                           onChange={e => setCalcState({...calcState, cbctShift: Number(e.target.value)})}
                           className="w-full bg-zinc-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-cyan-500"
@@ -422,8 +424,8 @@ export default function AdaptiveRT() {
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-zinc-400 uppercase">Volume Change (%)</label>
-                        <input 
-                          type="number" 
+                        <NumberInput 
+                           
                           value={calcState.volumeChange}
                           onChange={e => setCalcState({...calcState, volumeChange: Number(e.target.value)})}
                           className="w-full bg-zinc-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-cyan-500"
@@ -489,8 +491,8 @@ export default function AdaptiveRT() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-zinc-400 uppercase">Total Dose (Gy)</label>
-                        <input 
-                          type="number" 
+                        <NumberInput 
+                           
                           value={eqd2State.totalDose}
                           onChange={e => setEqd2State({...eqd2State, totalDose: Number(e.target.value)})}
                           className="w-full bg-zinc-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-amber-500"
@@ -498,8 +500,8 @@ export default function AdaptiveRT() {
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-zinc-400 uppercase">Dose/Fx (Gy)</label>
-                        <input 
-                          type="number" 
+                        <NumberInput 
+                           
                           value={eqd2State.dosePerFx}
                           onChange={e => setEqd2State({...eqd2State, dosePerFx: Number(e.target.value)})}
                           className="w-full bg-zinc-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-amber-500"
@@ -545,8 +547,8 @@ export default function AdaptiveRT() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-zinc-400 uppercase">Trigger Fx #</label>
-                        <input 
-                          type="number" 
+                        <NumberInput 
+                           
                           value={timingState.triggerFx}
                           onChange={e => setTimingState({...timingState, triggerFx: Number(e.target.value)})}
                           className="w-full bg-zinc-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-green-500"
@@ -554,8 +556,8 @@ export default function AdaptiveRT() {
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-zinc-400 uppercase">Total Fx</label>
-                        <input 
-                          type="number" 
+                        <NumberInput 
+                           
                           value={timingState.totalFx}
                           onChange={e => setTimingState({...timingState, totalFx: Number(e.target.value)})}
                           className="w-full bg-zinc-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-green-500"

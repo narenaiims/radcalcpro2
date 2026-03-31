@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 
+import { NumberInput } from '../src/components/NumberInput';
+
 const STORAGE_KEY = 'radonco_cervix_dosimeter_v2';
 
 interface BrachyFraction {
@@ -164,15 +166,15 @@ const CervixDosimeterPage: React.FC = () => {
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1">
                   <label className="text-xs text-slate-500 uppercase">Total Dose (Gy)</label>
-                  <input type="number" value={ebrtDose} onChange={e => setEbrtDose(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2" />
+                  <NumberInput  value={ebrtDose} onChange={e => setEbrtDose(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs text-slate-500 uppercase">Fractions</label>
-                  <input type="number" value={ebrtFx} onChange={e => setEbrtFx(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2" />
+                  <NumberInput  value={ebrtFx} onChange={e => setEbrtFx(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs text-slate-500 uppercase">Dose/Fx (Gy)</label>
-                  <input type="number" value={ebrtDosePerFx} onChange={e => setEbrtDosePerFx(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2" />
+                  <NumberInput  value={ebrtDosePerFx} onChange={e => setEbrtDosePerFx(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2" />
                 </div>
               </div>
             </section>
@@ -222,8 +224,8 @@ const CervixDosimeterPage: React.FC = () => {
                         <td className="py-2">{i + 1}</td>
                         {['hrCtvD90', 'bladderD2cc', 'rectumD2cc', 'sigmoidD2cc', 'vaginaD2cc'].map(field => (
                           <td key={field} className="py-2">
-                            <input 
-                              type="number" 
+                            <NumberInput 
+                               
                               value={fx[field as keyof BrachyFraction] || ''} 
                               onChange={e => updateFraction(fx.id, field as keyof BrachyFraction, e.target.value === '' ? 0 : Number(e.target.value))} 
                               className="w-20 bg-slate-950 border border-slate-800 rounded p-1 text-center focus:outline-none focus:border-cyan-500" 
@@ -243,15 +245,15 @@ const CervixDosimeterPage: React.FC = () => {
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1">
                   <label className="text-xs text-slate-500 uppercase">IR-CTV D98 (Gy)</label>
-                  <input type="number" value={irCtvD98} onChange={e => setIrCtvD98(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2" />
+                  <NumberInput  value={irCtvD98} onChange={e => setIrCtvD98(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs text-slate-500 uppercase">Point A (Gy)</label>
-                  <input type="number" value={pointADose} onChange={e => setPointADose(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2" />
+                  <NumberInput  value={pointADose} onChange={e => setPointADose(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs text-slate-500 uppercase">TRAK (cGy·m²)</label>
-                  <input type="number" value={trak} onChange={e => setTrak(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2" />
+                  <NumberInput  value={trak} onChange={e => setTrak(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2" />
                 </div>
               </div>
               <div className={`mt-4 p-3 rounded-lg border ${irCtvD98 >= 60 ? 'bg-emerald-500/5 border-emerald-500/10 text-emerald-400' : 'bg-rose-500/5 border-rose-500/10 text-rose-400'}`}>

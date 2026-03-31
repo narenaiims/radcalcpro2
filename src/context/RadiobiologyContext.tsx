@@ -301,12 +301,15 @@ export const RadiobiologyProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   // Persist rx state on every change
   useEffect(() => {
-    try {
-      localStorage.setItem(RX_STORAGE_KEY, JSON.stringify(rx));
-      // Apply theme to document
-      document.documentElement.classList.remove('light', 'dark', 'dim');
-      document.documentElement.classList.add(rx.theme);
-    } catch { /* storage full */ }
+    const handler = setTimeout(() => {
+      try {
+        localStorage.setItem(RX_STORAGE_KEY, JSON.stringify(rx));
+        // Apply theme to document
+        document.documentElement.classList.remove('light', 'dark', 'dim');
+        document.documentElement.classList.add(rx.theme);
+      } catch { /* storage full */ }
+    }, 500); // 500ms debounce
+    return () => clearTimeout(handler);
   }, [rx]);
 
   // ── Derived values ──────────────────────────────────────────────────────

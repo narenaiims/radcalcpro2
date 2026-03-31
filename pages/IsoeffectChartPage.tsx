@@ -1,3 +1,4 @@
+import { NumberInput } from '../src/components/NumberInput';
 import React, { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
@@ -6,6 +7,7 @@ import {
   ChevronRight, BarChart3, BookOpen, TrendingUp
 } from 'lucide-react';
 import { 
+
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ScatterChart, Scatter, ZAxis, Cell
 } from 'recharts';
 
@@ -81,8 +83,8 @@ const IsoeffectChartPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div>
             <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Target BED (Gy{nAB})</label>
-            <input 
-              type="number" 
+            <NumberInput 
+               
               value={targetBED}
               onChange={(e) => setTargetBED(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-2xl font-black text-slate-700 focus:ring-2 focus:ring-emerald-500 outline-none transition"
@@ -90,8 +92,8 @@ const IsoeffectChartPage: React.FC = () => {
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">α/β Ratio (Gy)</label>
-            <input 
-              type="number" 
+            <NumberInput 
+               
               value={alphaBeta}
               onChange={(e) => setAlphaBeta(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-2xl font-black text-slate-700 focus:ring-2 focus:ring-emerald-500 outline-none transition"

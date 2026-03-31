@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ChevronRight, ChevronLeft, CheckCircle, Info, Calculator, RotateCcw, Calendar, Activity, BookOpen, GraduationCap, AlertTriangle, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
@@ -7,6 +7,8 @@ import TumourSelector from '@/components/TumourSelector';
 import { PDFReport } from '@/src/components/PDFReport';
 import { generatePDFBlob, sharePDF } from '@/src/lib/pdfUtils';
 import { Share2 } from 'lucide-react';
+
+import { NumberInput } from '../src/components/NumberInput';
 
 const QUICK_REF_DATA = [
   {
@@ -322,8 +324,8 @@ const EBRTGapPage: React.FC = () => {
                 <label className="block text-xs font-bold uppercase text-slate-500 mb-1.5">
                   Total Prescribed Dose (Gy)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
+                  
                   value={data.totalDose || ''}
                   onChange={e => updateData('totalDose', parseFloat(e.target.value) || 0)}
                   className="w-full p-3 rounded-xl border border-slate-300 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none"
@@ -333,8 +335,8 @@ const EBRTGapPage: React.FC = () => {
                 <label className="block text-xs font-bold uppercase text-slate-500 mb-1.5">
                   Dose per Fraction (Gy)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
+                  
                   step="0.1"
                   value={data.dosePerFx || ''}
                   onChange={e => updateData('dosePerFx', parseFloat(e.target.value) || 0)}
@@ -346,8 +348,8 @@ const EBRTGapPage: React.FC = () => {
                   Fractions per Week
                   <span className="ml-1 text-[9px] text-slate-400 normal-case font-normal">(default 5 · use 10 for BID)</span>
                 </label>
-                <input
-                  type="number"
+                <NumberInput
+                  
                   min="1" max="14"
                   value={data.fxPerWeek || 5}
                   onChange={e => updateData('fxPerWeek', parseFloat(e.target.value) || 5)}
@@ -395,8 +397,8 @@ const EBRTGapPage: React.FC = () => {
                 <label className="block text-xs font-bold uppercase text-slate-500 mb-1.5">
                   Fractions Completed Before Gap
                 </label>
-                <input
-                  type="number"
+                <NumberInput
+                  
                   value={data.fxCompleted || ''}
                   onChange={e => updateData('fxCompleted', parseFloat(e.target.value) || 0)}
                   className="w-full p-3 rounded-xl border border-slate-300 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none"
@@ -411,16 +413,13 @@ const EBRTGapPage: React.FC = () => {
                 <label className="block text-xs font-bold uppercase text-slate-500 mb-1.5">
                   Gap Duration (Calendar Days)
                 </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input
-                    type="number"
-                    value={data.gapDays || ''}
-                    onChange={e => updateData('gapDays', parseFloat(e.target.value) || 0)}
-                    className="w-full pl-10 p-3 rounded-xl border border-slate-300 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none"
-                    placeholder="e.g. 5"
-                  />
-                </div>
+                <NumberInput
+                  
+                  value={data.gapDays || ''}
+                  onChange={e => updateData('gapDays', parseFloat(e.target.value) || 0)}
+                  className="w-full p-3 rounded-xl border border-slate-300 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="e.g. 5"
+                />
                 <p className="text-[10px] text-slate-400 mt-1">
                   Include weekends and public holidays in the count.
                 </p>

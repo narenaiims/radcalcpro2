@@ -1,12 +1,11 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { useReactToPrint } from 'react-to-print';
-import { PrintReport } from '@/src/components/PrintReport';
-import { PDFReport } from '@/src/components/PDFReport';
-import { generatePDFBlob, sharePDF, generateHTML2PDF } from '@/src/lib/pdfUtils';
-import { BookOpen, ChevronRight, GraduationCap, Info, CheckCircle2, AlertTriangle, Share2, Download, FileText, Zap, Printer } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { BookOpen, ChevronRight, GraduationCap, Info, CheckCircle2, AlertTriangle, Zap } from 'lucide-react';
+import { ExportButton, ClinicalReport } from '@/src/components/ClinicalPDFExport';
 import { motion, AnimatePresence } from 'motion/react';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import { RadiobiologyData } from '../src/data/radiobiologyData';
+
+import { NumberInput } from '../src/components/NumberInput';
 
 const STORAGE_KEY = 'radonco_brachy_state_v3';
 
@@ -218,12 +217,6 @@ function calcEQD2(total: number, dpf: number, ab: number): number {
 
 // ── Main component ────────────────────────────────────────────────────────
 const HDRBrachyPage: React.FC = () => {
-  const contentRef = useRef<HTMLDivElement>(null);
-  const reactToPrintFn = useReactToPrint({
-    contentRef,
-    documentTitle: 'RadOnc_HDR_Brachy_Report',
-  });
-
   const [presetId,  setPresetId]  = useState('cervix');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -243,6 +236,8 @@ const HDRBrachyPage: React.FC = () => {
   const [targetEQD2,setTargetEQD2]= useState('85');
   const [tab,       setTab]       = useState<'calc'|'oar'|'notes'>('calc');
   const [oarDoses,  setOarDoses]  = useState<Record<string, string>>({});
+
+
 
   const preset = useMemo(() => PRESETS.find(p => p.id === presetId) ?? PRESETS[0], [presetId]);
 
@@ -300,6 +295,26 @@ const HDRBrachyPage: React.FC = () => {
   const totalEQD2  = brachyEQD2 + ebrtEQD2;
   const targetMet  = totalEQD2 >= nTarget;
   const deficit    = Math.max(0, nTarget - totalEQD2);
+
+  const reportData: ClinicalReport = {
+    title: "HDR Brachytherapy Report",
+    toolName: "HDRBrachy",
+    parameters: [
+      { label: 'Site', value: preset.name },
+      { label: 'EBRT Total Dose', value: `${ebrtTotal} Gy` },
+      { label: 'EBRT Dose/Fx', value: `${ebrtDpf} Gy` },
+      { label: 'HDR Dose/Fx', value: `${nDpf} Gy` },
+      { label: 'HDR Fractions', value: `${nFx}` },
+      { label: 'α/β Ratio', value: `${nAb} Gy` },
+    ],
+    results: [
+      { label: 'Combined EQD2', value: totalEQD2.toFixed(1), unit: 'Gy' },
+      { label: 'EBRT EQD2', value: ebrtEQD2.toFixed(1), unit: 'Gy' },
+      { label: 'Brachy EQD2', value: brachyEQD2.toFixed(1), unit: 'Gy' },
+      { label: 'Target EQD2', value: nTarget.toString(), unit: 'Gy' },
+    ],
+    interpretation: `HDR Brachytherapy combined with EBRT. Total EQD2: ${totalEQD2.toFixed(1)} Gy. Goal: ${nTarget} Gy. Status: ${totalEQD2 >= nTarget ? 'Met' : 'Not Met'}.`
+  };
 
   // ── OAR calculations (α/β=3 for late tissues) ────────────────────────
   const oarRows = useMemo(() => preset.oarConstraints.map(c => {
@@ -405,13 +420,13 @@ const HDRBrachyPage: React.FC = () => {
               <div className="p-4 grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Total Dose (Gy)</label>
-                  <input type="number" step="0.5" value={ebrtTotal}
+                  <NumberInput  step="0.5" value={ebrtTotal}
                     onChange={e => setEbrtTotal(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-lg font-mono text-white focus:border-cyan-500/50 outline-none transition" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Dose/Fx (Gy)</label>
-                  <input type="number" step="0.1" value={ebrtDpf}
+                  <NumberInput  step="0.1" value={ebrtDpf}
                     onChange={e => setEbrtDpf(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-lg font-mono text-white focus:border-cyan-500/50 outline-none transition" />
                 </div>
@@ -427,13 +442,13 @@ const HDRBrachyPage: React.FC = () => {
               <div className="p-4 grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Dose/Fx (Gy)</label>
-                  <input type="number" step="0.1" value={dpf}
+                  <NumberInput  step="0.1" value={dpf}
                     onChange={e => setDpf(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-lg font-mono text-white focus:border-cyan-500/50 outline-none transition" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Fractions</label>
-                  <input type="number" step="1" value={fx}
+                  <NumberInput  step="1" value={fx}
                     onChange={e => setFx(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-lg font-mono text-white focus:border-cyan-500/50 outline-none transition" />
                 </div>
@@ -448,31 +463,11 @@ const HDRBrachyPage: React.FC = () => {
                 <div className="flex items-center justify-between no-print">
                   <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Analysis Results</h2>
                   <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => reactToPrintFn()}
-                      className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 hover:text-slate-300 transition"
-                      title="Print Report"
-                    >
-                      <Printer className="w-3.5 h-3.5" />
-                      Print
-                    </button>
 
-                    <button
-                      onClick={async () => {
-                        if (contentRef.current) {
-                          await generateHTML2PDF(contentRef.current, `RadOnc_HDR_Brachy_Report_HTML_${new Date().getTime()}.pdf`);
-                        }
-                      }}
-                      className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 hover:text-slate-300 transition"
-                      title="Export PDF from HTML (Alternative)"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      PDF (HTML)
-                    </button>
                   </div>
                 </div>
 
-                <div ref={contentRef} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl shadow-cyan-500/5">
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl shadow-cyan-500/5">
                   <div className="p-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="space-y-1">
@@ -569,71 +564,7 @@ const HDRBrachyPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <button 
-                      onClick={async () => {
-                        const doc = (
-                          <PDFReport 
-                            title="HDR Brachytherapy Report"
-                            parameters={[
-                              { label: 'Site', value: preset.name },
-                              { label: 'EBRT Dose', value: `${ebrtTotal} Gy` },
-                              { label: 'EBRT Dpf', value: `${ebrtDpf} Gy` },
-                              { label: 'HDR Dose', value: `${nDpf * nFx} Gy` },
-                              { label: 'HDR Dpf', value: `${nDpf} Gy` },
-                              { label: 'α/β Ratio', value: `${nAb} Gy` },
-                            ]}
-                            results={[
-                              { label: 'Total EQD2', value: totalEQD2.toFixed(1), unit: 'Gy' },
-                              { label: 'EBRT EQD2', value: ebrtEQD2.toFixed(1), unit: 'Gy' },
-                              { label: 'Brachy EQD2', value: brachyEQD2.toFixed(1), unit: 'Gy' },
-                              { label: 'Target EQD2', value: nTarget.toString(), unit: 'Gy' },
-                            ]}
-                            clinicalInsight={`Combined EQD2 is ${totalEQD2.toFixed(1)} Gy. Target was ${nTarget} Gy. ${totalEQD2 >= nTarget ? 'Prescription goal met.' : 'Goal not met.'}`}
-                          />
-                        );
-                        const blob = await generatePDFBlob(doc);
-                        const url = URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.download = `RadOnc_HDR_Brachy_Report_${new Date().getTime()}.pdf`;
-                        link.click();
-                        URL.revokeObjectURL(url);
-                      }}
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white text-cyan-700 px-4 py-2 rounded-xl text-xs font-bold hover:bg-cyan-50 transition shadow-sm"
-                    >
-                      <FileText className="w-3.5 h-3.5" />
-                      PDF (HQ)
-                    </button>
-                    <button 
-                      onClick={async () => {
-                        const doc = (
-                          <PDFReport 
-                            title="HDR Brachytherapy Report"
-                            parameters={[
-                              { label: 'Site', value: preset.name },
-                              { label: 'EBRT Dose', value: `${ebrtTotal} Gy` },
-                              { label: 'EBRT Dpf', value: `${ebrtDpf} Gy` },
-                              { label: 'HDR Dose', value: `${nDpf * nFx} Gy` },
-                              { label: 'HDR Dpf', value: `${nDpf} Gy` },
-                              { label: 'α/β Ratio', value: `${nAb} Gy` },
-                            ]}
-                            results={[
-                              { label: 'Total EQD2', value: totalEQD2.toFixed(1), unit: 'Gy' },
-                              { label: 'EBRT EQD2', value: ebrtEQD2.toFixed(1), unit: 'Gy' },
-                              { label: 'Brachy EQD2', value: brachyEQD2.toFixed(1), unit: 'Gy' },
-                              { label: 'Target EQD2', value: nTarget.toString(), unit: 'Gy' },
-                            ]}
-                            clinicalInsight={`Combined EQD2 is ${totalEQD2.toFixed(1)} Gy. Target was ${nTarget} Gy. ${totalEQD2 >= nTarget ? 'Prescription goal met.' : 'Goal not met.'}`}
-                          />
-                        );
-                        const blob = await generatePDFBlob(doc);
-                        await sharePDF(blob, `RadOnc_HDR_Brachy_Report.pdf`, `Clinical Report: HDR Brachytherapy analysis for ${preset.name}.`);
-                      }}
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-green-500 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-green-600 transition shadow-sm"
-                    >
-                      <Share2 className="w-3.5 h-3.5" />
-                      WhatsApp
-                    </button>
+                    <ExportButton report={reportData} />
                   </div>
                 </div>
               </div>
@@ -677,8 +608,8 @@ const HDRBrachyPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-end">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Brachy {r.metric}/fx (Gy)</label>
-                    <input
-                      type="number"
+                    <NumberInput
+                      
                       step="0.1"
                       min="0"
                       value={r.oarDpfStr}
@@ -757,87 +688,8 @@ const HDRBrachyPage: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <button 
-                onClick={() => reactToPrintFn()}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-white/30 transition backdrop-blur-sm border border-white/10 shadow-sm"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                Print Report
-              </button>
-              <button 
-                onClick={async () => {
-                  const doc = (
-                    <PDFReport 
-                      title="HDR Brachytherapy Report"
-                      parameters={[
-                        { label: 'Site', value: preset.name },
-                        { label: 'EBRT Total Dose', value: `${ebrtTotal} Gy` },
-                        { label: 'EBRT Dose/Fx', value: `${ebrtDpf} Gy` },
-                        { label: 'HDR Dose/Fx', value: `${nDpf} Gy` },
-                        { label: 'HDR Fractions', value: `${nFx}` },
-                        { label: 'α/β Ratio', value: `${nAb} Gy` },
-                      ]}
-                      results={[
-                        { label: 'Combined EQD2', value: totalEQD2.toFixed(1), unit: 'Gy' },
-                        { label: 'EBRT EQD2', value: ebrtEQD2.toFixed(1), unit: 'Gy' },
-                        { label: 'Brachy EQD2', value: brachyEQD2.toFixed(1), unit: 'Gy' },
-                      ]}
-                      clinicalInsight={`HDR Brachytherapy combined with EBRT. Total EQD2: ${totalEQD2.toFixed(1)} Gy. Goal: ${nTarget} Gy. Status: ${totalEQD2 >= nTarget ? 'Met' : 'Not Met'}.`}
-                    />
-                  );
-                  const blob = await generatePDFBlob(doc);
-                  const url = URL.createObjectURL(blob);
-                  const link = document.createElement('a');
-                  link.href = url;
-                  link.download = `RadOnc_HDR_Brachy_Report_${new Date().getTime()}.pdf`;
-                  link.click();
-                  URL.revokeObjectURL(url);
-                }}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white text-cyan-700 px-4 py-2 rounded-xl text-xs font-bold hover:bg-cyan-50 transition shadow-sm"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                PDF (HQ)
-              </button>
-              <button 
-                onClick={async () => {
-                  if (contentRef.current) {
-                    await generateHTML2PDF(contentRef.current, `RadOnc_HDR_Brachy_Report_${new Date().getTime()}.pdf`);
-                  }
-                }}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-cyan-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-cyan-700 transition shadow-sm"
-              >
-                <Download className="w-3.5 h-3.5" />
-                PDF (HTML)
-              </button>
-              <button 
-                onClick={async () => {
-                  const doc = (
-                    <PDFReport 
-                      title="HDR Brachytherapy Report"
-                      parameters={[
-                        { label: 'Site', value: preset.name },
-                        { label: 'EBRT Total Dose', value: `${ebrtTotal} Gy` },
-                        { label: 'EBRT Dose/Fx', value: `${ebrtDpf} Gy` },
-                        { label: 'HDR Dose/Fx', value: `${nDpf} Gy` },
-                        { label: 'HDR Fractions', value: `${nFx}` },
-                        { label: 'α/β Ratio', value: `${nAb} Gy` },
-                      ]}
-                      results={[
-                        { label: 'Combined EQD2', value: totalEQD2.toFixed(1), unit: 'Gy' },
-                        { label: 'EBRT EQD2', value: ebrtEQD2.toFixed(1), unit: 'Gy' },
-                        { label: 'Brachy EQD2', value: brachyEQD2.toFixed(1), unit: 'Gy' },
-                      ]}
-                      clinicalInsight={`HDR Brachytherapy combined with EBRT. Total EQD2: ${totalEQD2.toFixed(1)} Gy. Goal: ${nTarget} Gy. Status: ${totalEQD2 >= nTarget ? 'Met' : 'Not Met'}.`}
-                    />
-                  );
-                  const blob = await generatePDFBlob(doc);
-                  await sharePDF(blob, `RadOnc_HDR_Brachy_Report.pdf`, `Clinical Report: HDR Brachytherapy analysis.`);
-                }}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-green-500 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-green-600 transition shadow-sm"
-              >
-                <Share2 className="w-3.5 h-3.5" />
-                WhatsApp
-              </button>
+
+
             </div>
           </div>
         </div>
@@ -849,75 +701,6 @@ const HDRBrachyPage: React.FC = () => {
           Ref: EMBRACE I/II · GEC-ESTRO · ABS · ICRU 89
         </p>
       </div>
-
-      <PrintReport ref={contentRef}>
-        <div className="space-y-8">
-          <div className="border-b-2 border-slate-900 pb-4">
-            <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tighter">HDR Brachytherapy Report</h1>
-            <p className="text-sm text-slate-500 font-bold uppercase tracking-widest mt-1">Clinical Radiobiology Analysis</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-1">Prescription Parameters</h2>
-              <div className="grid grid-cols-2 gap-y-3 text-sm">
-                <p className="text-slate-500">Site:</p>
-                <p className="font-bold text-slate-900">{preset.name}</p>
-                <p className="text-slate-500">EBRT Total Dose:</p>
-                <p className="font-bold text-slate-900">{ebrtTotal} Gy</p>
-                <p className="text-slate-500">EBRT Dose/Fx:</p>
-                <p className="font-bold text-slate-900">{ebrtDpf} Gy</p>
-                <p className="text-slate-500">HDR Dose/Fx:</p>
-                <p className="font-bold text-slate-900">{nDpf} Gy</p>
-                <p className="text-slate-500">HDR Fractions:</p>
-                <p className="font-bold text-slate-900">{nFx}</p>
-                <p className="text-slate-500">α/β Ratio:</p>
-                <p className="font-bold text-slate-900">{nAb} Gy</p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-1">Radiobiological Results</h2>
-              <div className="grid grid-cols-2 gap-y-3 text-sm">
-                <p className="text-slate-500">Combined EQD2:</p>
-                <p className="text-xl font-black text-slate-900">{totalEQD2.toFixed(1)} Gy</p>
-                <p className="text-slate-500">EBRT EQD2:</p>
-                <p className="font-bold text-slate-900">{ebrtEQD2.toFixed(1)} Gy</p>
-                <p className="text-slate-500">Brachy EQD2:</p>
-                <p className="font-bold text-slate-900">{brachyEQD2.toFixed(1)} Gy</p>
-                <p className="text-slate-500">Target EQD2:</p>
-                <p className="font-bold text-slate-900">{nTarget} Gy</p>
-                <p className="text-slate-500">Goal Status:</p>
-                <p className={`font-bold ${totalEQD2 >= nTarget ? 'text-emerald-600' : 'text-rose-600'}`}>
-                  {totalEQD2 >= nTarget ? 'Prescription Goal Met' : 'Goal Not Met'}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Clinical Protocol Notes</h3>
-            <ul className="space-y-2">
-              {preset.notes.map((note, i) => (
-                <li key={i} className="text-xs text-slate-600 leading-relaxed flex gap-2">
-                  <span className="font-bold text-slate-400">{i + 1}.</span>
-                  {note}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="pt-8 border-t border-slate-100 flex justify-between items-end">
-            <div className="text-[10px] text-slate-400 uppercase tracking-widest leading-tight">
-              <p>Generated on {new Date().toLocaleDateString()}</p>
-              <p>RadOnc Radiobiology Toolkit v2.0</p>
-            </div>
-            <div className="w-32 h-12 border-b border-slate-300 flex items-end justify-center pb-1">
-              <span className="text-[8px] text-slate-300 uppercase font-bold">Clinician Signature</span>
-            </div>
-          </div>
-        </div>
-      </PrintReport>
     </div>
   );
 };

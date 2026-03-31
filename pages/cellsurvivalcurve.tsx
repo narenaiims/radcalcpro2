@@ -26,6 +26,8 @@ import {
 } from 'recharts';
 import KeyFactsSidebar from '../components/KeyFactsSidebar';
 
+import { NumberInput } from '../src/components/NumberInput';
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type TabType = 'Curves' | 'LQ Model' | 'Shoulder' | 'Fractionation' | 'Clinical' | 'Repair Kinetics' | 'Quiz';
@@ -1042,9 +1044,10 @@ const CellSurvivalPage: React.FC = () => {
                   ].map(({ label, val, set, min, max, step, color }) => (
                     <div key={label}>
                       <label className="text-[8px] uppercase font-bold block mb-1" style={{ color }}>{label}</label>
-                      <input type="number" min={min} max={max} step={step} value={val}
+                      <NumberInput  min={min} max={max} step={step} value={val}
                         onChange={e => set(parseFloat(e.target.value) || 0)}
                         className="w-full px-2 py-1.5 rounded-lg text-sm font-mono focus:outline-none transition"
+                        buttonClassName="bg-white/10 hover:bg-white/20 text-white border-white/20"
                         style={{ background: '#060c18', border: `1px solid ${color}30`, color: '#e2e8f0', WebkitAppearance: 'none' }} />
                     </div>
                   ))}
@@ -1210,16 +1213,18 @@ const CellSurvivalPage: React.FC = () => {
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   <div>
                     <label className="text-[8px] text-amber-400 uppercase font-bold block mb-1">Single dose (Gy)</label>
-                    <input type="number" min={1} max={14} step={0.5} value={compDose}
+                    <NumberInput  min={1} max={14} step={0.5} value={compDose}
                       onChange={e => setCompDose(parseFloat(e.target.value) || 0)}
                       className="w-full px-2 py-1.5 rounded-lg text-sm font-mono focus:outline-none"
+                      buttonClassName="bg-white/10 hover:bg-white/20 text-white border-white/20"
                       style={{ background: '#060c18', border: '1px solid rgba(251,191,36,0.3)', color: '#e2e8f0' }} />
                   </div>
                   <div>
                     <label className="text-[8px] text-amber-400 uppercase font-bold block mb-1">α/β (Gy)</label>
-                    <input type="number" min={0.5} max={20} step={0.5} value={compAB}
+                    <NumberInput  min={0.5} max={20} step={0.5} value={compAB}
                       onChange={e => setCompAB(parseFloat(e.target.value) || 0)}
                       className="w-full px-2 py-1.5 rounded-lg text-sm font-mono focus:outline-none"
+                      buttonClassName="bg-white/10 hover:bg-white/20 text-white border-white/20"
                       style={{ background: '#060c18', border: '1px solid rgba(251,191,36,0.3)', color: '#e2e8f0' }} />
                   </div>
                 </div>
@@ -1466,23 +1471,27 @@ const CellSurvivalPage: React.FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                   <div>
                     <label className="text-[8px] text-cyan-400 uppercase font-bold block mb-1">Repair T½ (h)</label>
-                    <input type="number" step="0.1" value={repairT12} onChange={e => setRepairT12(parseFloat(e.target.value) || 0.1)}
-                      className="w-full bg-[#060c18] border border-cyan-900/50 rounded px-2 py-1 text-xs font-mono" />
+                    <NumberInput  step="0.1" value={repairT12} onChange={e => setRepairT12(parseFloat(e.target.value) || 0.1)}
+                      className="w-full bg-[#060c18] border border-cyan-900/50 rounded px-2 py-1 text-xs font-mono"
+                      buttonClassName="bg-white/10 hover:bg-white/20 text-white border-white/20" />
                   </div>
                   <div>
                     <label className="text-[8px] text-cyan-400 uppercase font-bold block mb-1">Exposure T (h)</label>
-                    <input type="number" step="0.1" value={repairTime} onChange={e => setRepairTime(parseFloat(e.target.value) || 0.1)}
-                      className="w-full bg-[#060c18] border border-cyan-900/50 rounded px-2 py-1 text-xs font-mono" />
+                    <NumberInput  step="0.1" value={repairTime} onChange={e => setRepairTime(parseFloat(e.target.value) || 0.1)}
+                      className="w-full bg-[#060c18] border border-cyan-900/50 rounded px-2 py-1 text-xs font-mono"
+                      buttonClassName="bg-white/10 hover:bg-white/20 text-white border-white/20" />
                   </div>
                   <div>
                     <label className="text-[8px] text-cyan-400 uppercase font-bold block mb-1">Total Dose (Gy)</label>
-                    <input type="number" step="1" value={repairDose} onChange={e => setRepairDose(parseFloat(e.target.value) || 0)}
-                      className="w-full bg-[#060c18] border border-cyan-900/50 rounded px-2 py-1 text-xs font-mono" />
+                    <NumberInput  step="1" value={repairDose} onChange={e => setRepairDose(parseFloat(e.target.value) || 0)}
+                      className="w-full bg-[#060c18] border border-cyan-900/50 rounded px-2 py-1 text-xs font-mono"
+                      buttonClassName="bg-white/10 hover:bg-white/20 text-white border-white/20" />
                   </div>
                   <div>
                     <label className="text-[8px] text-cyan-400 uppercase font-bold block mb-1">α/β Ratio (Gy)</label>
-                    <input type="number" step="0.1" value={repairAB} onChange={e => setRepairAB(parseFloat(e.target.value) || 0.1)}
-                      className="w-full bg-[#060c18] border border-cyan-900/50 rounded px-2 py-1 text-xs font-mono" />
+                    <NumberInput  step="0.1" value={repairAB} onChange={e => setRepairAB(parseFloat(e.target.value) || 0.1)}
+                      className="w-full bg-[#060c18] border border-cyan-900/50 rounded px-2 py-1 text-xs font-mono"
+                      buttonClassName="bg-white/10 hover:bg-white/20 text-white border-white/20" />
                   </div>
                 </div>
 

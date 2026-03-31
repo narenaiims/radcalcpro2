@@ -9,6 +9,8 @@ import { Share2 } from 'lucide-react';
 import { PDFReport } from '@/src/components/PDFReport';
 import { generatePDFBlob, sharePDF } from '@/src/lib/pdfUtils';
 
+import { NumberInput } from '../src/components/NumberInput';
+
 const STORAGE_KEY = 'radonco_bed_eqd2_state_v2';
 
 // ── Quick Reference Data ──────────────────────────────────────────────────
@@ -179,7 +181,7 @@ const BEDtoEQD2Page: React.FC = () => {
               <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                 {isBtoE ? 'BED input (Gy)' : 'EQD2 input (Gy)'}
               </label>
-              <input type="number" step="0.5" value={input}
+              <NumberInput  step="0.5" value={input}
                 onChange={e => setInput(e.target.value)}
                 className="input-clinical num" />
             </div>
@@ -205,7 +207,7 @@ const BEDtoEQD2Page: React.FC = () => {
                 <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Or manually set α/β Ratio (Gy)
                 </label>
-                <input type="number" step="0.5" value={ab}
+                <NumberInput  step="0.5" value={ab}
                   onChange={e => {
                     setAb(e.target.value);
                     setSelectedTumour(null);

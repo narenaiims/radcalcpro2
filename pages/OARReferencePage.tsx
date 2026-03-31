@@ -1,3 +1,4 @@
+import { NumberInput } from '../src/components/NumberInput';
 /**
  * OARReferencePage.tsx — PRO LEVEL v5
  *
@@ -24,6 +25,7 @@ import {
 } from 'lucide-react';
 import KeyFactsSidebar, { KeyFactSection } from '@/components/KeyFactsSidebar';
 import {
+
   OAR_DATABASE,
   FRACTIONATION_PRESETS,
   Region,
@@ -342,7 +344,7 @@ const NTCPCalculator: React.FC<{ ntcpModel: NTCPModel }> = ({ ntcpModel }) => {
         <input type="range" min={0} max={TD50 * 2} step={0.5}
           value={gEUD} onChange={e => setGEUD(parseFloat(e.target.value))}
           className="flex-1 accent-blue-400" />
-        <input type="number" min={0} max={TD50 * 2} step={0.5}
+        <NumberInput  min={0} max={TD50 * 2} step={0.5}
           value={gEUD.toFixed(1)}
           onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setGEUD(v); }}
           className="w-16 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-xs text-white text-right focus:outline-none focus:border-blue-500" />
@@ -787,8 +789,8 @@ const OARReferencePage: React.FC = () => {
                     <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/5">
                       <div className="space-y-1">
                         <p className="text-[8px] text-slate-500 uppercase">Total (Gy)</p>
-                        <input
-                          type="number"
+                        <NumberInput
+                          
                           value={totalDose}
                           onChange={e => setTotalDose(e.target.value)}
                           className="w-full bg-slate-800 border border-white/10 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-teal"
@@ -796,8 +798,8 @@ const OARReferencePage: React.FC = () => {
                       </div>
                       <div className="space-y-1">
                         <p className="text-[8px] text-slate-500 uppercase">Fractions</p>
-                        <input
-                          type="number"
+                        <NumberInput
+                          
                           value={fractions}
                           onChange={e => setFractions(e.target.value)}
                           className="w-full bg-slate-800 border border-white/10 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-teal"
@@ -838,8 +840,8 @@ const OARReferencePage: React.FC = () => {
                       <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/5">
                         <div className="space-y-1">
                           <p className="text-[8px] text-slate-500 uppercase">Total (Gy)</p>
-                          <input
-                            type="number"
+                          <NumberInput
+                            
                             value={totalDose}
                             onChange={e => setTotalDose(e.target.value)}
                             className="w-full bg-slate-800 border border-white/10 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-teal"
@@ -847,8 +849,8 @@ const OARReferencePage: React.FC = () => {
                         </div>
                         <div className="space-y-1">
                           <p className="text-[8px] text-slate-500 uppercase">Fractions</p>
-                          <input
-                            type="number"
+                          <NumberInput
+                            
                             value={fractions}
                             onChange={e => setFractions(e.target.value)}
                             className="w-full bg-slate-800 border border-white/10 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-teal"
@@ -879,8 +881,8 @@ const OARReferencePage: React.FC = () => {
                           <div className="text-right">
                             <p className="label-micro opacity-40">Plan Metric</p>
                             <div className="flex items-center gap-2 mt-1">
-                              <input
-                                type="number" step="0.1"
+                              <NumberInput
+                                 step="0.1"
                                 placeholder="Enter value"
                                 value={metrics[selOAR.id] ?? ''}
                                 onChange={e => setMetrics(m => ({ ...m, [selOAR.id]: e.target.value }))}

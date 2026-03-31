@@ -1,22 +1,36 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
-function replaceInDir(dir) {
-  const files = fs.readdirSync(dir);
-  for (const file of files) {
-    const fullPath = path.join(dir, file);
-    if (fs.statSync(fullPath).isDirectory()) {
-      replaceInDir(fullPath);
-    } else if (fullPath.endsWith('.tsx') || fullPath.endsWith('.ts')) {
-      let content = fs.readFileSync(fullPath, 'utf8');
-      if (content.includes('@/')) {
-        content = content.replace(/@\//g, '../');
-        fs.writeFileSync(fullPath, content);
-        console.log('Updated', fullPath);
-      }
-    }
+const filesToFix = [
+  './pages/DoseExposuresPage.tsx',
+  './pages/IsoeffectChartPage.tsx',
+  './pages/LDRBrachyPage.tsx',
+  './pages/OARReferencePage.tsx',
+  './pages/RepairKineticsPage.tsx'
+];
+
+for (const file of filesToFix) {
+  let content = fs.readFileSync(file, 'utf8');
+  
+  // Find the misplaced import
+  const misplacedImport = "import { \nimport { NumberInput } from '../src/components/NumberInput';\n";
+  if (content.includes(misplacedImport)) {
+    content = content.replace(misplacedImport, "import { \n");
+    content = "import { NumberInput } from '../src/components/NumberInput';\n" + content;
   }
-}
+  
+  const misplacedImport2 = "import {\nimport { NumberInput } from '../src/components/NumberInput';\n";
+  if (content.includes(misplacedImport2)) {
+    content = content.replace(misplacedImport2, "import {\n");
+    content = "import { NumberInput } from '../src/components/NumberInput';\n" + content;
+  }
 
-replaceInDir('pages');
-replaceInDir('components');
+  const misplacedImport3 = "import { \nimport { NumberInput } from '../src/components/NumberInput';\n\n";
+  if (content.includes(misplacedImport3)) {
+    content = content.replace(misplacedImport3, "import { \n");
+    content = "import { NumberInput } from '../src/components/NumberInput';\n" + content;
+  }
+
+  fs.writeFileSync(file, content);
+}
+console.log('Done');

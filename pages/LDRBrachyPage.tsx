@@ -1,6 +1,9 @@
+import { NumberInput } from '../src/components/NumberInput';
 import React, { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
+import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import { 
+
   Calculator, Info, Activity, AlertTriangle, 
   ChevronRight, Clock, Zap, Database, 
   ArrowRightLeft, Beaker, BookOpen
@@ -78,6 +81,7 @@ const PRESETS: LDRPreset[] = [
 ];
 
 const LDRBrachyPage: React.FC = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [mode, setMode] = useState<'temporary' | 'permanent'>('temporary');
   const [dose, setDose] = useState<string>('50');
   const [doseRate, setDoseRate] = useState<string>('0.6');
@@ -88,6 +92,21 @@ const LDRBrachyPage: React.FC = () => {
   const [fastFraction, setFastFraction] = useState<string>('0.8');
   const [tHalfSlow, setTHalfSlow] = useState<string>('4.0');
   const [selectedPreset, setSelectedPreset] = useState<LDRPreset | null>(null);
+
+  const SIDEBAR_DATA: KeyFactSection[] = [
+    {
+      title: 'LDR Brachytherapy',
+      emoji: '☢️',
+      accent: '#3b82f6',
+      bg: 'rgba(59, 130, 246, 0.08)',
+      border: 'rgba(59, 130, 246, 0.4)',
+      rows: [
+        { k: 'Formula', v: 'BED = D * (1 + (2*R/(μ*(α/β))) * (1 - (1-exp(-μ*T))/(μ*T)))' },
+        { k: 'T1/2 Repair', v: 'Typically 1.5h for normal tissues' },
+        { k: 'Permanent Implant', v: 'T = infinity, BED = D * (1 + R0 / ((μ + λ)*(α/β)))' }
+      ]
+    }
+  ];
 
   // ─── Calculations ───────────────
   const results = useMemo(() => {
@@ -179,6 +198,12 @@ const LDRBrachyPage: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-slam pb-20">
+      <KeyFactsSidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+        onOpen={() => setIsSidebarOpen(true)} 
+        data={SIDEBAR_DATA} 
+      />
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/5 pb-6">
         <div className="space-y-1">
@@ -216,16 +241,16 @@ const LDRBrachyPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="label-micro">Total Dose (Gy)</label>
-                  <input 
-                    type="number" inputMode="decimal"
+                  <NumberInput 
+                     inputMode="decimal"
                     value={dose} onChange={(e) => setDose(e.target.value)}
                     className="input-premium w-full"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="label-micro">{mode === 'temporary' ? 'Dose Rate (Gy/h)' : 'Initial Rate (Gy/h)'}</label>
-                  <input 
-                    type="number" inputMode="decimal" step="0.01"
+                  <NumberInput 
+                     inputMode="decimal" step="0.01"
                     value={doseRate} onChange={(e) => setDoseRate(e.target.value)}
                     className="input-premium w-full"
                   />
@@ -235,16 +260,16 @@ const LDRBrachyPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="label-micro">α/β Ratio (Gy)</label>
-                  <input 
-                    type="number" inputMode="decimal" step="0.1"
+                  <NumberInput 
+                     inputMode="decimal" step="0.1"
                     value={alphaBeta} onChange={(e) => setAlphaBeta(e.target.value)}
                     className="input-premium w-full"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="label-micro">Repair Half-Time (T½, hours)</label>
-                  <input 
-                    type="number" inputMode="decimal" step="0.1"
+                  <NumberInput 
+                     inputMode="decimal" step="0.1"
                     value={tHalfRepair} onChange={(e) => setTHalfRepair(e.target.value)}
                     className="input-premium w-full"
                   />
@@ -255,8 +280,8 @@ const LDRBrachyPage: React.FC = () => {
                 <div className="space-y-2 pt-2 border-t border-white/5">
                   <label className="label-micro">Physical T½ (h)</label>
                   <div className="flex gap-2">
-                    <input 
-                      type="number" inputMode="decimal"
+                    <NumberInput 
+                       inputMode="decimal"
                       value={tHalfPhysical} onChange={(e) => setTHalfPhysical(e.target.value)}
                       className="input-premium flex-grow"
                     />
@@ -296,16 +321,16 @@ const LDRBrachyPage: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="label-micro">Fast Fraction (A)</label>
-                      <input 
-                        type="number" inputMode="decimal" step="0.1" min="0" max="1"
+                      <NumberInput 
+                         inputMode="decimal" step="0.1" min="0" max="1"
                         value={fastFraction} onChange={(e) => setFastFraction(e.target.value)}
                         className="input-premium w-full"
                       />
                     </div>
                     <div className="space-y-2">
                       <label className="label-micro">Slow T½ (h)</label>
-                      <input 
-                        type="number" inputMode="decimal" step="0.1"
+                      <NumberInput 
+                         inputMode="decimal" step="0.1"
                         value={tHalfSlow} onChange={(e) => setTHalfSlow(e.target.value)}
                         className="input-premium w-full"
                       />

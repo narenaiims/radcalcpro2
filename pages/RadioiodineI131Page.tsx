@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
+import { NumberInput } from '../src/components/NumberInput';
+
 // ── Constants & Presets ───────────────────────────────────────────────────────
 const T_HALF_I131 = 8.02; // days, physical half-life
 
@@ -134,7 +136,7 @@ const Field = ({ label, val, set, step = '1', unit = '', tip = '' }: {
       {label} {unit && <span className="text-slate-300 normal-case font-normal">({unit})</span>}
       {tip && <span title={tip} className="text-indigo-300 cursor-help text-xs">ⓘ</span>}
     </label>
-    <input type="number" step={step} value={val}
+    <NumberInput  step={step} value={val}
       onChange={e => set?.(e.target.value)}
       className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow" />
   </div>

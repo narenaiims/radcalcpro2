@@ -23,6 +23,8 @@ import TumourSelector from '../components/TumourSelector';
 import { RadiobiologyData } from '../src/data/radiobiologyData';
 import { useRxContext } from '../src/context/RadiobiologyContext';
 
+import { NumberInput } from '../src/components/NumberInput';
+
 // ── Constants & Presets ───────────────────────────────────────────────────────
 const QUICK_REF_DATA = [
   {
@@ -209,13 +211,13 @@ const TDFPage: React.FC = () => {
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Dose/Fx (Gy)</label>
-              <input type="number" step="0.1" min="0.1" max="30"
+              <NumberInput  step="0.1" min="0.1" max="30"
                 value={dpf} onChange={e => setDpf(e.target.value)}
                 className={`input-clinical num ${isVeryHypo ? 'border-red-300' : isHypo ? 'border-amber-300' : ''}`} />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Fractions</label>
-              <input type="number" step="1" min="1"
+              <NumberInput  step="1" min="1"
                 value={fx} onChange={e => setFx(e.target.value)}
                 className="input-clinical num" />
             </div>
@@ -229,7 +231,7 @@ const TDFPage: React.FC = () => {
                   Auto (5 fx/wk)
                 </button>
               </div>
-              <input type="number" step="1" min="1"
+              <NumberInput  step="1" min="1"
                 value={days} onChange={e => setDays(e.target.value)}
                 className="input-clinical num" />
             </div>
@@ -253,8 +255,8 @@ const TDFPage: React.FC = () => {
                 <label className="block text-xs font-semibold text-slate-500 mb-1">
                   Or manually set α/β Ratio (Gy)
                 </label>
-                <input
-                  type="number" step="0.1" min="0.5" max="20"
+                <NumberInput
+                   step="0.1" min="0.5" max="20"
                   value={alphaBeta}
                   onChange={e => {
                     setAlphaBeta(e.target.value);

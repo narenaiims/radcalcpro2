@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { BookOpen, ChevronRight } from "lucide-react";
 import KeyFactsSidebar, { KeyFactSection } from "../components/KeyFactsSidebar";
 
+import { NumberInput } from '../src/components/NumberInput';
+
 // ─── COLOUR TOKENS ────────────────────────────────────────────────────────────
 const C = {
   ldr:  { primary: "#22D3EE", glow: "rgba(34,211,238,0.25)",  bg: "rgba(34,211,238,0.08)",  border: "rgba(34,211,238,0.3)"  },
@@ -682,7 +684,7 @@ function BEDCalculator() {
               <div key={f.label}>
                 <label style={{ fontSize: "9px", color: "#475569", fontFamily: "'Space Mono', monospace",
                   display: "block", marginBottom: "4px" }}>{f.label}</label>
-                <input type="number" value={f.val} min={f.min} max={f.max} step={f.step}
+                <NumberInput  value={f.val} min={f.min} max={f.max} step={f.step}
                   onChange={e => f.set(Number(e.target.value))}
                   style={{
                     width: "100%", padding: "8px 10px",
@@ -725,7 +727,7 @@ function BEDCalculator() {
               <div key={f.label}>
                 <label style={{ fontSize: "9px", color: "#475569", fontFamily: "'Space Mono', monospace",
                   display: "block", marginBottom: "4px" }}>{f.label}</label>
-                <input type="number" value={f.val} min={f.min} max={f.max} step={f.step}
+                <NumberInput  value={f.val} min={f.min} max={f.max} step={f.step}
                   onChange={e => f.set(Number(e.target.value))}
                   style={{
                     width: "100%", padding: "8px 10px",

@@ -38,6 +38,8 @@ import { RadiobiologyData } from '@/src/data/radiobiologyData';
 import { useRxContext } from '../src/context/RadiobiologyContext';
 import TumourSelector from '../components/TumourSelector';
 
+import { NumberInput } from '../src/components/NumberInput';
+
 const STORAGE_KEY = 'radonco_frac_adjust_state_v2';
 
 const QUICK_REF_DATA = {
@@ -305,12 +307,12 @@ const FracAdjustPage: React.FC = () => {
         <div className="px-3 py-3 grid grid-cols-3 gap-3">
           <div>
             <label className="block text-[11px] font-semibold text-slate-500 mb-1">Total Dose (Gy)</label>
-            <input type="number" step="0.5" value={origDose}
+            <NumberInput  step="0.5" value={origDose}
               onChange={e => setOrigDose(e.target.value)} className="input-clinical num" />
           </div>
           <div>
             <label className="block text-[11px] font-semibold text-slate-500 mb-1">Dose/Fx (Gy)</label>
-            <input type="number" step="0.1" value={origDpf}
+            <NumberInput  step="0.1" value={origDpf}
               onChange={e => setOrigDpf(e.target.value)} className="input-clinical num" />
           </div>
           <div>
@@ -332,7 +334,7 @@ const FracAdjustPage: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-semibold text-slate-500 mb-1">New Dose/Fx (Gy)</label>
-              <input type="number" step="0.1" value={newDpf}
+              <NumberInput  step="0.1" value={newDpf}
                 onChange={e => setNewDpf(e.target.value)} className="input-clinical num" />
             </div>
           </div>
@@ -373,7 +375,7 @@ const FracAdjustPage: React.FC = () => {
                 <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Or manually set α/β Ratio (Gy)
                 </label>
-                <input type="number" step="0.5" value={ab}
+                <NumberInput  step="0.5" value={ab}
                   onChange={e => { setAb(e.target.value); setSelectedTumour(null); }}
                   className="input-clinical num" />
               </div>
@@ -382,7 +384,7 @@ const FracAdjustPage: React.FC = () => {
 
           <div>
             <label className="block text-[11px] font-semibold text-slate-500 mb-1">Custom OAR α/β (Gy)</label>
-            <input type="number" step="0.5" value={oarAb}
+            <NumberInput  step="0.5" value={oarAb}
               onChange={e => setOarAb(e.target.value)} className="input-clinical num" />
           </div>
         </div>

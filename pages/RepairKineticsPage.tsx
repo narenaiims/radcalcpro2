@@ -1,3 +1,4 @@
+import { NumberInput } from '../src/components/NumberInput';
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
@@ -8,6 +9,7 @@ import {
   ShieldCheck, TrendingUp
 } from 'lucide-react';
 import { 
+
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, AreaChart, Area, Legend
 } from 'recharts';
 
@@ -394,8 +396,8 @@ const RepairKineticsPage: React.FC = () => {
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Dose / Frac (Gy)</label>
-              <input 
-                type="number" 
+              <NumberInput 
+                 
                 step="0.1"
                 value={dosePerFraction}
                 onChange={(e) => setDosePerFraction(e.target.value)}
@@ -404,8 +406,8 @@ const RepairKineticsPage: React.FC = () => {
             </div>
             <div>
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">α/β Ratio (Gy)</label>
-              <input 
-                type="number" 
+              <NumberInput 
+                 
                 step="0.1"
                 value={alphaBeta}
                 onChange={(e) => setAlphaBeta(e.target.value)}

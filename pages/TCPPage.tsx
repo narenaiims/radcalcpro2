@@ -10,6 +10,8 @@ import {
 } from 'recharts';
 import { Link } from 'react-router-dom';
 
+import { NumberInput } from '../src/components/NumberInput';
+
 // ─── TCP Parameters (LQ-Poisson Model) ──────────────────────────────────────
 interface TumourParams {
   site: string;
@@ -193,8 +195,8 @@ const TCPPage: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Total Dose (Gy)</label>
-                <input 
-                  type="number" 
+                <NumberInput 
+                   
                   value={dose}
                   onChange={(e) => setDose(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xl font-black text-slate-700 focus:ring-2 focus:ring-red-500 outline-none transition"
@@ -202,8 +204,8 @@ const TCPPage: React.FC = () => {
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Fractions</label>
-                <input 
-                  type="number" 
+                <NumberInput 
+                   
                   value={fractions}
                   onChange={(e) => setFractions(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xl font-black text-slate-700 focus:ring-2 focus:ring-red-500 outline-none transition"

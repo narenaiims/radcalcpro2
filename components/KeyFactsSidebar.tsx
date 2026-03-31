@@ -34,15 +34,10 @@ const KeyFactsSidebar: React.FC<KeyFactsSidebarProps> = ({ isOpen, onClose, onOp
       <AnimatePresence>
         {isOpen && (
           <>
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={onClose}
-              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40"
-            />
             <motion.aside
               initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 210 }}
-              className="fixed right-0 top-0 h-full w-80 z-50 overflow-y-auto"
+              className="fixed right-0 top-0 h-full w-80 z-50 overflow-y-auto shadow-2xl"
               style={{ background: 'linear-gradient(180deg,#0d1929 0%,#0a1020 100%)', borderLeft: '1px solid #1e3a5f' }}
             >
               {/* Sidebar header */}
@@ -117,17 +112,14 @@ const KeyFactsSidebar: React.FC<KeyFactsSidebarProps> = ({ isOpen, onClose, onOp
       {/* Sidebar open button */}
       {!isOpen && (
         <motion.button
-          initial={{ x: 60, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: 0.5 }}
+          initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.5, type: 'spring', stiffness: 260, damping: 20 }}
           onClick={() => { onOpen(); setExpandedSec(0); }}
-          className="fixed right-0 top-24 z-40 flex flex-col items-center gap-2 px-2.5 py-4 rounded-l-xl transition-colors shadow-xl"
-          style={{ background: 'linear-gradient(180deg,#1e3a5f,#0d2340)', border: '1px solid #1e4a7f', borderRight: 'none' }}
+          className="fixed right-6 bottom-6 z-40 flex items-center justify-center w-12 h-12 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all"
+          style={{ background: 'linear-gradient(135deg, #0ea5e9, #2563eb)', border: '2px solid rgba(255,255,255,0.2)' }}
+          title={title}
         >
-          <BookOpen className="w-5 h-5 text-cyan-400" />
-          <span className="text-[11px] font-black uppercase text-cyan-400/80 font-display"
-            style={{ writingMode: 'vertical-lr', transform: 'rotate(180deg)', letterSpacing: 2 }}>
-            {title}
-          </span>
+          <BookOpen className="w-5 h-5 text-white" />
         </motion.button>
       )}
     </>

@@ -1,3 +1,4 @@
+import { NumberInput } from '../src/components/NumberInput';
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
@@ -7,6 +8,7 @@ import {
   ReferenceLine, Label, PieChart, Pie
 } from 'recharts';
 import { 
+
   Shield, Calculator, Info, BookOpen, Baby, 
   Briefcase, Search, ChevronRight, CheckCircle2, 
   XCircle, AlertTriangle, ArrowRight, Activity,
@@ -763,8 +765,8 @@ const DoseExposuresPage: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2">Annual Dose (mSv)</label>
-                      <input 
-                        type="number" value={occDose} 
+                      <NumberInput 
+                         value={occDose} 
                         onChange={(e) => setOccDose(parseFloat(e.target.value))}
                         className="w-full px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none"
                       />

@@ -930,16 +930,6 @@ export default function CervixBrachytherapy() {
           {isSidebarOpen && (
             <>
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setIsSidebarOpen(false)}
-                style={{
-                  position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.5)",
-                  backdropFilter: "blur(4px)", zIndex: 100
-                }}
-              />
-              <motion.div
                 initial={{ x: '100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
@@ -1060,28 +1050,22 @@ export default function CervixBrachytherapy() {
 
         {!isSidebarOpen && (
           <motion.button 
-            initial={{ x: 80 }}
-            animate={{ x: 0 }}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
             onClick={() => setIsSidebarOpen(true)}
             style={{
-              position: "fixed", right: 0, top: "120px", zIndex: 90,
-              backgroundColor: COL.card, color: COL.text, padding: "12px",
-              borderRadius: "12px 0 0 12px", border: `1px solid ${COL.roseBd}`,
-              borderRight: "none", boxShadow: "-4px 0 16px rgba(0,0,0,0.3)",
-              display: "flex", flexDirection: "column", alignItems: "center", gap: "12px",
-              cursor: "pointer", transition: "all 0.2s"
+              position: "fixed", right: "24px", bottom: "24px", zIndex: 90,
+              backgroundColor: COL.rose, color: "#FFF", width: "48px", height: "48px",
+              borderRadius: "50%", border: "none", boxShadow: "0 8px 24px rgba(244,63,94,0.4)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", transition: "transform 0.2s"
             }}
-            onMouseEnter={e => e.currentTarget.style.backgroundColor = `${COL.rose}22`}
-            onMouseLeave={e => e.currentTarget.style.backgroundColor = COL.card}
+            onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"}
+            onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+            title="Quick Ref"
           >
-            <BookOpen size={20} color={COL.rose} />
-            <span style={{
-              writingMode: "vertical-lr", transform: "rotate(180deg)",
-              fontSize: "10px", fontWeight: 700, textTransform: "uppercase",
-              letterSpacing: "0.1em", color: "#FFF"
-            }}>
-              Quick Ref
-            </span>
+            <BookOpen size={20} color="#FFF" />
           </motion.button>
         )}
 

@@ -31,6 +31,8 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 
+import { NumberInput } from '../src/components/NumberInput';
+
 const STORAGE_KEY = 'radonco_reRT_v3';
 
 // ── OAR model definitions ─────────────────────────────────────────────────
@@ -606,12 +608,12 @@ ${'─'.repeat(50)}
         <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-3 grid grid-cols-2 gap-3">
           <div>
             <label className="block text-[10px] font-bold text-amber-700 uppercase mb-1">α/β ratio (Gy)</label>
-            <input type="number" step="0.5" value={customAb} onChange={e => setCustomAb(e.target.value)}
+            <NumberInput  step="0.5" value={customAb} onChange={e => setCustomAb(e.target.value)}
               className="input-clinical num" />
           </div>
           <div>
             <label className="block text-[10px] font-bold text-amber-700 uppercase mb-1">BED limit (Gy)</label>
-            <input type="number" step="5" value={customLim} onChange={e => setCustomLim(e.target.value)}
+            <NumberInput  step="5" value={customLim} onChange={e => setCustomLim(e.target.value)}
               className="input-clinical num" />
           </div>
         </div>
@@ -650,12 +652,12 @@ ${'─'.repeat(50)}
           <div className="px-3 py-3 grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-semibold text-slate-500 mb-1">OAR dose received (Gy)</label>
-              <input type="number" step="0.5" value={d1Total}
+              <NumberInput  step="0.5" value={d1Total}
                 onChange={e => setD1Total(e.target.value)} className="input-clinical num" />
             </div>
             <div>
               <label className="block text-[11px] font-semibold text-slate-500 mb-1">No. of fractions</label>
-              <input type="number" step="1" value={d1Fx}
+              <NumberInput  step="1" value={d1Fx}
                 onChange={e => setD1Fx(e.target.value)} className="input-clinical num" />
             </div>
             <div className="col-span-2 text-[11px] text-slate-400 bg-slate-50 rounded px-2 py-1.5 num">
@@ -677,7 +679,7 @@ ${'─'.repeat(50)}
             <div className="flex items-end gap-3">
               <div className="flex-1 max-w-[120px]">
                 <label className="block text-[11px] font-semibold text-slate-500 mb-1">Months since Course 1</label>
-                <input type="number" step="1" min="0" value={months}
+                <NumberInput  step="1" min="0" value={months}
                   onChange={e => setMonths(e.target.value)} className="input-clinical num" />
               </div>
               <div className={`flex-1 px-3 py-2 rounded-lg text-center border ${
@@ -718,12 +720,12 @@ ${'─'.repeat(50)}
           <div className="px-3 py-3 grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-semibold text-slate-500 mb-1">OAR dose planned (Gy)</label>
-              <input type="number" step="0.5" value={d2Total}
+              <NumberInput  step="0.5" value={d2Total}
                 onChange={e => setD2Total(e.target.value)} className="input-clinical num" />
             </div>
             <div>
               <label className="block text-[11px] font-semibold text-slate-500 mb-1">No. of fractions</label>
-              <input type="number" step="1" value={d2Fx}
+              <NumberInput  step="1" value={d2Fx}
                 onChange={e => setD2Fx(e.target.value)} className="input-clinical num" />
             </div>
             <div className="col-span-2 text-[11px] text-slate-400 bg-slate-50 rounded px-2 py-1.5 num">

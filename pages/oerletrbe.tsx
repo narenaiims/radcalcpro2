@@ -25,6 +25,8 @@ import {
 import { useRxContext } from '@/src/context/RadiobiologyContext';
 import { saveHistory } from '../src/lib/db';
 
+import { NumberInput } from '../src/components/NumberInput';
+
 // ─── Types ────────────────────────────────────────────────────────────────
 
 type TabType = 'Calculator' | 'LET' | 'OER' | 'RBE' | 'Particles' | 'Quiz';
@@ -747,7 +749,7 @@ const OERLETRBEPage: React.FC = () => {
                 <span>~150 (¹²C Bragg)</span>
                 <span>500</span>
               </div>
-              <input type="number" step="0.5" min="0.1" max="1000"
+              <NumberInput  step="0.5" min="0.1" max="1000"
                 value={letVal} onChange={e => setLetVal(e.target.value)}
                 className="mt-1 w-full border border-slate-200 rounded-lg px-2 py-1 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-400" />
             </div>
@@ -770,7 +772,7 @@ const OERLETRBEPage: React.FC = () => {
                 <span>40 (venous)</span>
                 <span>95 (arterial)</span>
               </div>
-              <input type="number" step="0.5" min="0" max="760"
+              <NumberInput  step="0.5" min="0" max="760"
                 value={pO2Val} onChange={e => setPO2Val(e.target.value)}
                 className="mt-1 w-full border border-slate-200 rounded-lg px-2 py-1 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-400" />
             </div>
@@ -779,13 +781,13 @@ const OERLETRBEPage: React.FC = () => {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-[9px] text-slate-500 uppercase font-black tracking-wider block mb-1">Dose/Fx (Gy)</label>
-                <input type="number" step="0.1" min="0.1" max="30"
+                <NumberInput  step="0.1" min="0.1" max="30"
                   value={photonDose} onChange={e => setPhotonDose(e.target.value)}
                   className="w-full border border-slate-200 rounded-lg px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-blue-400" />
               </div>
               <div>
                 <label className="text-[9px] text-slate-500 uppercase font-black tracking-wider block mb-1">Fractions</label>
-                <input type="number" step="1" min="1" max="100"
+                <NumberInput  step="1" min="1" max="100"
                   value={fractions} onChange={e => setFractions(e.target.value)}
                   className="w-full border border-slate-200 rounded-lg px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-blue-400" />
               </div>

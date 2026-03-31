@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 
+import { NumberInput } from '../src/components/NumberInput';
+
 // ─── TYPES & CONSTANTS ───────────────────────────────────────────────────────
 
 interface ScalingResult {
@@ -67,8 +69,8 @@ const InputField = ({ label, value, onChange, icon: Icon, unit, min = 0, max = 3
       {label}
     </label>
     <div className="relative">
-      <input
-        type="number"
+      <NumberInput
+        
         min={min}
         max={max}
         step={step}

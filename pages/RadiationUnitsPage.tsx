@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import Tooltip, { InfoIcon } from '../components/Tooltip';
 
+import { NumberInput } from '../src/components/NumberInput';
+
 const STORAGE_KEY = 'radonco_units_state_v2';
 
 interface UnitDefinition {
@@ -723,8 +725,8 @@ const FormulaCalculator: React.FC<FormulaCalculatorProps> = ({ title, formula, d
             <div key={input.key} className="flex items-center space-x-2">
               <label className="text-[9px] font-bold text-slate-400 uppercase w-12">{input.label}</label>
               <div className="relative flex-1">
-                <input 
-                  type="number" 
+                <NumberInput 
+                   
                   value={vals[input.key]} 
                   onChange={(e) => setVals(prev => ({ ...prev, [input.key]: e.target.value }))}
                   placeholder={input.placeholder}
@@ -1118,8 +1120,8 @@ const RadiationUnitsPage: React.FC = () => {
                 <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Parameters</h3>
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Magnitude</label>
-                  <input 
-                    type="number" 
+                  <NumberInput 
+                     
                     value={convValue} 
                     onChange={(e) => setConvValue(e.target.value)}
                     className="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-amber-500 outline-none transition text-lg font-bold text-slate-700"
@@ -1326,16 +1328,16 @@ const RadiationUnitsPage: React.FC = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Alpha (α)</label>
-                        <input type="number" value={cellSurvAlpha} onChange={(e) => setCellSurvAlpha(parseFloat(e.target.value))} className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-1 focus:ring-amber-500" />
+                        <NumberInput  value={cellSurvAlpha} onChange={(e) => setCellSurvAlpha(parseFloat(e.target.value))} className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-1 focus:ring-amber-500" />
                       </div>
                       <div>
                         <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Beta (β)</label>
-                        <input type="number" value={cellSurvBeta} onChange={(e) => setCellSurvBeta(parseFloat(e.target.value))} className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-1 focus:ring-amber-500" />
+                        <NumberInput  value={cellSurvBeta} onChange={(e) => setCellSurvBeta(parseFloat(e.target.value))} className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-1 focus:ring-amber-500" />
                       </div>
                     </div>
                     <div>
                       <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Dose (Gy)</label>
-                      <input type="number" value={cellSurvDose} onChange={(e) => setCellSurvDose(parseFloat(e.target.value))} className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-1 focus:ring-amber-500" />
+                      <NumberInput  value={cellSurvDose} onChange={(e) => setCellSurvDose(parseFloat(e.target.value))} className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-1 focus:ring-amber-500" />
                     </div>
                     <div className="pt-4 border-t border-slate-50">
                       <div className="flex justify-between items-center mb-2">

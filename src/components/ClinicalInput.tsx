@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { NumberInput } from './NumberInput';
+
 interface ClinicalInputProps {
   label: string;
   value: number;
@@ -20,8 +22,8 @@ export const ClinicalInput: React.FC<ClinicalInputProps> = ({
         {label}
       </label>
       <div className="flex items-center gap-2">
-        <input
-          type="number"
+        <NumberInput
+          
           inputMode="decimal"
           step={type === 'dose' ? 0.1 : 1}
           min={min}

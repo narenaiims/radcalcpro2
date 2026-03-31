@@ -39,7 +39,7 @@ export const sharePDF = async (blob: Blob, filename: string, text: string) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
 
     // Open WhatsApp with a message
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text + " I've just generated a clinical report. The PDF has been downloaded to my device.")}`;

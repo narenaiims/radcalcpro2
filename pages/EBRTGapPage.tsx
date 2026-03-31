@@ -26,10 +26,10 @@
  *   Fowler JF. Br J Radiol 1989 (LQ model)
  *   RTOG / CHART protocols (≥6h BID interval)
  */
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   ChevronRight, ChevronLeft, CheckCircle, Info, Calculator,
-  RotateCcw, Calendar, Activity, AlertTriangle, Printer,
+  RotateCcw, Calendar, Activity, AlertTriangle,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
@@ -38,6 +38,8 @@ import TumourSelector from '@/components/TumourSelector';
 import { PDFReport } from '@/src/components/PDFReport';
 import { generatePDFBlob, sharePDF } from '@/src/lib/pdfUtils';
 import { Share2 } from 'lucide-react';
+
+import { NumberInput } from '../src/components/NumberInput';
 
 // ── Quick reference sidebar data ──────────────────────────────────────────
 const QUICK_REF_DATA = [
@@ -170,6 +172,26 @@ const EBRTGapPage: React.FC = () => {
   const [step, setStep]                   = useState<WizardStep>('site');
   const [data, setData]                   = useState<GapState>(INITIAL_STATE);
   const [selectedTumour, setSelectedTumour] = useState<RadiobiologyData | null>(null);
+
+  const STORAGE_KEY = 'radonco_ebrt_gap_v1';
+
+  // Load on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        setData(JSON.parse(saved));
+      } catch { /* ignore */ }
+    }
+  }, []);
+
+  // Save with debounce
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [data]);
 
   // Safe α/β accessor
   const getAB = (t: RadiobiologyData | null): number =>
@@ -397,17 +419,17 @@ const EBRTGapPage: React.FC = () => {
             <div className="grid grid-cols-1 gap-5">
               <div>
                 <label className="block text-xs font-bold uppercase text-slate-500 mb-1.5">Total Prescribed Dose (Gy)</label>
-                <input
-                  type="number" step="0.5" value={data.totalDose}
-                  onChange={e => updateData('totalDose', parseFloat(e.target.value) || 0)}
+                <NumberInput
+                   step="0.5" value={isNaN(data.totalDose) ? '' : data.totalDose}
+                  onChange={e => updateData('totalDose', e.target.value === '' ? NaN : parseFloat(e.target.value))}
                   className="w-full p-3 rounded-xl border border-slate-300 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none"
                 />
               </div>
               <div>
                 <label className="block text-xs font-bold uppercase text-slate-500 mb-1.5">Dose per Fraction (Gy)</label>
-                <input
-                  type="number" step="0.1" value={data.dosePerFx}
-                  onChange={e => updateData('dosePerFx', parseFloat(e.target.value) || 0)}
+                <NumberInput
+                   step="0.1" value={isNaN(data.dosePerFx) ? '' : data.dosePerFx}
+                  onChange={e => updateData('dosePerFx', e.target.value === '' ? NaN : parseFloat(e.target.value))}
                   className="w-full p-3 rounded-xl border border-slate-300 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none"
                 />
               </div>
@@ -417,9 +439,9 @@ const EBRTGapPage: React.FC = () => {
                   Fractions per Week
                   <span className="ml-1 font-normal text-slate-400">(typically 5; enter 6 for CHART/6-day schedule)</span>
                 </label>
-                <input
-                  type="number" step="1" min="1" max="14" value={data.fxPerWeek}
-                  onChange={e => updateData('fxPerWeek', parseFloat(e.target.value) || 5)}
+                <NumberInput
+                   step="1" min="1" max="14" value={isNaN(data.fxPerWeek) ? '' : data.fxPerWeek}
+                  onChange={e => updateData('fxPerWeek', e.target.value === '' ? NaN : parseFloat(e.target.value))}
                   className="w-full p-3 rounded-xl border border-slate-300 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none"
                 />
               </div>
@@ -449,9 +471,9 @@ const EBRTGapPage: React.FC = () => {
             <div className="grid grid-cols-1 gap-5">
               <div>
                 <label className="block text-xs font-bold uppercase text-slate-500 mb-1.5">Fractions Completed Before Gap</label>
-                <input
-                  type="number" value={data.fxCompleted}
-                  onChange={e => updateData('fxCompleted', parseFloat(e.target.value) || 0)}
+                <NumberInput
+                   value={isNaN(data.fxCompleted) ? '' : data.fxCompleted}
+                  onChange={e => updateData('fxCompleted', e.target.value === '' ? NaN : parseFloat(e.target.value))}
                   className="w-full p-3 rounded-xl border border-slate-300 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none"
                 />
                 <p className="text-[10px] text-slate-400 mt-1">
@@ -461,15 +483,12 @@ const EBRTGapPage: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold uppercase text-slate-500 mb-1.5">Gap Duration (Calendar Days)</label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input
-                    type="number" value={data.gapDays}
-                    onChange={e => updateData('gapDays', parseFloat(e.target.value) || 0)}
-                    className="w-full pl-10 p-3 rounded-xl border border-slate-300 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none"
-                    placeholder="e.g. 5"
-                  />
-                </div>
+                <NumberInput
+                  value={isNaN(data.gapDays) ? '' : data.gapDays}
+                  onChange={e => updateData('gapDays', e.target.value === '' ? NaN : parseFloat(e.target.value))}
+                  className="w-full p-3 rounded-xl border border-slate-300 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="e.g. 5"
+                />
                 <p className="text-[10px] text-slate-400 mt-1">Include weekends and holidays.</p>
               </div>
             </div>
@@ -715,10 +734,10 @@ const EBRTGapPage: React.FC = () => {
                           Inter-fraction interval (hours)
                           <span className="text-red-600 ml-1">— minimum 6h required</span>
                         </label>
-                        <input
-                          type="number" step="0.5" min="6"
-                          value={data.bidInterval}
-                          onChange={e => updateData('bidInterval', parseFloat(e.target.value) || 6)}
+                        <NumberInput
+                           step="0.5" min="6"
+                          value={isNaN(data.bidInterval) ? '' : data.bidInterval}
+                          onChange={e => updateData('bidInterval', e.target.value === '' ? NaN : parseFloat(e.target.value))}
                           className={`w-full p-2.5 rounded-lg border text-sm font-mono font-medium focus:ring-2 outline-none ${
                             data.bidInterval < 6
                               ? 'border-red-400 bg-red-50 focus:ring-red-500'

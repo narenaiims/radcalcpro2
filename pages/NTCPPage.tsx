@@ -5,6 +5,9 @@ import { PDFReport } from '@/src/components/PDFReport';
 import { generatePDFBlob, sharePDF } from '@/src/lib/pdfUtils';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, ReferenceDot, Area, ComposedChart } from 'recharts';
 
+import { NumberInput } from '../src/components/NumberInput';
+import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
+
 // ── LKB Parameters (QUANTEC 2010) ───────────────────────────────────────────
 const OAR_PARAMS = [
   { name: 'Spinal cord', endpoint: 'Myelopathy', n: 0.05, m: 0.175, d50: 66.5 },
@@ -42,6 +45,22 @@ const NTCPPage: React.FC = () => {
   const [isPercent, setIsPercent] = useState<boolean>(false);
   const [isCumulative, setIsCumulative] = useState<boolean>(true);
   const [showLkbParams, setShowLkbParams] = useState<boolean>(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const SIDEBAR_DATA: KeyFactSection[] = [
+    {
+      title: 'NTCP Models',
+      emoji: '📈',
+      accent: '#3b82f6',
+      bg: 'rgba(59, 130, 246, 0.08)',
+      border: 'rgba(59, 130, 246, 0.4)',
+      rows: [
+        { k: 'LKB Model', v: 'Lyman-Kutcher-Burman model uses gEUD' },
+        { k: 'gEUD', v: 'Generalized Equivalent Uniform Dose' },
+        { k: 'Volume Effect (n)', v: 'n=1 (parallel), n≈0 (serial)' }
+      ]
+    }
+  ];
 
   const oar = OAR_PARAMS[selectedOarIdx];
 
@@ -218,6 +237,12 @@ const NTCPPage: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-slam pb-10">
+      <KeyFactsSidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+        onOpen={() => setIsSidebarOpen(true)} 
+        data={SIDEBAR_DATA} 
+      />
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/5 pb-6">
         <div className="space-y-1">
@@ -374,8 +399,8 @@ const NTCPPage: React.FC = () => {
               {dvhPoints.map((pt, i) => (
                 <div key={i} className="grid grid-cols-12 gap-2 items-center">
                   <div className="col-span-5">
-                    <input 
-                      type="number" inputMode="decimal" step="0.1" min="0"
+                    <NumberInput 
+                       inputMode="decimal" step="0.1" min="0"
                       value={pt.dose} 
                       onChange={(e) => handleDvhChange(i, 'dose', e.target.value)}
                       className="input-premium w-full"
@@ -383,8 +408,8 @@ const NTCPPage: React.FC = () => {
                     />
                   </div>
                   <div className="col-span-5">
-                    <input 
-                      type="number" inputMode="decimal" step="0.01" min="0" max="1"
+                    <NumberInput 
+                       inputMode="decimal" step="0.01" min="0" max="1"
                       value={pt.vol} 
                       onChange={(e) => handleDvhChange(i, 'vol', e.target.value)}
                       className="input-premium w-full"

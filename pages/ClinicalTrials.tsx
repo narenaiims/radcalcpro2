@@ -4,6 +4,8 @@ import { BookOpen, ChevronRight, BarChart3, Info, Calculator, ArrowRightLeft } f
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import KeyFactsSidebar, { KeyFactSection } from "../components/KeyFactsSidebar";
 
+import { NumberInput } from '../src/components/NumberInput';
+
 // ─── TRIAL DATABASE ──────────────────────────────────────────────────────────
 
 const TRIALS = [
@@ -918,25 +920,29 @@ export default function ClinicalTrials() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Total Dose (Gy)</label>
-                      <input type="number" value={customDose} onChange={e => setCustomDose(parseFloat(e.target.value) || 0)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-cyan-400" />
+                      <NumberInput  value={customDose} onChange={e => setCustomDose(parseFloat(e.target.value) || 0)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-cyan-400"
+                        buttonClassName="bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700" />
                     </div>
                     <div>
                       <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Fractions</label>
-                      <input type="number" value={customFracs} onChange={e => setCustomFracs(parseFloat(e.target.value) || 1)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-cyan-400" />
+                      <NumberInput  value={customFracs} onChange={e => setCustomFracs(parseFloat(e.target.value) || 1)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-cyan-400"
+                        buttonClassName="bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700" />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">α/β Tumour</label>
-                      <input type="number" value={customABTumour} onChange={e => setCustomABTumour(parseFloat(e.target.value) || 0.1)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-emerald-400" />
+                      <NumberInput  value={customABTumour} onChange={e => setCustomABTumour(parseFloat(e.target.value) || 0.1)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-emerald-400"
+                        buttonClassName="bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700" />
                     </div>
                     <div>
                       <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">α/β Late</label>
-                      <input type="number" value={customABLate} onChange={e => setCustomABLate(parseFloat(e.target.value) || 0.1)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-rose-400" />
+                      <NumberInput  value={customABLate} onChange={e => setCustomABLate(parseFloat(e.target.value) || 0.1)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-rose-400"
+                        buttonClassName="bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700" />
                     </div>
                   </div>
                 </div>

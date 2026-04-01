@@ -175,7 +175,51 @@ const CervixDosimeterPage: React.FC = () => {
       accent: "#00d4ff",
       bg: "rgba(0, 212, 255, 0.05)",
       border: "rgba(0, 212, 255, 0.2)",
-      rows: STRUCTURES.map(s => ({ k: s.name, v: `${s.goal} Gy` }))
+      rows: [
+        ...STRUCTURES.map(s => ({ k: s.name, v: `${s.goal} Gy` })),
+        { k: "IR-CTV D98", v: "≥ 60 Gy" },
+        { k: "Point A", v: "Historical reference" },
+      ]
+    },
+    {
+      title: "OAR Constraints (D2cc)",
+      emoji: "🛡️",
+      accent: "#f43f5e",
+      bg: "rgba(244, 63, 94, 0.05)",
+      border: "rgba(244, 63, 94, 0.2)",
+      rows: [
+        { k: "Bladder", v: "< 80 Gy (Goal < 70)" },
+        { k: "Rectum", v: "< 65 Gy (Goal < 60)" },
+        { k: "Sigmoid", v: "< 70 Gy" },
+        { k: "Vagina", v: "< 65 Gy (at 2cm²)" },
+      ]
+    },
+    {
+      title: "Radiobiology",
+      emoji: "🧬",
+      accent: "#10b981",
+      bg: "rgba(16, 185, 129, 0.05)",
+      border: "rgba(16, 185, 129, 0.2)",
+      rows: [
+        { k: "α/β (Tumor)", v: "10 Gy" },
+        { k: "α/β (OARs)", v: "3 Gy" },
+        { k: "Repair T½", v: "1.5 hours" },
+        { k: "EQD2 Formula", v: "D × ([d+α/β] / [2+α/β])" },
+      ]
+    },
+    {
+      title: "Clinical Pearls",
+      emoji: "💡",
+      accent: "#fbbf24",
+      bg: "rgba(251, 191, 36, 0.05)",
+      border: "rgba(251, 191, 36, 0.2)",
+      rows: [
+        { k: "Overall Time", v: "< 56 days (8 weeks)" },
+        { k: "TRAK", v: "Total Reference Air Kerma" },
+        { k: "ICRU 89", v: "Volume-based reporting" },
+        { k: "HR-CTV", v: "High-Risk CTV" },
+        { k: "IR-CTV", v: "Intermediate-Risk CTV" },
+      ]
     }
   ];
 

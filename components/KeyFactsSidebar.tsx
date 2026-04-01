@@ -49,13 +49,9 @@ const KeyFactsSidebar: React.FC<KeyFactsSidebarProps> = ({ isOpen, onClose, onOp
                     {title}
                   </span>
                 </div>
-                <button onClick={onClose}
-                  className="p-1.5 hover:bg-slate-800 rounded-lg transition">
-                  <XCircle className="w-5 h-5 text-slate-400" />
-                </button>
               </div>
 
-              <div className="p-4 space-y-4">
+              <div className="p-4 space-y-4 pb-24">
                 {data.map((sec, si) => (
                   <div key={si}
                     style={{ borderLeftColor: sec.accent, borderLeftWidth: 3, borderLeftStyle: 'solid', background: sec.bg, borderRadius: 12, border: `1px solid ${sec.border}`, borderLeft: `3px solid ${sec.accent}` }}
@@ -104,6 +100,17 @@ const KeyFactsSidebar: React.FC<KeyFactsSidebarProps> = ({ isOpen, onClose, onOp
                 {/* Custom children content */}
                 {children}
               </div>
+
+              {/* Sidebar close button at bottom */}
+              <motion.button
+                initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                onClick={onClose}
+                className="fixed right-6 bottom-6 z-50 flex items-center justify-center w-12 h-12 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all"
+                style={{ background: 'linear-gradient(135deg, #ef4444, #b91c1c)', border: '2px solid rgba(255,255,255,0.2)' }}
+                title="Close Sidebar"
+              >
+                <XCircle className="w-5 h-5 text-white" />
+              </motion.button>
             </motion.aside>
           </>
         )}

@@ -406,6 +406,8 @@ const SIDEBAR_DATA: KeyFactSection[] = [
       { k: 'Hippocampus', v: 'Dmean < 7.3 Gy', mono: true },
       { k: 'Brainstem (<5y)', v: 'Dmax < 54 Gy', mono: true },
       { k: 'Cochlea (<5y)', v: 'Dmean < 30 Gy', mono: true },
+      { k: 'Optic Nerve', v: 'Dmax < 54 Gy', mono: true },
+      { k: 'Pituitary', v: 'Dmean < 10 Gy (GH risk)', mono: true },
     ]
   },
   {
@@ -418,6 +420,8 @@ const SIDEBAR_DATA: KeyFactSection[] = [
       { k: 'Lung (<3y)', v: 'MLD < 12 Gy', mono: true },
       { k: 'Heart (<5y)', v: 'Dmean < 10 Gy', mono: true },
       { k: 'Spinal Cord (<5y)', v: 'Dmax < 45 Gy', mono: true },
+      { k: 'Esophagus', v: 'Dmean < 27 Gy', mono: true },
+      { k: 'Breast Buds', v: 'Avoid (Dmean < 1 Gy)', mono: true },
     ]
   },
   {
@@ -430,6 +434,22 @@ const SIDEBAR_DATA: KeyFactSection[] = [
       { k: 'Kidney (Bilateral)', v: 'Dmean < 12 Gy', mono: true },
       { k: 'Liver (Whole)', v: 'Dmean < 15 Gy', mono: true },
       { k: 'Ovaries', v: 'Dmean < 2 Gy', mono: true },
+      { k: 'Testes', v: 'Dmean < 1 Gy', mono: true },
+      { k: 'Stomach', v: 'Dmean < 22 Gy', mono: true },
+      { k: 'Bowel', v: 'Dmax < 45 Gy', mono: true },
+    ]
+  },
+  {
+    title: 'Growth & Bone',
+    emoji: '🦴',
+    accent: '#f43f5e',
+    bg: 'rgba(244, 63, 94, 0.08)',
+    border: 'rgba(244, 63, 94, 0.4)',
+    rows: [
+      { k: 'Growth Plates', v: 'Avoid asymmetric dose', mono: false },
+      { k: 'Femoral Head', v: 'Dmean < 25 Gy', mono: true },
+      { k: 'Vertebral Body', v: 'Homogeneous dose (Scoliosis)', mono: false },
+      { k: 'Mandible', v: 'Dmax < 45 Gy', mono: true },
     ]
   }
 ];

@@ -52,6 +52,7 @@ const QUICK_REF_DATA = [
       { label: 'K-value',      value: 'EQD2 loss/day (Gy)' },
       { label: 'Tk',           value: 'Kick-off time (days)' },
       { label: 'Formula',      value: 'Loss = k × (gap − max[0,Tk−elapsed])' },
+      { label: 'BED Loss',     value: 'Loss = d × (1 + d/αβ)' },
     ],
   },
   {
@@ -60,6 +61,7 @@ const QUICK_REF_DATA = [
       { label: 'Method A', value: 'Extra fractions at same d/fx' },
       { label: 'Method B', value: 'Increase dose/fx (remaining fx)' },
       { label: 'Method C', value: 'BID days (≥6h inter-fraction)' },
+      { label: 'Method D', value: 'Shorten OTT (treat weekends)' },
     ],
   },
   {
@@ -71,6 +73,17 @@ const QUICK_REF_DATA = [
       { label: 'SCLC',        value: '1.0 (Tk 14d)' },
       { label: 'TNBC',        value: '0.5 (Tk 14d)' },
       { label: 'Prostate',    value: '0.0 (no repop)' },
+      { label: 'Bladder',     value: '0.3 (Tk 21d)' },
+      { label: 'Oesophagus',  value: '0.4 (Tk 21d)' },
+    ],
+  },
+  {
+    category: 'Clinical Guidance',
+    items: [
+      { label: 'Urgency',     value: 'High if loss > 5% EQD2' },
+      { label: 'BID Gap',      value: 'Min 6h between fractions' },
+      { label: 'Max d/fx',    value: 'Avoid > 2.5 Gy for late tox' },
+      { label: 'Tk Start',    value: 'Count from Day 1 of RT' },
     ],
   },
 ];

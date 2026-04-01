@@ -26,24 +26,45 @@ const QUICK_REF_DATA = [
       { label: "Absorbed Dose", value: "Gray (Gy) = 1 J/kg" },
       { label: "Equivalent Dose", value: "Sievert (Sv) = Gy × wR" },
       { label: "Activity", value: "Becquerel (Bq) = 1 dps" },
-      { label: "Exposure", value: "Roentgen (R)" },
+      { label: "Exposure", value: "Roentgen (R) = 2.58e-4 C/kg" },
+      { label: "Curie (Ci)", value: "3.7 × 10¹⁰ Bq (37 GBq)" },
+      { label: "Rad (Legacy)", value: "0.01 Gy (1 cGy)" },
+      { label: "Rem (Legacy)", value: "0.01 Sv (10 mSv)" },
     ]
   },
   {
     category: "Radiobiology",
     items: [
-      { label: "LET", value: "Energy per track length" },
-      { label: "RBE", value: "D_ref / D_test" },
-      { label: "OER", value: "D_hypoxic / D_oxic" },
-      { label: "TCP/NTCP", value: "Sigmoid probability" },
+      { label: "LET", value: "Energy per track length (keV/μm)" },
+      { label: "RBE", value: "D_ref / D_test (Proton: 1.1)" },
+      { label: "OER", value: "D_hypoxic / D_oxic (2.5-3.0)" },
+      { label: "TCP/NTCP", value: "Sigmoid probability curves" },
+      { label: "α/β Early", value: "10 Gy (Rapidly dividing)" },
+      { label: "α/β Late", value: "3 Gy (Slowly dividing)" },
+      { label: "Tk", value: "Kick-off time for repopulation" },
     ]
   },
   {
-    category: "Physics",
+    category: "Physics & Planning",
     items: [
       { label: "Compton", value: "Dominant 100keV - 10MeV" },
-      { label: "Photoelectric", value: "Dominant < 100keV" },
-      { label: "Pair Production", value: "Threshold 1.022 MeV" },
+      { label: "Photoelectric", value: "Dominant < 100keV (∝ Z³)" },
+      { label: "Pair Production", value: "Threshold 1.022 MeV (∝ Z²)" },
+      { label: "Inverse Square", value: "I ∝ 1/d² (Intensity drop)" },
+      { label: "Penumbra", value: "s × (SSD + d - SDD) / SDD" },
+      { label: "Dmax (6MV)", v: "1.5 cm (Build-up depth)" },
+      { label: "Dmax (10MV)", v: "2.5 cm" },
+      { label: "Dmax (15MV)", v: "3.0 cm" },
+    ]
+  },
+  {
+    category: "Clinical Safety",
+    items: [
+      { label: "ALARA", value: "As Low As Reasonably Achievable" },
+      { label: "Dose Limit (Public)", value: "1 mSv / year" },
+      { label: "Dose Limit (Occ)", value: "20 mSv / year (5yr avg)" },
+      { label: "Lens Limit", value: "20 mSv / year (ICRP 118)" },
+      { label: "Fetus Limit", value: "1 mSv (post-declaration)" },
     ]
   }
 ];

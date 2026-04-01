@@ -205,6 +205,8 @@ export default function PediatricScalingPage() {
         { k: "Adult BSA Ref", v: "1.73 m²", mono: true },
         { k: "Adult Weight Ref", v: "70 kg", mono: true },
         { k: "Growth Plates", v: "High radiosensitivity", mono: false },
+        { k: "Young's Rule", v: "Age / (Age + 12)", mono: true },
+        { k: "Clark's Rule", v: "Weight (lb) / 150", mono: true },
       ]
     },
     {
@@ -217,6 +219,23 @@ export default function PediatricScalingPage() {
         { k: "Infants (<1y)", v: "Extreme sensitivity", mono: false },
         { k: "Organ Maturity", v: "Age-dependent tolerance", mono: false },
         { k: "Secondary Cancer", v: "Higher lifetime risk", mono: false },
+        { k: "Cognitive", v: "Risk if < 3 years old", mono: false },
+        { k: "Endocrine", v: "Growth hormone deficiency", mono: false },
+        { k: "Fertility", v: "Ovarian/Testicular risk", mono: false },
+      ]
+    },
+    {
+      title: "COG Guidelines",
+      emoji: "📚",
+      accent: "#10b981",
+      bg: "rgba(16, 185, 129, 0.08)",
+      border: "rgba(16, 185, 129, 0.4)",
+      rows: [
+        { k: "Wilms Tumor", v: "10.8 - 19.8 Gy", mono: true },
+        { k: "Neuroblastoma", v: "21 - 24 Gy", mono: true },
+        { k: "Ewing Sarcoma", v: "45 - 55.8 Gy", mono: true },
+        { k: "Rhabdomyo", v: "36 - 50.4 Gy", mono: true },
+        { k: "Medullo", v: "23.4 - 36 Gy (CSI)", mono: true },
       ]
     }
   ];

@@ -387,7 +387,9 @@ const SIDEBAR_DATA: KeyFactSection[] = [
     rows: [
       { k: "Anatomical Barriers", v: "Bone, air, and intact fascia are barriers to microscopic spread." },
       { k: "CTV Expansion", v: "Typically 5-10mm, but must be trimmed at anatomical boundaries." },
-      { k: "Nodal Levels", v: "Standardized by DAHANCA, RTOG, and ESTRO consensus." }
+      { k: "Nodal Levels", v: "Standardized by DAHANCA, RTOG, and ESTRO consensus." },
+      { k: "GTV-to-CTV", v: "Accounts for sub-clinical microscopic disease (e.g., 5mm for SCC)." },
+      { k: "CTV-to-PTV", v: "Accounts for setup error and organ motion (e.g., 3-5mm)." },
     ]
   },
   {
@@ -399,7 +401,10 @@ const SIDEBAR_DATA: KeyFactSection[] = [
     rows: [
       { k: "Level II/III", v: "Divided by the inferior border of the hyoid bone." },
       { k: "Level III/IV", v: "Divided by the inferior border of the cricoid cartilage." },
-      { k: "RP Nodes", v: "Skull base to C2; mandatory for NPC." }
+      { k: "RP Nodes", v: "Skull base to C2; mandatory for NPC." },
+      { k: "Level VII", v: "Superior mediastinal nodes (below sternal notch)." },
+      { k: "Level VI", v: "Anterior compartment (hyoid to suprasternal notch)." },
+      { k: "Level V", v: "Posterior triangle (SCM to Trapezius)." },
     ]
   },
   {
@@ -410,7 +415,25 @@ const SIDEBAR_DATA: KeyFactSection[] = [
     border: "rgba(251, 113, 133, 0.1)",
     rows: [
       { k: "Common Iliac", v: "Aortic bifurcation (L4/L5) to CI bifurcation." },
-      { k: "Inguinal", v: "Superior boundary is the inguinal ligament." }
+      { k: "Inguinal", v: "Superior boundary is the inguinal ligament." },
+      { k: "External Iliac", v: "CI bifurcation to inguinal ligament." },
+      { k: "Internal Iliac", v: "CI bifurcation to greater sciatic foramen." },
+      { k: "Obturator", v: "Anterior to internal iliac, along pelvic wall." },
+      { k: "Presacral", v: "S1-S3 region, anterior to sacrum." },
+    ]
+  },
+  {
+    title: "Thoracic Landmarks",
+    emoji: "🫁",
+    accent: "#3b82f6",
+    bg: "rgba(59, 130, 246, 0.05)",
+    border: "rgba(59, 130, 246, 0.1)",
+    rows: [
+      { k: "Station 1", v: "Highest mediastinal (above L brachiocephalic v)." },
+      { k: "Station 2", v: "Upper paratracheal (above aortic arch)." },
+      { k: "Station 4", v: "Lower paratracheal (aortic arch to azygos v)." },
+      { k: "Station 7", v: "Subcarinal (below carina)." },
+      { k: "Station 10", v: "Hilar (proximal to lobar bronchi)." },
     ]
   }
 ];

@@ -17,6 +17,8 @@ const QUICK_REF_DATA = [
       { label: "Cervix (HR-CTV)", value: "10 Gy" },
       { label: "Prostate", value: "1.5 - 3 Gy" },
       { label: "Late OARs", value: "3 Gy" },
+      { label: "Skin (Acute)", value: "10 Gy" },
+      { label: "Skin (Late)", value: "3 Gy" },
     ]
   },
   {
@@ -26,6 +28,8 @@ const QUICK_REF_DATA = [
       { label: "Bladder D2cc", value: "< 80-90 Gy EQD2" },
       { label: "Rectum D2cc", value: "< 65-75 Gy EQD2" },
       { label: "Sigmoid D2cc", value: "< 70-75 Gy EQD2" },
+      { label: "Vagina D2cc", value: "< 65 Gy EQD2" },
+      { label: "Bowel D2cc", value: "< 70 Gy EQD2" },
     ]
   },
   {
@@ -33,6 +37,18 @@ const QUICK_REF_DATA = [
     items: [
       { label: "EQD2", value: "D × [(d + α/β) / (2 + α/β)]" },
       { label: "BED", value: "D × [1 + d / (α/β)]" },
+      { label: "TDF", value: "Time, Dose, Fractionation" },
+      { label: "NSD", value: "Nominal Standard Dose" },
+    ]
+  },
+  {
+    category: "HDR Physics (Ir-192)",
+    items: [
+      { label: "Half-life", value: "73.8 days" },
+      { label: "Avg Energy", value: "380 keV" },
+      { label: "HVL (Lead)", value: "3 mm" },
+      { label: "Dose Rate", value: "> 12 Gy/h (HDR definition)" },
+      { label: "Source Size", value: "~3.5 mm length, 0.6 mm diam" },
     ]
   }
 ];

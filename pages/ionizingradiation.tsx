@@ -546,6 +546,8 @@ const IonizingRadiationEffectsPage: React.FC = () => {
         { k: "Gastrointestinal", v: "6–10 Gy", mono: true },
         { k: "Cerebrovascular", v: "> 20–50 Gy", mono: true },
         { k: "LD50/60 (No Tx)", v: "3–4 Gy", mono: true },
+        { k: "LD50/60 (With Tx)", v: "6–8 Gy", mono: true },
+        { k: "Lymphocyte nadir", v: "48h (dosimetry)", mono: false },
       ]
     },
     {
@@ -560,6 +562,9 @@ const IonizingRadiationEffectsPage: React.FC = () => {
         { k: "Cataracts (ICRP 118)", v: "0.5 Gy", mono: true },
         { k: "Male Sterility (Perm)", v: "3.5–6 Gy", mono: true },
         { k: "Female Sterility", v: "2.5–6 Gy", mono: true },
+        { k: "Erythema (Acute)", v: "6 Gy", mono: true },
+        { k: "Moist Desquamation", v: "15 Gy", mono: true },
+        { k: "Necrosis", v: "> 20 Gy", mono: true },
       ]
     },
     {
@@ -573,6 +578,7 @@ const IonizingRadiationEffectsPage: React.FC = () => {
         { k: "Cancer (Workers)", v: "4.1% / Sv", mono: true },
         { k: "Hereditary (Pop)", v: "0.2% / Sv", mono: true },
         { k: "Hereditary (Workers)", v: "0.1% / Sv", mono: true },
+        { k: "DDREF", v: "2 (Dose/Dose Rate)", mono: true },
       ]
     },
     {
@@ -587,6 +593,20 @@ const IonizingRadiationEffectsPage: React.FC = () => {
         { k: "Repopulation", v: "Tumour cell proliferation", mono: false },
         { k: "Reoxygenation", v: "Hypoxic cells become oxic", mono: false },
         { k: "Radiosensitivity", v: "Intrinsic cell sensitivity", mono: false },
+        { k: "6th R", v: "Reactivation (Immune)", mono: false },
+      ]
+    },
+    {
+      title: "Fetal Risks",
+      emoji: "👶",
+      accent: "#ec4899",
+      bg: "rgba(236, 72, 153, 0.08)",
+      border: "rgba(236, 72, 153, 0.4)",
+      rows: [
+        { k: "Pre-implantation", v: "All-or-none (0.1 Gy)", mono: true },
+        { k: "Organogenesis", v: "Malformation (0.1 Gy)", mono: true },
+        { k: "Early Fetal", v: "IQ deficit (0.1 Gy)", mono: true },
+        { k: "Late Fetal", v: "Stochastic cancer risk", mono: false },
       ]
     }
   ];

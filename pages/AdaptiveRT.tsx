@@ -71,7 +71,10 @@ const SIDEBAR_DATA: KeyFactSection[] = [
     rows: [
       { k: "ART", v: "Adaptive Radiotherapy" },
       { k: "IGRT", v: "Image-Guided Radiotherapy" },
-      { k: "PoD", v: "Plan of the Day" }
+      { k: "PoD", v: "Plan of the Day" },
+      { k: "DIR", v: "Deformable Image Registration" },
+      { k: "Dose Accumulation", v: "Summing dose over fractions" },
+      { k: "Margin Reduction", v: "Goal of ART (e.g. 5mm → 2mm)" },
     ]
   },
   {
@@ -81,9 +84,12 @@ const SIDEBAR_DATA: KeyFactSection[] = [
     bg: "rgba(251, 191, 36, 0.1)",
     border: "rgba(251, 191, 36, 0.3)",
     rows: [
-      { k: "CBCT", v: "Standard for most linacs" },
-      { k: "MR-Linac", v: "Superior soft-tissue contrast" },
-      { k: "CT-on-rails", v: "Diagnostic quality CT" }
+      { k: "CBCT", v: "Cone-Beam CT (Standard)" },
+      { k: "kV-CBCT", v: "Low dose, moderate contrast" },
+      { k: "MV-CBCT", v: "High dose, low contrast" },
+      { k: "MR-Linac", v: "Superior soft-tissue (0.35T/1.5T)" },
+      { k: "CT-on-rails", v: "Diagnostic quality CT" },
+      { k: "PET-Linac", v: "Biology-guided (RefleXion)" },
     ]
   },
   {
@@ -95,9 +101,24 @@ const SIDEBAR_DATA: KeyFactSection[] = [
     rows: [
       { k: "1. Image", v: "Acquire daily anatomy" },
       { k: "2. Contour", v: "AI/Deformable registration" },
-      { k: "3. Plan", v: "Re-optimize dose" },
+      { k: "3. Plan", v: "Re-optimize dose (Online)" },
       { k: "4. QA", v: "Independent dose calculation" },
-      { k: "5. Deliver", v: "Treat the patient" }
+      { k: "5. Deliver", v: "Treat the patient" },
+      { k: "6. Review", v: "Offline evaluation" },
+    ]
+  },
+  {
+    title: "Clinical Rationale",
+    emoji: "💡",
+    accent: "#f472b6",
+    bg: "rgba(244, 114, 182, 0.1)",
+    border: "rgba(244, 114, 182, 0.3)",
+    rows: [
+      { k: "Weight Loss", v: "Common in H&N (Week 3-4)" },
+      { k: "Tumor Shrinkage", v: "Lung/Cervix resolution" },
+      { k: "Organ Filling", v: "Bladder/Rectum variation" },
+      { k: "Margin Sparing", v: "Reducing OAR toxicity" },
+      { k: "Dose Escalation", v: "Safe increase to tumor" },
     ]
   }
 ];

@@ -521,6 +521,8 @@ const OARReferencePage: React.FC = () => {
         { k: 'Bowel', v: '3.0 Gy' },
         { k: 'Cochlea', v: '3.0 Gy' },
         { k: 'Prostate tumour', v: '1.5 Gy' },
+        { k: 'Breast tumour', v: '4.0 Gy' },
+        { k: 'Renal', v: '3.0 Gy' },
       ]
     },
     {
@@ -533,6 +535,8 @@ const OARReferencePage: React.FC = () => {
         { k: 'Serial (Dmax driven)', v: 'Cord, Chiasm, Bowel wall, Urethra' },
         { k: 'Parallel (Mean driven)', v: 'Lung, Liver, Kidney, Parotid' },
         { k: 'Mixed', v: 'Heart, Rectum, Bladder' },
+        { k: 'Threshold', v: 'Dose below which no effect' },
+        { k: 'Tolerance', v: 'Dose with acceptable risk' },
       ]
     },
     {
@@ -543,6 +547,8 @@ const OARReferencePage: React.FC = () => {
       border: "rgba(245, 158, 11, 0.3)",
       rows: [
         { k: 'Formula', v: 'D_ref × (d_ref + α/β) / (d_new + α/β)', mono: true },
+        { k: 'BED', v: 'D × (1 + d / α/β)', mono: true },
+        { k: 'TDF', v: 'Time, Dose, Fractionation' },
       ]
     },
     {
@@ -552,14 +558,14 @@ const OARReferencePage: React.FC = () => {
       bg: "rgba(245, 158, 11, 0.1)",
       border: "rgba(245, 158, 11, 0.3)",
       rows: [
-        { k: 'Spinal cord Dmax', v: '≤45 Gy' },
-        { k: 'Brainstem Dmax', v: '≤54 Gy' },
-        { k: 'Optic chiasm Dmax', v: '≤54 Gy' },
-        { k: 'Lung V20Gy', v: '<20–35%' },
-        { k: 'Lung MLD', v: '≤20 Gy' },
-        { k: 'Parotid Dmean', v: '≤25 Gy (≥1 gland)' },
-        { k: 'Heart Dmean', v: '<2 Gy (breast)' },
-        { k: 'Liver Dmean (CP-A)', v: '≤30 Gy' },
+        { k: 'Brainstem', v: 'Dmax < 54 Gy', mono: true },
+        { k: 'Optic Chiasm', v: 'Dmax < 54 Gy', mono: true },
+        { k: 'Spinal Cord', v: 'Dmax < 45-50 Gy', mono: true },
+        { k: 'Parotid', v: 'Mean < 26 Gy', mono: true },
+        { k: 'Lung', v: 'V20 < 30-35%', mono: true },
+        { k: 'Heart', v: 'Mean < 26 Gy', mono: true },
+        { k: 'Liver', v: 'Mean < 30-32 Gy', mono: true },
+        { k: 'Kidney', v: 'Mean < 15-18 Gy', mono: true },
       ]
     }
   ];

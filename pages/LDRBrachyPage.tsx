@@ -95,15 +95,45 @@ const LDRBrachyPage: React.FC = () => {
 
   const SIDEBAR_DATA: KeyFactSection[] = [
     {
-      title: 'LDR Brachytherapy',
+      title: 'LDR Physics',
       emoji: '☢️',
       accent: '#3b82f6',
       bg: 'rgba(59, 130, 246, 0.08)',
       border: 'rgba(59, 130, 246, 0.4)',
       rows: [
-        { k: 'Formula', v: 'BED = D * (1 + (2*R/(μ*(α/β))) * (1 - (1-exp(-μ*T))/(μ*T)))' },
-        { k: 'T1/2 Repair', v: 'Typically 1.5h for normal tissues' },
-        { k: 'Permanent Implant', v: 'T = infinity, BED = D * (1 + R0 / ((μ + λ)*(α/β)))' }
+        { k: 'I-125 T1/2', v: '59.4 days', mono: true },
+        { k: 'Pd-103 T1/2', v: '17.0 days', mono: true },
+        { k: 'Cs-137 T1/2', v: '30.1 years', mono: true },
+        { k: 'Ir-192 T1/2', v: '73.8 days', mono: true },
+        { k: 'Au-198 T1/2', v: '2.7 days', mono: true },
+      ]
+    },
+    {
+      title: 'Radiobiology',
+      emoji: '🧬',
+      accent: '#10b981',
+      bg: 'rgba(16, 185, 129, 0.08)',
+      border: 'rgba(16, 185, 129, 0.4)',
+      rows: [
+        { k: 'Dose Rate Effect', v: 'Lower rate = higher repair', mono: false },
+        { k: 'Repair T1/2', v: 'Typically 1.5h (Normal)', mono: true },
+        { k: 'α/β (Prostate)', v: '1.5 - 3.0 Gy', mono: true },
+        { k: 'α/β (Cervix)', v: '10 Gy (Tumour)', mono: true },
+        { k: 'α/β (OAR)', v: '3 Gy (Late)', mono: true },
+      ]
+    },
+    {
+      title: 'Clinical Rules',
+      emoji: '📏',
+      accent: '#f43f5e',
+      bg: 'rgba(244, 63, 94, 0.08)',
+      border: 'rgba(244, 63, 94, 0.4)',
+      rows: [
+        { k: 'Prescription', v: '145 Gy (I-125 alone)', mono: true },
+        { k: 'Prescription', v: '125 Gy (Pd-103 alone)', mono: true },
+        { k: 'Boost Dose', v: '110 Gy (I-125) + 45 Gy EBRT', mono: true },
+        { k: 'D90', v: '> 100% of prescription', mono: true },
+        { k: 'V100', v: '> 95% of volume', mono: true },
       ]
     }
   ];

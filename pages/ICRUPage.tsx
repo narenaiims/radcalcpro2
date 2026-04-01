@@ -684,6 +684,8 @@ const ICRUPage: React.FC = () => {
         { k: "CTV", v: "Clinical Target Volume", mono: false },
         { k: "ITV", v: "Internal Target Volume", mono: false },
         { k: "PTV", v: "Planning Target Volume", mono: false },
+        { k: "TV", v: "Treated Volume", mono: false },
+        { k: "IV", v: "Irradiated Volume", mono: false },
       ]
     },
     {
@@ -697,6 +699,9 @@ const ICRUPage: React.FC = () => {
         { k: "D98%", v: "Near Minimum Dose", mono: true },
         { k: "D50%", v: "Median Dose", mono: true },
         { k: "V95%", v: "Volume receiving 95% dose", mono: true },
+        { k: "HI", v: "Homogeneity Index", mono: true },
+        { k: "CI", v: "Conformity Index", mono: true },
+        { k: "GI", v: "Gradient Index", mono: true },
       ]
     },
     {
@@ -709,6 +714,21 @@ const ICRUPage: React.FC = () => {
         { k: "PRV", v: "Planning Risk Volume", mono: false },
         { k: "Serial", v: "Max dose matters (Spine)", mono: false },
         { k: "Parallel", v: "Mean dose matters (Lung)", mono: false },
+        { k: "Threshold", v: "Dose below which no effect", mono: false },
+        { k: "Tolerance", v: "Dose with acceptable risk", mono: false },
+      ]
+    },
+    {
+      title: "ICRU 91 (SBRT)",
+      emoji: "🚀",
+      accent: "#f43f5e",
+      bg: "rgba(244, 63, 94, 0.08)",
+      border: "rgba(244, 63, 94, 0.4)",
+      rows: [
+        { k: "Dmax", v: "Maximum point dose", mono: true },
+        { k: "Dmean", v: "Mean target dose", mono: true },
+        { k: "R50%", v: "Ratio of 50% ISL to PTV", mono: true },
+        { k: "D2cm", v: "Max dose 2cm from PTV", mono: true },
       ]
     }
   ];

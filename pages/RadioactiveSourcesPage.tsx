@@ -50,6 +50,9 @@ const QUICK_REF_DATA = {
     { label: 'Y-90 (SIRT)', value: '64.1 hours' },
     { label: 'Lu-177 (Systemic)', value: '6.65 days' },
     { label: 'Ra-223 (Systemic)', value: '11.4 days' },
+    { label: 'Sr-89 (Bone)', value: '50.5 days' },
+    { label: 'P-32 (Fluid)', value: '14.3 days' },
+    { label: 'I-131 (Thyroid)', value: '8.02 days' },
   ],
   energies: [
     { label: 'Ir-192 (Avg γ)', value: '380 keV' },
@@ -57,12 +60,22 @@ const QUICK_REF_DATA = {
     { label: 'I-125 (Avg γ/X)', value: '28 keV' },
     { label: 'Y-90 (Max β)', value: '2.28 MeV' },
     { label: 'Ra-223 (Total α)', value: '~28 MeV' },
+    { label: 'Cs-137 (Avg γ)', value: '662 keV' },
+    { label: 'Au-198 (Avg γ)', value: '412 keV' },
   ],
   hvl: [
     { label: 'Ir-192', value: '3.0 mm Pb' },
     { label: 'Co-60', value: '11.0 mm Pb' },
     { label: 'I-125', value: '0.025 mm Pb' },
     { label: '6 MV LINAC', value: '16.0 mm Pb' },
+    { label: 'Cs-137', value: '6.5 mm Pb' },
+    { label: 'Ra-226', value: '12.0 mm Pb' },
+  ],
+  constants: [
+    { label: 'Specific Gamma (Ir-192)', value: '4.69 R·cm²/mCi·h' },
+    { label: 'Specific Gamma (Co-60)', value: '13.07 R·cm²/mCi·h' },
+    { label: 'Specific Gamma (I-125)', value: '1.46 R·cm²/mCi·h' },
+    { label: 'Specific Gamma (Cs-137)', value: '3.26 R·cm²/mCi·h' },
   ]
 };
 

@@ -19,6 +19,8 @@ const QUICK_REF_DATA = [
       { label: "Dexamethasone", value: "16mg STAT, 4mg QID" },
       { label: "SINS Score", value: "≥ 7: Consult Surgery" },
       { label: "RT Regimen", value: "8 Gy/1fx or 20 Gy/5fx" },
+      { label: "Patchell RCT", value: "Surg+RT > RT (Ambulatory)" },
+      { label: "SCORAD", value: "8 Gy/1fx non-inferior to 20 Gy/5fx" },
     ]
   },
   {
@@ -27,14 +29,27 @@ const QUICK_REF_DATA = [
       { label: "NSCLC RT", value: "3 Gy x 3 then 2 Gy x 7" },
       { label: "Stenting", value: "Fastest relief (hours)" },
       { label: "SCLC/Lymphoma", value: "Chemo first-line" },
+      { label: "Steroids", value: "Dexamethasone for oedema" },
+      { label: "Anticoagulation", value: "If thrombus present" },
     ]
   },
   {
     category: "Brain Mets",
     items: [
-      { label: "GPA Score", value: "Prognostic index" },
-      { label: "SRS Limit", value: "< 4 cm lesions" },
+      { label: "GPA Score", value: "Prognostic index (KPS, Age, #Mets)" },
+      { label: "SRS Limit", value: "< 4 cm lesions (V12 < 10cc)" },
       { label: "WBRT", value: "30 Gy/10fx or 20 Gy/5fx" },
+      { label: "HA-WBRT", value: "Hippocampal avoidance (NRG CC001)" },
+      { label: "Memantine", value: "Neuroprotection (RTOG 0614)" },
+    ]
+  },
+  {
+    category: "Bone Mets",
+    items: [
+      { label: "Single Fraction", value: "8 Gy/1fx (Standard)" },
+      { label: "Multi-Fraction", value: "20 Gy/5fx or 30 Gy/10fx" },
+      { label: "Re-irradiation", value: "8 Gy/1fx (ROSEL/NCIC)" },
+      { label: "SBRT", value: "16-18 Gy/1fx (Oligomet)" },
     ]
   }
 ];

@@ -533,6 +533,8 @@ const OERLETRBEPage: React.FC = () => {
         { k: "Protons (SOBP)", v: "1 - 5 keV/µm", mono: true },
         { k: "Carbon Ions", v: "50 - 200 keV/µm", mono: true },
         { k: "Alpha Particles", v: "100 - 200 keV/µm", mono: true },
+        { k: "Neutrons (14 MeV)", v: "12 keV/µm", mono: true },
+        { k: "Heavy Ions (Fe)", v: "1000+ keV/µm", mono: true },
       ]
     },
     {
@@ -547,6 +549,8 @@ const OERLETRBEPage: React.FC = () => {
         { k: "Carbon Ions", v: "2.5 - 3.0", mono: true },
         { k: "Alpha Particles", v: "10 - 20", mono: true },
         { k: "Neutrons", v: "5 - 20", mono: true },
+        { k: "RBE Peak", v: "At LET ~100 keV/µm", mono: false },
+        { k: "Overkill Effect", v: "RBE drops at very high LET", mono: false },
       ]
     },
     {
@@ -560,6 +564,8 @@ const OERLETRBEPage: React.FC = () => {
         { k: "Protons", v: "2.0 - 2.5", mono: true },
         { k: "Neutrons", v: "1.6", mono: true },
         { k: "Alpha/Carbon", v: "1.0 - 1.2", mono: true },
+        { k: "OER_max", v: "At low LET (photons)", mono: false },
+        { k: "OER_min", v: "At high LET (alpha)", mono: false },
       ]
     },
     {
@@ -572,6 +578,21 @@ const OERLETRBEPage: React.FC = () => {
         { k: "Max RBE", v: "At LET ~100 keV/µm", mono: false },
         { k: "OER vs LET", v: "OER drops as LET rises", mono: false },
         { k: "OER = 1", v: "At LET > 200 keV/µm", mono: false },
+        { k: "Direct Action", v: "Dominates at high LET", mono: false },
+        { k: "Indirect Action", v: "Dominates at low LET", mono: false },
+      ]
+    },
+    {
+      title: "Oxygen Effect",
+      emoji: "🫁",
+      accent: "#ec4899",
+      bg: "rgba(236, 72, 153, 0.08)",
+      border: "rgba(236, 72, 153, 0.4)",
+      rows: [
+        { k: "Oxygen Fixation", v: "O2 makes damage permanent", mono: false },
+        { k: "K value", v: "pO2 for half max OER (~3 mmHg)", mono: true },
+        { k: "Hypoxia", v: "pO2 < 10 mmHg", mono: true },
+        { k: "Anoxia", v: "pO2 = 0 mmHg", mono: true },
       ]
     }
   ];

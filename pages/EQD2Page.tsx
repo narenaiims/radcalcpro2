@@ -16,20 +16,41 @@ const STORAGE_KEY = 'radonco_eqd2_analyzer_state_v1';
 
 const QUICK_REF_DATA = [
   {
-    category: 'Radiobiology Basics',
+    category: 'Radiobiology Formulas',
     items: [
-      { label: 'BED Formula', value: 'D × [1 + d / (α/β)]' },
-      { label: 'EQD2 Formula', value: 'BED / [1 + 2 / (α/β)]' },
+      { label: 'BED', value: 'D × [1 + d / (α/β)]' },
+      { label: 'EQD2', value: 'BED / [1 + 2 / (α/β)]' },
+      { label: 'EQDx', value: 'BED / [1 + x / (α/β)]' },
       { label: 'α/β (Tumour)', value: 'Typically 10 Gy' },
       { label: 'α/β (Late OAR)', value: 'Typically 3 Gy' },
     ],
   },
   {
-    category: 'Standard Benchmarks',
+    category: 'Standard Fractionation',
     items: [
-      { label: 'Conventional', value: '2.0 Gy/fx' },
+      { label: 'Conventional', value: '1.8 - 2.0 Gy/fx' },
       { label: 'Hypofractionation', value: '2.5 - 4.0 Gy/fx' },
-      { label: 'SBRT', value: '> 5.0 Gy/fx' },
+      { label: 'SBRT / SABR', value: '5.0 - 20.0 Gy/fx' },
+      { label: 'Hyperfractionation', value: '1.1 - 1.2 Gy/fx (BID)' },
+    ],
+  },
+  {
+    category: 'Clinical α/β Ratios',
+    items: [
+      { label: 'H&N SCC', value: '10 Gy' },
+      { label: 'Prostate', value: '1.5 Gy' },
+      { label: 'Breast', value: '4.0 Gy' },
+      { label: 'Melanoma', value: '0.6 - 2.5 Gy' },
+      { label: 'Spinal Cord', value: '2.0 Gy' },
+      { label: 'Brain (Late)', value: '2.0 Gy' },
+    ],
+  },
+  {
+    category: 'LQ Model Limits',
+    items: [
+      { label: 'Dose/fx Limit', value: '< 10-12 Gy (LQ valid)' },
+      { label: 'Repair Time', value: 'Min 6h between fx' },
+      { label: 'Repopulation', value: 'Tk ~21-28 days' },
     ],
   },
 ];

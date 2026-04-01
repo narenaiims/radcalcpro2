@@ -16,6 +16,9 @@ const QUICK_REF_DATA = [
       { label: "α/β Late", value: "3 Gy" },
       { label: "Compton", value: "Dominant MV" },
       { label: "Photoelectric", value: "Dominant kV" },
+      { label: "Pair Production", value: "> 1.022 MeV" },
+      { label: "Lead K-edge", value: "88 keV" },
+      { label: "Iodine K-edge", value: "33 keV" },
     ]
   },
   {
@@ -27,6 +30,8 @@ const QUICK_REF_DATA = [
       { label: "DNA Repair", value: "NHEJ (fast) / HR (slow)" },
       { label: "OER", value: "2.5 - 3.0" },
       { label: "FLASH", value: "Ultra-high dose rate" },
+      { label: "Abscopal", value: "Remote immune effect" },
+      { label: "Bystander", value: "Non-targeted cells" },
     ]
   },
   {
@@ -35,7 +40,9 @@ const QUICK_REF_DATA = [
       { label: "Therapeutic Ratio", value: "TCP / NTCP" },
       { label: "NSD", value: "1800 rets" },
       { label: "Hormesis", value: "Low-dose stimulation" },
-      { label: "Bystander Effect", value: "Non-targeted" },
+      { label: "Oxygen Effect", value: "Sensitisation (OER)" },
+      { label: "Inverse Square", value: "1/d² intensity drop" },
+      { label: "Bragg Peak", value: "Proton depth dose" },
     ]
   }
 ];

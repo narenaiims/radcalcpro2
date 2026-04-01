@@ -311,17 +311,40 @@ const QUICK_REF_DATA = {
     { label: 'Megavoltage', value: '1930s - 1960s' },
     { label: '3D / CT', value: '1970s - 1990s' },
     { label: 'IMRT / SBRT', value: '2000s - 2010s' },
-    { label: 'AI / Adaptive', value: '2015 - Present' }
+    { label: 'AI / Adaptive', value: '2015 - Present' },
+    { label: 'Theranostics', value: '2020s - Future' },
+    { label: 'FLASH / Micro', value: '2025 - Research' },
   ],
   milestones: [
     { label: 'Röntgen', value: 'X-ray discovery (1895)' },
     { label: 'Becquerel', value: 'Radioactivity (1896)' },
-    { label: 'Curies', value: 'Radium (1898)' }
+    { label: 'Curies', value: 'Radium (1898)' },
+    { label: 'Coutard', value: 'Fractionation (1920s)' },
+    { label: 'Coolidge', value: 'X-ray Tube (1913)' },
+    { label: 'Lawrence', value: 'Cyclotron (1930s)' },
+    { label: 'Kerst', value: 'Betatron (1940s)' },
+    { label: 'Hounsfield', value: 'CT Scanner (1972)' },
+    { label: 'Cormack', value: 'CT Algorithm (1963)' },
+    { label: 'Bjarngard', value: 'MLC (1980s)' },
   ],
   constants: [
     { label: '1 R', value: '≈ 0.00877 Gy' },
     { label: '1 Ci', value: '3.7 × 10¹⁰ Bq' },
-    { label: '1 rad', value: '1 cGy' }
+    { label: '1 rad', value: '1 cGy' },
+    { label: '1 rem', value: '10 mSv' },
+    { label: '1 eV', value: '1.6 × 10⁻¹⁹ J' },
+    { label: 'c', value: '3 × 10⁸ m/s' },
+    { label: 'h', value: '6.626 × 10⁻³⁴ J·s' },
+    { label: 'e⁻ mass', value: '0.511 MeV' },
+  ],
+  nobelPrizes: [
+    { label: '1901', value: 'Röntgen (Physics)' },
+    { label: '1903', value: 'Becquerel/Curies (Physics)' },
+    { label: '1911', value: 'Marie Curie (Chemistry)' },
+    { label: '1935', value: 'Joliot-Curies (Chemistry)' },
+    { label: '1979', value: 'Cormack/Hounsfield (Medicine)' },
+    { label: '2003', value: 'Lauterbur/Mansfield (MRI)' },
+    { label: '2018', value: 'Ashkin/Mourou/Strickland (Laser)' },
   ]
 };
 

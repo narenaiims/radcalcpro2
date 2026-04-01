@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { BookOpen, ChevronRight } from "lucide-react";
+import { BookOpen, ChevronRight, XCircle } from "lucide-react";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // COLOUR SYSTEM
@@ -952,15 +952,6 @@ export default function CervixBrachytherapy() {
                       Quick Reference
                     </h3>
                   </div>
-                  <button 
-                    onClick={() => setIsSidebarOpen(false)}
-                    style={{
-                      background: "none", border: "none", color: COL.dim, cursor: "pointer",
-                      padding: "4px", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center"
-                    }}
-                  >
-                    <ChevronRight size={20} />
-                  </button>
                 </div>
 
                 <div style={{ padding: "16px", flex: 1 }}>
@@ -1043,6 +1034,21 @@ export default function CervixBrachytherapy() {
                     ))}
                   </div>
                 </div>
+
+                <motion.button 
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  onClick={() => setIsSidebarOpen(false)}
+                  style={{
+                    position: "absolute", right: "24px", bottom: "24px", zIndex: 120,
+                    backgroundColor: COL.rose, color: "#FFF", width: "48px", height: "48px",
+                    borderRadius: "50%", border: "none", boxShadow: "0 8px 24px rgba(244,63,94,0.4)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    cursor: "pointer"
+                  }}
+                >
+                  <XCircle size={20} color="#FFF" />
+                </motion.button>
               </motion.div>
             </>
           )}

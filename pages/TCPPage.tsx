@@ -96,6 +96,8 @@ const TCPPage: React.FC = () => {
         { k: 'SF/fx', v: 'exp(-α·d - β·d²)' },
         { k: 'SF total', v: '(SF/fx)^n' },
         { k: 'TCP', v: 'exp(-N₀ · SF_total)' },
+        { k: 'TCD₅₀', v: 'Dose for 50% TCP' },
+        { k: 'γ₅₀', v: 'Slope at TCD₅₀' },
       ]
     },
     {
@@ -108,6 +110,23 @@ const TCPPage: React.FC = () => {
         { k: 'N₀', v: 'Initial clonogenic cells' },
         { k: '1cm³ Tumour', v: '≈ 10⁸ cells' },
         { k: 'Clonogens', v: '≈ 1% (N₀ ≈ 10⁶)' },
+        { k: 'Tumour α/β', v: 'H&N: 10, Pros: 1.5' },
+        { k: 'OER', v: 'Hypoxia reduces TCP' },
+        { k: 'Repopulation', v: 'Tk ~21-28 days' },
+      ]
+    },
+    {
+      title: 'NTCP Principles',
+      emoji: '📉',
+      accent: '#8b5cf6',
+      bg: 'rgba(139, 92, 246, 0.08)',
+      border: 'rgba(139, 92, 246, 0.4)',
+      rows: [
+        { k: 'Serial Organs', v: 'Max dose matters' },
+        { k: 'Parallel Organs', v: 'Mean dose matters' },
+        { k: 'QUANTEC', v: 'Dose-volume limits' },
+        { k: 'TD 5/5', v: '5% injury at 5 years' },
+        { k: 'TD 50/5', v: '50% injury at 5 years' },
       ]
     }
   ];
@@ -154,12 +173,6 @@ const TCPPage: React.FC = () => {
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">TCP Calculator</h1>
           <p className="text-sm text-slate-500">LQ-Poisson Fractionation-Sensitive Model</p>
         </div>
-        <button 
-          onClick={() => setIsSidebarOpen(true)}
-          className="p-2 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition"
-        >
-          <Info className="w-5 h-5" />
-        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">

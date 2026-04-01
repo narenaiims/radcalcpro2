@@ -55,11 +55,14 @@ const SIDEBAR_DATA: KeyFactSection[] = [
     bg: "rgba(56, 189, 248, 0.1)",
     border: "rgba(56, 189, 248, 0.2)",
     rows: [
-      { k: "Mass", v: "1836× electron mass", mono: false },
-      { k: "Charge", v: "+1", mono: false },
-      { k: "Interaction", v: "Coulomb interactions", mono: false },
-      { k: "Bragg Peak", v: "Maximum dose at end of range", mono: false },
-      { k: "SOBP", v: "Spread-Out Bragg Peak", mono: false },
+      { k: "Mass", v: "1.67 × 10⁻²⁷ kg", mono: true },
+      { k: "Rest Energy", v: "938.3 MeV", mono: true },
+      { k: "Charge", v: "+1.6 × 10⁻¹⁹ C", mono: true },
+      { k: "Interaction", v: "Coulomb (Inelastic)", mono: false },
+      { k: "Bragg Peak", v: "End-of-range peak", mono: false },
+      { k: "SOBP", v: "Summed Bragg Peaks", mono: false },
+      { k: "Range", v: "∝ Energy¹·⁷⁸", mono: true },
+      { k: "Scattering", v: "Multiple Coulomb (MCS)", mono: false },
     ]
   },
   {
@@ -69,10 +72,27 @@ const SIDEBAR_DATA: KeyFactSection[] = [
     bg: "rgba(244, 63, 94, 0.1)",
     border: "rgba(244, 63, 94, 0.2)",
     rows: [
-      { k: "RBE", v: "1.1 (Standard value)", mono: true },
-      { k: "LET", v: "Increases at distal edge", mono: false },
-      { k: "OER", v: "~2.5 (Similar to photons)", mono: true },
-      { k: "Range Shifter", v: "Used for shallow targets", mono: false },
+      { k: "RBE", v: "1.1 (Clinical standard)", mono: true },
+      { k: "LET", v: "0.5–2.0 keV/μm (avg)", mono: true },
+      { k: "Distal LET", v: "Up to 10+ keV/μm", mono: true },
+      { k: "OER", v: "2.5–3.0 (Low LET)", mono: true },
+      { k: "Cell Cycle", v: "Sensitive in G2/M", mono: false },
+      { k: "Repair", v: "Sublethal damage repair", mono: false },
+    ]
+  },
+  {
+    title: "Clinical Delivery",
+    emoji: "🏥",
+    accent: "#10b981",
+    bg: "rgba(16, 185, 129, 0.1)",
+    border: "rgba(16, 185, 129, 0.2)",
+    rows: [
+      { k: "PBS", v: "Pencil Beam Scanning", mono: false },
+      { k: "DS", v: "Double Scattering", mono: false },
+      { k: "Aperture", v: "Brass (for DS)", mono: false },
+      { k: "Compensator", v: "Lucite/Wax (for DS)", mono: false },
+      { k: "Snout", v: "Holds apertures/shifters", mono: false },
+      { k: "Spot Size", v: "3–10 mm (sigma)", mono: true },
     ]
   }
 ];

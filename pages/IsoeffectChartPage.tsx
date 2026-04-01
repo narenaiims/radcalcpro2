@@ -71,12 +71,6 @@ const IsoeffectChartPage: React.FC = () => {
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Isoeffect Chart</h1>
           <p className="text-sm text-slate-500">Interactive Fractionation Visualiser</p>
         </div>
-        <button 
-          onClick={() => setIsSidebarOpen(true)}
-          className="p-2 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition"
-        >
-          <Info className="w-5 h-5" />
-        </button>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">

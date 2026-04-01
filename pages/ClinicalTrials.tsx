@@ -1,13 +1,7 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
-// @ts-ignore
-import * as reactWindow from "react-window";
-import { AutoSizer } from "react-virtualized-auto-sizer";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { BookOpen, ChevronRight, BarChart3, Info, Calculator, ArrowRightLeft } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+import { BookOpen, ChevronDown, Info, ExternalLink, Search, Filter } from "lucide-react";
 import KeyFactsSidebar, { KeyFactSection } from "../components/KeyFactsSidebar";
-
-import { NumberInput } from '../src/components/NumberInput';
 
 // ─── TRIAL DATABASE ──────────────────────────────────────────────────────────
 
@@ -63,8 +57,6 @@ const TRIALS = [
     keyNumber: "13% vs 26%", keyLabel: "20y LRR (PMRT vs no PMRT)",
     pmid: "25104271", tags: ["PMRT", "nodes", "meta-analysis"]
   },
-
-  // ── LUNG ──
   {
     id: "l1", site: "Lung", subsite: "NSCLC Stage III",
     name: "RTOG 9410", sponsor: "RTOG", year: 2011,
@@ -115,8 +107,6 @@ const TRIALS = [
     keyNumber: "20.7% vs 15.3%", keyLabel: "3y OS (PCI vs no PCI)",
     pmid: "10490038", tags: ["PCI", "SCLC", "brain-mets", "OS"]
   },
-
-  // ── PROSTATE ──
   {
     id: "p1", site: "Prostate", subsite: "Localised",
     name: "ProtecT", sponsor: "UK MRC", year: 2016,
@@ -157,8 +147,6 @@ const TRIALS = [
     keyNumber: "32% vs 23%", keyLabel: "3y FFS (RT vs no RT, low burden)",
     pmid: "30355464", tags: ["metastatic", "oligometastatic", "primary-RT"]
   },
-
-  // ── HEAD & NECK ──
   {
     id: "hn1", site: "Head & Neck", subsite: "Locally Advanced",
     name: "MACH-NC Meta-Analysis", sponsor: "Meta-analysis", year: 2000,
@@ -199,8 +187,6 @@ const TRIALS = [
     keyNumber: "82% vs 57%", keyLabel: "3y OS (HPV+ vs HPV-)",
     pmid: "20530316", tags: ["HPV", "oropharynx", "biomarker", "de-escalation"]
   },
-
-  // ── RECTAL ──
   {
     id: "r1", site: "Colorectal", subsite: "Rectal Cancer",
     name: "Swedish Rectal Trial", sponsor: "Swedish", year: 1997,
@@ -231,8 +217,6 @@ const TRIALS = [
     keyNumber: "28% vs 14%", keyLabel: "pCR rate (TNT vs standard CRT)",
     pmid: "33296616", tags: ["TNT", "SCRT", "systemic", "pCR"]
   },
-
-  // ── CNS ──
   {
     id: "c1", site: "CNS", subsite: "GBM",
     name: "Stupp (EORTC 22981)", sponsor: "EORTC", year: 2005,
@@ -273,8 +257,6 @@ const TRIALS = [
     keyNumber: "Better cognition", keyLabel: "SRS alone vs SRS+WBRT (no OS diff)",
     pmid: "26978590", tags: ["SRS", "WBRT", "cognition", "brain-mets", "omission"]
   },
-
-  // ── CERVIX ──
   {
     id: "cv1", site: "Gynaecology", subsite: "Cervix",
     name: "Rose / Keys (GOG) 1999", sponsor: "GOG", year: 1999,
@@ -295,8 +277,6 @@ const TRIALS = [
     keyNumber: "Non-inferior", keyLabel: "VBT vs EBRT vaginal control",
     pmid: "20223991", tags: ["endometrium", "brachytherapy", "VBT", "EBRT", "standard"]
   },
-
-  // ── PROSTATE SBRT ──
   {
     id: "ps1", site: "Prostate", subsite: "SBRT",
     name: "HYPO-RT-PC", sponsor: "Swedish", year: 2019,
@@ -307,8 +287,6 @@ const TRIALS = [
     keyNumber: "84% vs 84%", keyLabel: "5y bFFS (SBRT vs conventional)",
     pmid: "31227373", tags: ["SBRT", "prostate", "ultra-hypo", "7-fraction"]
   },
-
-  // ── PALLIATIVE ──
   {
     id: "pal1", site: "Palliative", subsite: "Bone Mets",
     name: "RTOG 9714", sponsor: "RTOG", year: 2005,
@@ -339,305 +317,287 @@ const TRIALS = [
     keyNumber: "84% vs 57%", keyLabel: "Ambulation retained (surgery+RT vs RT)",
     pmid: "15939062", tags: ["MSCC", "surgery", "spinal", "ambulation"]
   },
+  {
+    id: "e1", site: "Esophagus", subsite: "Locally Advanced",
+    name: "CROSS", sponsor: "Dutch", year: 2012,
+    question: "Does pre-operative chemoRT improve OS in resectable esophageal cancer?",
+    arms: ["Surgery alone", "Pre-op Carboplatin/Paclitaxel + RT (41.4 Gy) → Surgery"],
+    result: "Pre-op chemoRT improved median OS (49.4 vs 24 months) and pCR rate (29%).",
+    impact: "Established trimodality therapy as the global standard for resectable esophageal cancer.",
+    keyNumber: "49.4 vs 24 mo", keyLabel: "Median OS (CRT+S vs S)",
+    pmid: "22646630", tags: ["esophagus", "preoperative", "trimodality"]
+  },
+  {
+    id: "om1", site: "Oligometastatic", subsite: "Multiple Sites",
+    name: "SABR-COMET", sponsor: "International", year: 2019,
+    question: "Does SABR improve OS in patients with 1–5 metastatic lesions?",
+    arms: ["Standard of care (SOC) palliative therapy", "SOC + SABR to all metastatic lesions"],
+    result: "SABR improved median OS from 28 to 41 months. 5y OS 42.3% vs 17.7%.",
+    impact: "Proof-of-concept for oligometastatic state; established SABR as a standard option for low-volume mets.",
+    keyNumber: "41 vs 28 mo", keyLabel: "Median OS (SABR vs SOC)",
+    pmid: "30982687", tags: ["SBRT", "SABR", "oligometastatic", "landmark"]
+  },
+  {
+    id: "p5", site: "Prostate", subsite: "Localised High-Risk",
+    name: "FLAME", sponsor: "Dutch", year: 2021,
+    question: "Does a focal boost to the intraprostatic lesion (IPL) improve bFFS?",
+    arms: ["77 Gy to whole prostate", "77 Gy to whole prostate + focal boost up to 95 Gy to IPL"],
+    result: "Focal boost improved 5y bFFS (92% vs 85%) without increasing significant toxicity.",
+    impact: "Validated the use of MRI-guided focal boosting in high-risk prostate cancer.",
+    keyNumber: "92% vs 85%", keyLabel: "5y bFFS (Boost vs No Boost)",
+    pmid: "33471548", tags: ["prostate", "focal-boost", "MRI", "bFFS"]
+  },
+  {
+    id: "cv3", site: "Gynaecology", subsite: "Endometrium",
+    name: "PORTEC-3", sponsor: "Dutch PORTEC", year: 2018,
+    question: "Does adjuvant chemoRT improve OS vs RT alone in high-risk endometrial cancer?",
+    arms: ["RT alone (48.6 Gy)", "ChemoRT (2x Cisplatin during RT → 4x Carboplatin/Paclitaxel)"],
+    result: "ChemoRT improved 5y OS (81.4% vs 76.1%) and DFS, especially in Stage III and serous histology.",
+    impact: "Established adjuvant chemoRT as standard for high-risk and Stage III endometrial cancer.",
+    keyNumber: "81.4% vs 76.1%", keyLabel: "5y OS (CRT vs RT)",
+    pmid: "29449189", tags: ["endometrium", "chemoRT", "high-risk", "Stage-III"]
+  },
+  {
+    id: "c5", site: "CNS", subsite: "Brain Mets",
+    name: "RTOG 0614 (Memantine)", sponsor: "RTOG", year: 2013,
+    question: "Does memantine protect cognitive function during WBRT?",
+    arms: ["WBRT + Placebo", "WBRT + Memantine (20mg/day for 24 weeks)"],
+    result: "Memantine delayed time to cognitive decline; improved executive function and memory at 24 weeks.",
+    impact: "Memantine became standard supportive care for patients receiving WBRT.",
+    keyNumber: "Delayed decline", keyLabel: "Cognitive preservation with Memantine",
+    pmid: "23959912", tags: ["WBRT", "brain-mets", "supportive", "cognition"]
+  },
+  {
+    id: "b6", site: "Breast", subsite: "Early Breast",
+    name: "EORTC 22881 (Boost)", sponsor: "EORTC", year: 2001,
+    question: "Does a 16 Gy boost improve local control after 50 Gy WBI?",
+    arms: ["WBI 50 Gy alone", "WBI 50 Gy + 16 Gy boost to tumor bed"],
+    result: "Boost reduced 10y local recurrence (6.2% vs 10.2%), especially in patients <40 years.",
+    impact: "Established the benefit of tumor bed boost for local control in breast-conserving therapy.",
+    keyNumber: "6.2% vs 10.2%", keyLabel: "10y LR (Boost vs No Boost)",
+    pmid: "11698690", tags: ["breast", "boost", "local-control"]
+  },
+  {
+    id: "l6", site: "Lung", subsite: "NSCLC Stage I",
+    name: "RTOG 0813 (Central SBRT)", sponsor: "RTOG", year: 2019,
+    question: "What is the maximum tolerated dose (MTD) for central SBRT?",
+    arms: ["Dose escalation: 50 Gy to 60 Gy in 5 fractions"],
+    result: "MTD was 60 Gy in 5 fractions; 2y local control 88%; Grade 3+ toxicity 7.2%.",
+    impact: "Established safety and efficacy of 5-fraction SBRT for central/ultra-central lung tumors.",
+    keyNumber: "60 Gy / 5#", keyLabel: "Safe for central tumors",
+    pmid: "30939095", tags: ["SBRT", "central-lung", "safety", "MTD"]
+  },
+  {
+    id: "p6", site: "Prostate", subsite: "Localised Low-Risk",
+    name: "RTOG 0415", sponsor: "RTOG", year: 2016,
+    question: "Is hypofractionation (70 Gy/28#) non-inferior to conventional (73.8 Gy/41#)?",
+    arms: ["73.8 Gy / 41 fractions", "70 Gy / 28 fractions"],
+    result: "Hypofractionation non-inferior for DFS; slightly higher late GI/GU toxicity.",
+    impact: "Supported hypofractionation as a standard option for low-risk prostate cancer.",
+    keyNumber: "Non-inferior", keyLabel: "Hypofractionation validated",
+    pmid: "27044935", tags: ["prostate", "hypofractionation", "low-risk"]
+  },
+  {
+    id: "b7", site: "Breast", subsite: "Nodal",
+    name: "EORTC 22922 (IMN)", sponsor: "EORTC", year: 2015,
+    question: "Does internal mammary and medial supraclavicular (IM-MS) RT improve OS?",
+    arms: ["WBI/PMRT alone", "WBI/PMRT + IM-MS nodal irradiation"],
+    result: "IM-MS RT improved DFS and DMFS; trend toward improved OS (p=0.06) at 10 years.",
+    impact: "Supported inclusion of IMN in regional nodal irradiation for high-risk patients.",
+    keyNumber: "Improved DFS", keyLabel: "Nodal RT benefit",
+    pmid: "26200978", tags: ["breast", "IMN", "nodal", "DFS"]
+  },
+  {
+    id: "e2", site: "Esophagus", subsite: "Locally Advanced",
+    name: "CheckMate 577", sponsor: "BMS", year: 2021,
+    question: "Does adjuvant Nivolumab improve DFS after trimodality therapy?",
+    arms: ["Placebo", "Nivolumab for 1 year (after R0 resection post-CRT)"],
+    result: "Nivolumab doubled median DFS (22.4 vs 11 months).",
+    impact: "Established adjuvant Nivolumab as standard of care for patients with residual disease post-CRT.",
+    keyNumber: "22.4 vs 11 mo", keyLabel: "Median DFS (Nivo vs Placebo)",
+    pmid: "33789010", tags: ["esophagus", "immunotherapy", "adjuvant", "landmark"]
+  },
 ];
-
-const REFERENCE_ARMS = [
-  { id: "ff", name: "FAST-Forward", arm: "26 Gy / 5#", dose: 26, fractions: 5, abTumour: 4.0, abLate: 3.0, site: "Breast" },
-  { id: "chhip", name: "CHHiP", arm: "60 Gy / 20#", dose: 60, fractions: 20, abTumour: 1.5, abLate: 3.0, site: "Prostate" },
-  { id: "rtog0617", name: "RTOG 0617", arm: "60 Gy / 30#", dose: 60, fractions: 30, abTumour: 10.0, abLate: 3.0, site: "Lung" },
-  { id: "startb", name: "START-B", arm: "40 Gy / 15#", dose: 40, fractions: 15, abTumour: 4.0, abLate: 3.0, site: "Breast" },
-  { id: "sabr3", name: "RTOG 0236 (SABR)", arm: "54 Gy / 3#", dose: 54, fractions: 3, abTumour: 10.0, abLate: 3.0, site: "Lung" },
-  { id: "stupp", name: "Stupp Protocol", arm: "60 Gy / 30#", dose: 60, fractions: 30, abTumour: 10.0, abLate: 3.0, site: "CNS" },
-];
-
-// ─── CONFIG ──────────────────────────────────────────────────────────────────
 
 const SITES = Array.from(new Set(TRIALS.map(t => t.site)));
 
 const SITE_META: Record<string, { color: string; bg: string }> = {
-  "All":          { color: "#94A3B8", bg: "rgba(148,163,184,0.1)" },
-  "Breast":       { color: "#F472B6", bg: "rgba(244,114,182,0.08)" },
-  "Lung":         { color: "#60A5FA", bg: "rgba(96,165,250,0.08)" },
-  "Prostate":     { color: "#34D399", bg: "rgba(52,211,153,0.08)" },
-  "Head & Neck":  { color: "#FBBF24", bg: "rgba(251,191,36,0.08)" },
-  "Colorectal":   { color: "#F97316", bg: "rgba(249,115,22,0.08)" },
-  "CNS":          { color: "#A78BFA", bg: "rgba(167,139,250,0.08)" },
-  "Gynaecology":  { color: "#FB7185", bg: "rgba(251,113,133,0.08)" },
-  "Palliative":   { color: "#94A3B8", bg: "rgba(148,163,184,0.08)" },
+  "Breast":       { color: "#F472B6", bg: "rgba(244,114,182,0.1)" },
+  "Lung":         { color: "#60A5FA", bg: "rgba(96,165,250,0.1)" },
+  "Prostate":     { color: "#34D399", bg: "rgba(52,211,153,0.1)" },
+  "Head & Neck":  { color: "#FBBF24", bg: "rgba(251,191,36,0.1)" },
+  "Colorectal":   { color: "#F97316", bg: "rgba(249,115,22,0.1)" },
+  "CNS":          { color: "#A78BFA", bg: "rgba(167,139,250,0.1)" },
+  "Gynaecology":  { color: "#FB7185", bg: "rgba(251,113,133,0.1)" },
+  "Palliative":   { color: "#94A3B8", bg: "rgba(148,163,184,0.1)" },
+  "Esophagus":    { color: "#F59E0B", bg: "rgba(245,158,11,0.1)" },
+  "Oligometastatic": { color: "#EC4899", bg: "rgba(236,72,153,0.1)" },
 };
-
-const SPONSOR_COLORS: Record<string, string> = {
-  "RTOG": "#60A5FA", "EORTC": "#FBBF24", "NCIC": "#34D399",
-  "GOG": "#FB7185", "UK": "#A78BFA", "Swedish": "#F472B6",
-  "Dutch": "#F97316", "Meta-analysis": "#94A3B8",
-};
-
-function sponsorColor(s: string) {
-  for (const [k, v] of Object.entries(SPONSOR_COLORS)) {
-    if (s.includes(k)) return v;
-  }
-  return "#64748B";
-}
 
 // ─── COMPONENTS ──────────────────────────────────────────────────────────────
 
-function SiteChip({ site, active, onClick }: { site: string; active: boolean; onClick: () => void }) {
-  const meta = SITE_META[site] || SITE_META["All"];
-  return (
-    <button onClick={onClick} style={{
-      padding: "6px 14px", borderRadius: "30px",
-      backgroundColor: active ? meta.color : "rgba(255,255,255,0.04)",
-      border: `1px solid ${active ? meta.color : "rgba(255,255,255,0.08)"}`,
-      color: active ? "#0A0F1A" : "#64748B",
-      fontSize: "11px", fontWeight: 700, cursor: "pointer",
-      whiteSpace: "nowrap", transition: "all 0.2s ease",
-      fontFamily: "'Syne', sans-serif", letterSpacing: "0.04em"
-    }}>
-      {site}
-    </button>
-  );
-}
-
-function TagPill({ tag }: { tag: string }) {
-  return (
-    <span style={{
-      padding: "2px 8px", borderRadius: "20px",
-      backgroundColor: "rgba(255,255,255,0.04)",
-      border: "1px solid rgba(255,255,255,0.08)",
-      fontSize: "9px", color: "#475569",
-      fontFamily: "'JetBrains Mono', monospace",
-      letterSpacing: "0.06em"
-    }}>#{tag}</span>
-  );
-}
-
-function TrialCard({ trial, index, expanded, onToggle }: { trial: typeof TRIALS[0]; index: number; expanded: boolean; onToggle: () => void }) {
-  const siteColor = SITE_META[trial.site]?.color || "#94A3B8";
-  const siteBg    = SITE_META[trial.site]?.bg    || "rgba(255,255,255,0.04)";
-
-  return (
-    <div
-      className="trial-card"
-      style={{
-        borderRadius: "16px", overflow: "hidden",
-        border: `1px solid rgba(255,255,255,0.07)`,
-        backgroundColor: "#0D1420",
-        marginBottom: "12px",
-        animationDelay: `${index * 0.05}s`,
-        transition: "border-color 0.25s ease, box-shadow 0.25s ease"
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.borderColor = siteColor + "55";
-        e.currentTarget.style.boxShadow = `0 0 24px ${siteColor}15`;
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)";
-        e.currentTarget.style.boxShadow = "none";
-      }}
-    >
-      {/* ── Card Header ── */}
-      <button
-        onClick={onToggle}
-        style={{
-          width: "100%", display: "flex", gap: "12px",
-          padding: "16px", background: "none", border: "none",
-          cursor: "pointer", textAlign: "left", alignItems: "flex-start"
-        }}
-      >
-        {/* Year column */}
-        <div style={{
-          flexShrink: 0, width: "42px", textAlign: "center",
-          paddingTop: "2px"
-        }}>
-          <div style={{
-            fontSize: "11px", fontWeight: 700, color: siteColor,
-            fontFamily: "'JetBrains Mono', monospace"
-          }}>{trial.year}</div>
-          <div style={{
-            marginTop: "6px", width: "2px", height: "100%",
-            backgroundColor: siteColor + "33", margin: "4px auto 0"
-          }} />
-        </div>
-
-        {/* Main content */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px" }}>
-            <div>
-              <div style={{
-                fontSize: "14px", fontWeight: 800, color: "#F1F5F9",
-                fontFamily: "'Syne', sans-serif", lineHeight: 1.2, marginBottom: "3px"
-              }}>{trial.name}</div>
-              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" }}>
-                <span style={{
-                  fontSize: "9px", fontWeight: 700, padding: "2px 8px",
-                  borderRadius: "20px", backgroundColor: siteBg,
-                  color: siteColor, border: `1px solid ${siteColor}44`,
-                  fontFamily: "'JetBrains Mono', monospace"
-                }}>{trial.site} · {trial.subsite}</span>
-                <span style={{
-                  fontSize: "9px", padding: "2px 8px", borderRadius: "20px",
-                  backgroundColor: "rgba(255,255,255,0.04)",
-                  color: sponsorColor(trial.sponsor),
-                  border: `1px solid ${sponsorColor(trial.sponsor)}44`,
-                  fontFamily: "'JetBrains Mono', monospace"
-                }}>{trial.sponsor}</span>
-              </div>
-            </div>
-            <span style={{
-              color: siteColor, fontSize: "14px",
-              transform: expanded ? "rotate(180deg)" : "rotate(0)",
-              transition: "transform 0.25s", flexShrink: 0, marginTop: "2px"
-            }}>▾</span>
-          </div>
-
-          <div style={{
-            fontSize: "12px", color: "#94A3B8", lineHeight: 1.5,
-            marginBottom: "10px"
-          }}>{trial.question}</div>
-
-          {/* Key number banner */}
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: "8px",
-            padding: "6px 12px", borderRadius: "8px",
-            backgroundColor: siteBg, border: `1px solid ${siteColor}33`
-          }}>
-            <span style={{
-              fontSize: "13px", fontWeight: 900, color: siteColor,
-              fontFamily: "'JetBrains Mono', monospace"
-            }}>{trial.keyNumber}</span>
-            <span style={{ fontSize: "10px", color: "#64748B" }}>{trial.keyLabel}</span>
-          </div>
-        </div>
-      </button>
-
-      {/* ── Expanded ── */}
-      {expanded && (
-        <div style={{
-          padding: "0 16px 16px",
-          borderTop: `1px solid rgba(255,255,255,0.05)`
-        }}>
-          {/* Arms */}
-          <div style={{ marginTop: "14px", marginBottom: "12px" }}>
-            <div style={{
-              fontSize: "10px", fontWeight: 700, color: "#475569",
-              letterSpacing: "0.1em", marginBottom: "8px",
-              fontFamily: "'JetBrains Mono', monospace"
-            }}>TRIAL ARMS</div>
-            {trial.arms.map((arm, i) => (
-              <div key={i} style={{
-                display: "flex", gap: "10px", alignItems: "flex-start",
-                marginBottom: "5px"
-              }}>
-                <span style={{
-                  flexShrink: 0, width: "18px", height: "18px",
-                  borderRadius: "50%", backgroundColor: `${siteColor}22`,
-                  border: `1px solid ${siteColor}55`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "9px", fontWeight: 700, color: siteColor,
-                  fontFamily: "'JetBrains Mono', monospace"
-                }}>{i + 1}</span>
-                <span style={{ fontSize: "12px", color: "#CBD5E1", lineHeight: 1.5 }}>{arm}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Result */}
-          <div style={{
-            padding: "12px 14px", borderRadius: "10px",
-            backgroundColor: "rgba(255,255,255,0.03)",
-            border: `1px solid ${siteColor}22`, marginBottom: "10px"
-          }}>
-            <div style={{
-              fontSize: "10px", fontWeight: 700, color: siteColor,
-              letterSpacing: "0.1em", marginBottom: "6px",
-              fontFamily: "'JetBrains Mono', monospace"
-            }}>📊 RESULT</div>
-            <div style={{ fontSize: "12px", color: "#CBD5E1", lineHeight: 1.6 }}>{trial.result}</div>
-          </div>
-
-          {/* Impact */}
-          <div style={{
-            padding: "12px 14px", borderRadius: "10px",
-            backgroundColor: `${siteColor}0D`,
-            border: `1px solid ${siteColor}33`, marginBottom: "12px"
-          }}>
-            <div style={{
-              fontSize: "10px", fontWeight: 700, color: siteColor,
-              letterSpacing: "0.1em", marginBottom: "6px",
-              fontFamily: "'JetBrains Mono', monospace"
-            }}>⚡ CLINICAL IMPACT</div>
-            <div style={{ fontSize: "12px", color: "#E2E8F0", lineHeight: 1.6, fontWeight: 500 }}>{trial.impact}</div>
-          </div>
-
-          {/* Tags + PMID */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
-            <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
-              {trial.tags.map(tag => <TagPill key={tag} tag={tag} />)}
-            </div>
-            {trial.pmid && (
-              <a
-                href={`https://pubmed.ncbi.nlm.nih.gov/${trial.pmid}`}
-                target="_blank" rel="noopener noreferrer"
-                style={{
-                  fontSize: "10px", color: "#3B82F6",
-                  textDecoration: "none", fontFamily: "'JetBrains Mono', monospace",
-                  padding: "4px 10px", borderRadius: "6px",
-                  backgroundColor: "rgba(59,130,246,0.1)",
-                  border: "1px solid rgba(59,130,246,0.25)"
-                }}
-              >
-                PMID {trial.pmid} ↗
-              </a>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── STATS BAR ────────────────────────────────────────────────────────────────
-
-function StatsBar({ filtered }: { filtered: typeof TRIALS }) {
-  const bySite = useMemo(() => {
-    const map: Record<string, number> = {};
-    filtered.forEach(t => { map[t.site] = (map[t.site] || 0) + 1; });
-    return map;
-  }, [filtered]);
+function TrialCard({ trial, expanded, onToggle }: { trial: typeof TRIALS[0]; expanded: boolean; onToggle: () => void }) {
+  const meta = SITE_META[trial.site] || { color: "#94A3B8", bg: "rgba(148,163,184,0.1)" };
 
   return (
     <div style={{
-      display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "4px",
-      marginBottom: "16px"
+      backgroundColor: "rgba(255,255,255,0.03)",
+      borderRadius: "12px",
+      border: `1px solid ${expanded ? meta.color + "44" : "rgba(255,255,255,0.08)"}`,
+      overflow: "hidden",
+      marginBottom: "12px",
+      transition: "all 0.2s ease"
     }}>
-      {[
-        { label: "Trials", value: filtered.length },
-        { label: "Sites", value: Object.keys(bySite).length },
-        { label: "Oldest", value: filtered.length ? Math.min(...filtered.map(t => t.year)) : "—" },
-        { label: "Newest", value: filtered.length ? Math.max(...filtered.map(t => t.year)) : "—" },
-      ].map(stat => (
-        <div key={stat.label} style={{
-          flexShrink: 0, padding: "10px 16px",
-          backgroundColor: "rgba(255,255,255,0.03)",
-          borderRadius: "10px", border: "1px solid rgba(255,255,255,0.07)",
-          textAlign: "center", minWidth: "64px"
-        }}>
-          <div style={{
-            fontSize: "18px", fontWeight: 900, color: "#F1F5F9",
-            fontFamily: "'Syne', sans-serif", lineHeight: 1
-          }}>{stat.value}</div>
-          <div style={{ fontSize: "9px", color: "#475569", marginTop: "3px", letterSpacing: "0.08em" }}>
-            {stat.label}
+      <button
+        onClick={onToggle}
+        style={{
+          width: "100%",
+          padding: "16px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "8px",
+          background: "none",
+          border: "none",
+          textAlign: "left",
+          cursor: "pointer"
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", width: "100%" }}>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <span style={{
+              fontSize: "10px",
+              fontWeight: 800,
+              color: meta.color,
+              fontFamily: "'JetBrains Mono', monospace",
+              backgroundColor: meta.bg,
+              padding: "2px 6px",
+              borderRadius: "4px"
+            }}>{trial.year}</span>
+            <span style={{
+              fontSize: "10px",
+              fontWeight: 700,
+              color: "#64748B",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em"
+            }}>{trial.site}</span>
           </div>
+          <ChevronDown 
+            size={18} 
+            style={{ 
+              color: "#475569", 
+              transform: expanded ? "rotate(180deg)" : "rotate(0)",
+              transition: "transform 0.3s ease"
+            }} 
+          />
         </div>
-      ))}
+        
+        <h3 style={{
+          fontSize: "15px",
+          fontWeight: 700,
+          color: "#F1F5F9",
+          lineHeight: 1.3
+        }}>{trial.name}</h3>
+        
+        <p style={{
+          fontSize: "12px",
+          color: "#94A3B8",
+          lineHeight: 1.4,
+          display: expanded ? "none" : "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden"
+        }}>{trial.question}</p>
+
+        {!expanded && (
+          <div style={{
+            marginTop: "4px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+          }}>
+            <div style={{
+              fontSize: "11px",
+              fontWeight: 700,
+              color: meta.color,
+              fontFamily: "'JetBrains Mono', monospace"
+            }}>{trial.keyNumber}</div>
+            <div style={{ fontSize: "10px", color: "#475569" }}>{trial.keyLabel}</div>
+          </div>
+        )}
+      </button>
+
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            <div style={{ padding: "0 16px 16px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+              <div style={{ marginTop: "12px" }}>
+                <h4 style={{ fontSize: "10px", fontWeight: 800, color: "#475569", letterSpacing: "0.1em", marginBottom: "6px" }}>QUESTION</h4>
+                <p style={{ fontSize: "13px", color: "#CBD5E1", lineHeight: 1.5 }}>{trial.question}</p>
+              </div>
+
+              <div style={{ marginTop: "16px" }}>
+                <h4 style={{ fontSize: "10px", fontWeight: 800, color: "#475569", letterSpacing: "0.1em", marginBottom: "6px" }}>ARMS</h4>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  {trial.arms.map((arm, i) => (
+                    <div key={i} style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
+                      <div style={{ 
+                        width: "16px", height: "16px", borderRadius: "50%", 
+                        backgroundColor: meta.bg, border: `1px solid ${meta.color}44`,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: "9px", fontWeight: 700, color: meta.color, flexShrink: 0, marginTop: "2px"
+                      }}>{i + 1}</div>
+                      <p style={{ fontSize: "12px", color: "#94A3B8", lineHeight: 1.4 }}>{arm}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginTop: "16px", padding: "12px", backgroundColor: "rgba(255,255,255,0.02)", borderRadius: "8px", border: `1px solid ${meta.color}22` }}>
+                <h4 style={{ fontSize: "10px", fontWeight: 800, color: meta.color, letterSpacing: "0.1em", marginBottom: "4px" }}>RESULT</h4>
+                <p style={{ fontSize: "12px", color: "#F1F5F9", lineHeight: 1.5 }}>{trial.result}</p>
+              </div>
+
+              <div style={{ marginTop: "12px", padding: "12px", backgroundColor: meta.bg, borderRadius: "8px", border: `1px solid ${meta.color}33` }}>
+                <h4 style={{ fontSize: "10px", fontWeight: 800, color: meta.color, letterSpacing: "0.1em", marginBottom: "4px" }}>IMPACT</h4>
+                <p style={{ fontSize: "12px", color: "#F1F5F9", lineHeight: 1.5, fontWeight: 500 }}>{trial.impact}</p>
+              </div>
+
+              <div style={{ marginTop: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                  {trial.tags.map(tag => (
+                    <span key={tag} style={{ fontSize: "9px", color: "#475569", fontFamily: "'JetBrains Mono', monospace" }}>#{tag}</span>
+                  ))}
+                </div>
+                {trial.pmid && (
+                  <a 
+                    href={`https://pubmed.ncbi.nlm.nih.gov/${trial.pmid}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ 
+                      display: "flex", alignItems: "center", gap: "4px", 
+                      fontSize: "10px", color: "#3B82F6", textDecoration: "none",
+                      backgroundColor: "rgba(59,130,246,0.1)", padding: "4px 8px", borderRadius: "4px"
+                    }}
+                  >
+                    PMID {trial.pmid} <ExternalLink size={10} />
+                  </a>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 
-// ─── SIDEBAR DATA ─────────────────────────────────────────────────────────────
 const SIDEBAR_DATA: KeyFactSection[] = [
   {
     title: 'Breast Trials',
@@ -649,6 +609,11 @@ const SIDEBAR_DATA: KeyFactSection[] = [
       { k: 'START B', v: '40Gy/15# non-inferior', mono: true },
       { k: 'FAST-Forward', v: '26Gy/5# non-inferior', mono: true },
       { k: 'MA.20', v: 'RNI improves DFS', mono: true },
+      { k: 'CALGB 9343', v: 'RT omission in elderly', mono: true },
+      { k: 'EBCTCG PMRT', v: 'Benefit in 1-3 nodes', mono: true },
+      { k: 'AMAROS', v: 'Axillary RT vs Surgery', mono: true },
+      { k: 'EORTC 22881', v: 'Boost benefit in <50y', mono: true },
+      { k: 'PRIME II', v: 'Omission in low-risk', mono: true },
     ]
   },
   {
@@ -661,449 +626,186 @@ const SIDEBAR_DATA: KeyFactSection[] = [
       { k: 'PACIFIC', v: 'Durvalumab post-CRT', mono: true },
       { k: 'RTOG 0617', v: '60Gy > 74Gy in Stage III', mono: true },
       { k: 'RTOG 0236', v: 'SBRT 54Gy/3# for Stage I', mono: true },
+      { k: 'RTOG 9410', v: 'Concurrent > Sequential', mono: true },
+      { k: 'CHART', v: 'Continuous Hyperfrac', mono: true },
+      { k: 'STAMPEDE', v: 'Oligometastatic RT', mono: true },
+      { k: 'COMET', v: 'SABR in oligomets', mono: true },
+      { k: 'LUKAS', v: 'PCI in SCLC benefit', mono: true },
     ]
   },
   {
     title: 'Prostate Trials',
-    emoji: '💧',
-    accent: '#a78bfa',
-    bg: 'rgba(167,139,250,0.08)',
-    border: 'rgba(167,139,250,0.4)',
+    emoji: '💎',
+    accent: '#10b981',
+    bg: 'rgba(16,185,129,0.08)',
+    border: 'rgba(16,185,129,0.4)',
     rows: [
       { k: 'CHHiP', v: '60Gy/20# non-inferior', mono: true },
-      { k: 'PACE-B', v: 'SBRT vs Mod Hypo', mono: true },
-      { k: 'STAMPEDE', v: 'RT to primary in M1', mono: true },
+      { k: 'PROFIT', v: 'Hypofractionation standard', mono: true },
+      { k: 'PROTECT', v: 'Active surveillance vs RT', mono: true },
+      { k: 'STAMPEDE', v: 'M1 prostate RT benefit', mono: true },
+      { k: 'RADICALS-RT', v: 'Adjuvant vs Salvage', mono: true },
+      { k: 'HYPO-RT-PC', v: 'Ultra-hypofractionation', mono: true },
+      { k: 'ASCENDE-RT', v: 'LDR boost benefit', mono: true },
+    ]
+  },
+  {
+    title: 'H&N Trials',
+    emoji: '🗣️',
+    accent: '#f59e0b',
+    bg: 'rgba(245,158,11,0.08)',
+    border: 'rgba(245,158,11,0.4)',
+    rows: [
+      { k: 'MACH-NC', v: 'Concurrent CRT benefit', mono: true },
+      { k: 'DAHANCA', v: 'Nimorazole benefit', mono: true },
+      { k: 'ARTSCAN', v: 'Dose escalation failed', mono: true },
+      { k: 'RTOG 0129', v: 'HPV+ prognosis better', mono: true },
+      { k: 'De-ESCALATE', v: 'Cisplatin > Cetuximab', mono: true },
     ]
   }
 ];
 
 export default function ClinicalTrials() {
-  const [view, setView] = useState<"database" | "comparison">("database");
   const [activeSite, setActiveSite] = useState(SITES[0] || "");
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("year");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const listRef = useRef<any>(null);
-
-  // Comparison Tool State — must be declared here with all other hooks (Rules of Hooks)
-  const [selectedRefId, setSelectedRefId] = useState(REFERENCE_ARMS[0].id);
-  const [customDose, setCustomDose] = useState(50);
-  const [customFracs, setCustomFracs] = useState(25);
-  const [customABTumour, setCustomABTumour] = useState(10.0);
-  const [customABLate, setCustomABLate] = useState(3.0);
-
-  const toggleExpand = (id: string) => {
-    setExpandedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
 
   const filtered = useMemo(() => {
     let t = TRIALS;
-    t = t.filter(x => x.site === activeSite);
     if (search.trim()) {
       const s = search.toLowerCase();
-      t = t.filter(x =>
-        x.name.toLowerCase().includes(s) ||
+      t = t.filter(x => 
+        x.name.toLowerCase().includes(s) || 
         x.question.toLowerCase().includes(s) ||
-        x.result.toLowerCase().includes(s) ||
-        x.impact.toLowerCase().includes(s) ||
         x.tags.some(tag => tag.includes(s)) ||
-        x.subsite.toLowerCase().includes(s)
+        x.site.toLowerCase().includes(s)
       );
+    } else {
+      t = t.filter(x => x.site === activeSite);
     }
-    if (sortBy === "year") return [...t].sort((a, b) => b.year - a.year);
-    if (sortBy === "site") return [...t].sort((a, b) => a.site.localeCompare(b.site));
-    if (sortBy === "name") return [...t].sort((a, b) => a.name.localeCompare(b.name));
-    return t;
-  }, [activeSite, search, sortBy]);
-
-  useEffect(() => {
-    if (listRef.current) {
-      listRef.current.resetAfterIndex(0);
-    }
-  }, [expandedIds, filtered]);
-
-  const getItemSize = (index: number) => {
-    const trial = filtered[index];
-    if (expandedIds.has(trial.id)) {
-      const baseHeight = 180;
-      const armHeight = trial.arms.length * 25;
-      const resultHeight = trial.result.length * 0.5;
-      const impactHeight = trial.impact.length * 0.5;
-      return baseHeight + armHeight + resultHeight + impactHeight + 100;
-    }
-    return 160;
-  };
-
-  const selectedRef = useMemo(() => 
-    REFERENCE_ARMS.find(a => a.id === selectedRefId) || REFERENCE_ARMS[0],
-  [selectedRefId]);
-
-  const comparisonData = useMemo(() => {
-    const ref = selectedRef;
-    const dRef = ref.dose / ref.fractions;
-    const bedTumourRef = ref.dose * (1 + dRef / ref.abTumour);
-    const bedLateRef = ref.dose * (1 + dRef / ref.abLate);
-
-    const dCust = customDose / customFracs;
-    const bedTumourCust = customDose * (1 + dCust / customABTumour);
-    const bedLateCust = customDose * (1 + dCust / customABLate);
-
-    return [
-      {
-        name: 'Tumour BED',
-        Reference: parseFloat(bedTumourRef.toFixed(1)),
-        Custom: parseFloat(bedTumourCust.toFixed(1)),
-        unit: 'Gy₁₀'
-      },
-      {
-        name: 'Late Tissue BED',
-        Reference: parseFloat(bedLateRef.toFixed(1)),
-        Custom: parseFloat(bedLateCust.toFixed(1)),
-        unit: 'Gy₃'
-      }
-    ];
-  }, [selectedRef, customDose, customFracs, customABTumour, customABLate]);
-
-  const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
-    const trial = filtered[index];
-    return (
-      <div style={{ ...style, paddingRight: "8px" }}>
-        <TrialCard 
-          trial={trial} 
-          index={index} 
-          expanded={expandedIds.has(trial.id)}
-          onToggle={() => toggleExpand(trial.id)}
-        />
-      </div>
-    );
-  };
-
-  const AutoSizerAny = AutoSizer as any;
-  const VariableSizeListAny = (reactWindow as any).VariableSizeList;
+    return t.sort((a, b) => b.year - a.year);
+  }, [activeSite, search]);
 
   return (
     <div style={{
       minHeight: "100vh",
-      background: "linear-gradient(175deg, #060B14 0%, #0A1322 60%, #060B14 100%)",
-      fontFamily: "'DM Sans', sans-serif", color: "#F1F5F9"
+      backgroundColor: "#060B14",
+      color: "#F1F5F9",
+      fontFamily: "'Inter', sans-serif",
+      paddingBottom: "40px"
     }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap'); ::-webkit-scrollbar { height: 3px; width: 3px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #1E3A5F; border-radius: 4px; } @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } } .trial-card { animation: fadeUp 0.4s ease both; } .chip-scroll { -ms-overflow-style: none; scrollbar-width: none; } .chip-scroll::-webkit-scrollbar { display: none; }`}</style>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
 
       {/* ── HEADER ── */}
       <div style={{
         position: "sticky", top: "44px", zIndex: 40,
-        background: "rgba(6,11,20,0.94)", backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)"
+        backgroundColor: "rgba(6,11,20,0.8)", backdropFilter: "blur(12px)",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        padding: "16px"
       }}>
-        <div style={{ maxWidth: "680px", margin: "0 auto", padding: "14px 16px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div style={{
-              width: "40px", height: "40px", borderRadius: "12px", flexShrink: 0,
-              background: "linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "20px", boxShadow: "0 0 24px rgba(245,158,11,0.35)"
-            }}>⚗</div>
-            <div style={{ flex: 1 }}>
-              <h1 style={{
-                fontSize: "17px", fontWeight: 900, color: "#F8FAFC",
-                fontFamily: "'Syne', sans-serif", letterSpacing: "-0.03em", lineHeight: 1
-              }}>Clinical Trials Reference</h1>
-              <div style={{
-                fontSize: "10px", color: "#475569", marginTop: "3px",
-                fontFamily: "'JetBrains Mono', monospace"
-              }}>Landmark RT trials · RTOG · EORTC · NCI · {TRIALS.length} studies</div>
+        <div style={{ maxWidth: "600px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ 
+              width: "36px", height: "36px", borderRadius: "10px", 
+              backgroundColor: "#3B82F6", display: "flex", alignItems: "center", justifyContent: "center" 
+            }}>
+              <BookOpen size={20} color="white" />
             </div>
-            <div style={{ display: "flex", gap: "4px" }}>
-              <button 
-                onClick={() => setView("database")}
-                style={{
-                  padding: "6px 10px", borderRadius: "8px",
-                  backgroundColor: view === "database" ? "#F59E0B" : "rgba(255,255,255,0.04)",
-                  border: `1px solid ${view === "database" ? "#F59E0B" : "rgba(255,255,255,0.08)"}`,
-                  color: view === "database" ? "#0A0F1A" : "#64748B",
-                  fontSize: "9px", fontWeight: 700, cursor: "pointer",
-                  fontFamily: "'JetBrains Mono', monospace", transition: "all 0.2s"
-                }}
-              >DATABASE</button>
-              <button 
-                onClick={() => setView("comparison")}
-                style={{
-                  padding: "6px 10px", borderRadius: "8px",
-                  backgroundColor: view === "comparison" ? "#F59E0B" : "rgba(255,255,255,0.04)",
-                  border: `1px solid ${view === "comparison" ? "#F59E0B" : "rgba(255,255,255,0.08)"}`,
-                  color: view === "comparison" ? "#0A0F1A" : "#64748B",
-                  fontSize: "9px", fontWeight: 700, cursor: "pointer",
-                  fontFamily: "'JetBrains Mono', monospace", transition: "all 0.2s"
-                }}
-              >COMPARE</button>
+            <div>
+              <h1 style={{ fontSize: "16px", fontWeight: 800, letterSpacing: "-0.02em" }}>Landmark Trials</h1>
+              <p style={{ fontSize: "10px", color: "#475569", fontWeight: 500 }}>Evidence Database</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: "680px", margin: "0 auto", padding: "16px" }}>
-        {view === "database" ? (
-          <>
-            {/* ── SEARCH ── */}
-            <div style={{ position: "relative", marginBottom: "14px" }}>
-          <span style={{
-            position: "absolute", left: "14px", top: "50%",
-            transform: "translateY(-50%)", fontSize: "14px",
-            color: "#475569", pointerEvents: "none"
-          }}>🔍</span>
-          <input
+      <div style={{ maxWidth: "600px", margin: "0 auto", padding: "16px" }}>
+        {/* ── SEARCH ── */}
+        <div style={{ position: "relative", marginBottom: "16px" }}>
+          <Search size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#475569" }} />
+          <input 
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search trial name, keyword, result…"
+            placeholder="Search trials, sites, keywords..."
             style={{
-              width: "100%", padding: "12px 14px 12px 42px",
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.09)",
-              borderRadius: "12px", color: "#F1F5F9",
-              fontSize: "13px", outline: "none",
-              fontFamily: "var(--font-sans)",
-              transition: "border-color 0.2s"
+              width: "100%", padding: "12px 12px 12px 38px",
+              backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "10px", color: "white", fontSize: "14px", outline: "none"
             }}
-            onFocus={e => e.target.style.borderColor = "#F59E0B"}
-            onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.09)"}
           />
         </div>
 
-        {/* ── SITE CHIPS ── */}
-        <div className="chip-scroll" style={{
-          display: "flex", gap: "6px", overflowX: "auto",
-          marginBottom: "16px", paddingBottom: "2px"
-        }}>
-          {SITES.map(site => (
-            <SiteChip
-              key={site} site={site}
-              active={activeSite === site}
-              onClick={() => setActiveSite(site)}
-            />
-          ))}
-        </div>
-
-        {/* ── SORT + STATS ── */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-          <div style={{ fontSize: "12px", color: "#475569" }}>
-            <span style={{ color: "#F59E0B", fontWeight: 700 }}>{filtered.length}</span> trials
+        {/* ── SITE FILTER ── */}
+        {!search && (
+          <div className="no-scrollbar" style={{ display: "flex", gap: "8px", overflowX: "auto", marginBottom: "20px", paddingBottom: "4px" }}>
+            {SITES.map(site => {
+              const active = activeSite === site;
+              const meta = SITE_META[site];
+              return (
+                <button
+                  key={site}
+                  onClick={() => setActiveSite(site)}
+                  style={{
+                    padding: "6px 14px", borderRadius: "20px", whiteSpace: "nowrap",
+                    backgroundColor: active ? meta.color : "rgba(255,255,255,0.04)",
+                    color: active ? "#060B14" : "#64748B",
+                    border: `1px solid ${active ? meta.color : "rgba(255,255,255,0.08)"}`,
+                    fontSize: "11px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s"
+                  }}
+                >
+                  {site}
+                </button>
+              );
+            })}
           </div>
-          <div style={{ display: "flex", gap: "4px" }}>
-            {["year", "site", "name"].map(s => (
-              <button key={s} onClick={() => setSortBy(s)} style={{
-                padding: "5px 10px", borderRadius: "8px",
-                backgroundColor: sortBy === s ? "#F59E0B" : "rgba(255,255,255,0.04)",
-                border: `1px solid ${sortBy === s ? "#F59E0B" : "rgba(255,255,255,0.08)"}`,
-                color: sortBy === s ? "#0A0F1A" : "#64748B",
-                fontSize: "10px", fontWeight: 700, cursor: "pointer",
-                fontFamily: "'JetBrains Mono', monospace",
-                transition: "all 0.2s"
-              }}>{s}</button>
-            ))}
-          </div>
-        </div>
+        )}
 
-        {/* ── STATS BAR ── */}
-        <StatsBar filtered={filtered} />
+        {/* ── STATS ── */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+          <div style={{ fontSize: "12px", color: "#475569", display: "flex", alignItems: "center", gap: "4px" }}>
+            <Filter size={12} />
+            <span>Showing <b>{filtered.length}</b> studies</span>
+          </div>
+          {search && (
+            <button 
+              onClick={() => setSearch("")}
+              style={{ fontSize: "11px", color: "#3B82F6", background: "none", border: "none", cursor: "pointer" }}
+            >
+              Clear Search
+            </button>
+          )}
+        </div>
 
         {/* ── TRIAL LIST ── */}
-        {filtered.length === 0 ? (
-          <div style={{
-            textAlign: "center", padding: "48px 24px",
-            color: "#475569", fontSize: "13px"
-          }}>
-            <div style={{ fontSize: "32px", marginBottom: "12px" }}>🔬</div>
-            No trials found for "{search}"
-          </div>
-        ) : (
-          <div style={{ height: "500px", width: "100%" }}>
-            <AutoSizerAny>
-              {({ height, width }: any) => (
-                <VariableSizeListAny
-                  ref={listRef}
-                  height={height}
-                  width={width}
-                  itemCount={filtered.length}
-                  itemSize={getItemSize}
-                  itemData={filtered}
-                  className="chip-scroll"
-                >
-                  {({ index, style }: any) => <Row index={index} style={style} />}
-                </VariableSizeListAny>
-              )}
-            </AutoSizerAny>
-          </div>
-        )}
-      </>
-    ) : (
-      <div className="space-y-6">
-            {/* Reference Arm Selector */}
-            <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-4">
-              <div className="flex items-center gap-2 mb-4">
-                <ArrowRightLeft className="w-4 h-4 text-amber-500" />
-                <h2 className="text-sm font-black uppercase tracking-widest text-slate-400">Dose Comparison Tool</h2>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1.5">Select Reference Trial Arm</label>
-                  <select 
-                    value={selectedRefId} 
-                    onChange={e => setSelectedRefId(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:border-amber-500 outline-none transition-colors"
-                  >
-                    {REFERENCE_ARMS.map(arm => (
-                      <option key={arm.id} value={arm.id}>{arm.name} ({arm.arm})</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="bg-slate-950/50 border border-slate-800/50 rounded-lg p-3">
-                  <p className="text-[9px] text-slate-500 uppercase mb-1">Reference Parameters</p>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[11px] text-slate-300">{selectedRef.site} Protocol</span>
-                    <span className="text-[11px] font-mono text-amber-400">α/β: {selectedRef.abTumour}/{selectedRef.abLate}</span>
-                  </div>
-                </div>
-              </div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {filtered.length > 0 ? (
+            filtered.map(trial => (
+              <TrialCard 
+                key={trial.id} 
+                trial={trial} 
+                expanded={expandedId === trial.id}
+                onToggle={() => setExpandedId(expandedId === trial.id ? null : trial.id)}
+              />
+            ))
+          ) : (
+            <div style={{ textAlign: "center", padding: "40px 20px", color: "#475569" }}>
+              <p style={{ fontSize: "14px" }}>No trials found matching your search.</p>
             </div>
-
-            {/* Custom Schedule Inputs */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <Calculator className="w-4 h-4 text-cyan-500" />
-                  <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400">Custom Schedule</h3>
-                </div>
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Total Dose (Gy)</label>
-                      <NumberInput  value={customDose} onChange={e => setCustomDose(parseFloat(e.target.value) || 0)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-cyan-400"
-                        buttonClassName="bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700" />
-                    </div>
-                    <div>
-                      <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Fractions</label>
-                      <NumberInput  value={customFracs} onChange={e => setCustomFracs(parseFloat(e.target.value) || 1)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-cyan-400"
-                        buttonClassName="bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">α/β Tumour</label>
-                      <NumberInput  value={customABTumour} onChange={e => setCustomABTumour(parseFloat(e.target.value) || 0.1)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-emerald-400"
-                        buttonClassName="bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700" />
-                    </div>
-                    <div>
-                      <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">α/β Late</label>
-                      <NumberInput  value={customABLate} onChange={e => setCustomABLate(parseFloat(e.target.value) || 0.1)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-rose-400"
-                        buttonClassName="bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bio-equivalence Summary */}
-              <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 flex flex-col justify-center">
-                <div className="text-center space-y-2">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase">Bio-equivalence (Tumour BED)</p>
-                  {(() => {
-                    const refBED = comparisonData[0].Reference;
-                    const custBED = comparisonData[0].Custom;
-                    const ratio = (custBED / refBED) * 100;
-                    const diff = ratio - 100;
-                    return (
-                      <>
-                        <div className="text-4xl font-black text-white font-mono tracking-tighter">
-                          {ratio.toFixed(1)}%
-                        </div>
-                        <div className={`text-[11px] font-bold ${diff > 0 ? 'text-rose-400' : diff < 0 ? 'text-cyan-400' : 'text-slate-500'}`}>
-                          {diff > 0 ? `+${diff.toFixed(1)}% higher dose` : diff < 0 ? `${diff.toFixed(1)}% lower dose` : 'Identical dose'}
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
-            </div>
-
-            {/* Comparison Chart */}
-            <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-4">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-amber-500" />
-                  <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400">BED Comparison (Gy)</h3>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-slate-600" />
-                    <span className="text-[9px] text-slate-500 uppercase font-bold">Reference</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-amber-500" />
-                    <span className="text-[9px] text-slate-500 uppercase font-bold">Custom</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="h-64 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={comparisonData} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                    <XAxis dataKey="name" stroke="#475569" fontSize={10} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#475569" fontSize={10} tickLine={false} axisLine={false} />
-                    <Tooltip 
-                      contentStyle={{ background: '#0f172a', border: '1px solid #1e3a5f', borderRadius: '12px', fontSize: '11px' }}
-                      itemStyle={{ padding: '2px 0' }}
-                    />
-                    <Bar dataKey="Reference" fill="#475569" radius={[4, 4, 0, 0]} barSize={40} />
-                    <Bar dataKey="Custom" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={40} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div className="mt-4 bg-slate-950/50 border border-slate-800/50 rounded-xl p-3">
-                <div className="flex gap-3">
-                  <Info className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" />
-                  <div className="text-[10px] text-slate-400 leading-relaxed">
-                    <p className="font-bold text-slate-300 mb-1">Interpretation</p>
-                    Compare the <span className="text-amber-400">Custom</span> schedule against the <span className="text-slate-300">Reference</span> trial arm. Ensure the Late Tissue BED does not significantly exceed the reference to avoid increased toxicity. Bio-equivalence is calculated based on the Tumour α/β.
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── FOOTER NOTE ── */}
-        <div style={{
-          marginTop: "24px", padding: "16px", borderRadius: "12px",
-          backgroundColor: "rgba(245,158,11,0.06)",
-          border: "1px solid rgba(245,158,11,0.18)"
-        }}>
-          <div style={{
-            fontSize: "10px", fontWeight: 700, color: "#F59E0B",
-            letterSpacing: "0.1em", marginBottom: "6px",
-            fontFamily: "'JetBrains Mono', monospace"
-          }}>⚠️ DISCLAIMER</div>
-          <div style={{ fontSize: "11px", color: "#78716C", lineHeight: 1.7 }}>
-            Data summarised for educational/reference use. Results reflect primary endpoints at specified follow-up. Clinical application requires full original publications. PMID links open PubMed. Not a substitute for current institutional guidelines or protocol-specific practice.
-          </div>
+          )}
         </div>
-        <div style={{ height: "32px" }} />
       </div>
 
-      <KeyFactsSidebar data={SIDEBAR_DATA} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} onOpen={() => setIsSidebarOpen(true)} />
-
+      <KeyFactsSidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+        onOpen={() => setIsSidebarOpen(true)}
+        data={SIDEBAR_DATA}
+      />
     </div>
   );
 }

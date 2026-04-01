@@ -15,6 +15,9 @@ const SIDEBAR_DATA: KeyFactSection[] = [
       { k: "Photoelectric", v: "< 25 keV", mono: true },
       { k: "Compton", v: "25 keV – 25 MeV", mono: true },
       { k: "Pair Production", v: "> 25 MeV", mono: true },
+      { k: "Soft Tissue Crossover", v: "~25 keV", mono: true },
+      { k: "Bone Crossover", v: "~40 keV", mono: true },
+      { k: "Lead Crossover", v: "~500 keV", mono: true },
     ]
   },
   {
@@ -27,6 +30,9 @@ const SIDEBAR_DATA: KeyFactSection[] = [
       { k: "Photoelectric", v: "∝ Z³", mono: true },
       { k: "Compton", v: "Independent", mono: false },
       { k: "Pair Production", v: "∝ Z²", mono: true },
+      { k: "Coherent", v: "∝ Z²", mono: true },
+      { k: "Photonuclear", v: "∝ Z", mono: true },
+      { k: "Mass Atten. (PE)", v: "∝ Z³/E³", mono: true },
     ]
   },
   {
@@ -37,9 +43,12 @@ const SIDEBAR_DATA: KeyFactSection[] = [
     border: "rgba(251,191,36,0.4)",
     rows: [
       { k: "Pair Production", v: "1.022 MeV", mono: true },
+      { k: "Triplet Production", v: "2.044 MeV", mono: true },
       { k: "Photonuclear", v: "> 7–10 MeV", mono: true },
       { k: "Lead K-edge", v: "88 keV", mono: true },
       { k: "Iodine K-edge", v: "33 keV", mono: true },
+      { k: "Tungsten K-edge", v: "69.5 keV", mono: true },
+      { k: "Barium K-edge", v: "37.4 keV", mono: true },
     ]
   },
   {
@@ -53,6 +62,26 @@ const SIDEBAR_DATA: KeyFactSection[] = [
       { k: "OER (Low LET)", v: "2.5 – 3.0", mono: true },
       { k: "Early α/β", v: "~10 Gy", mono: true },
       { k: "Late α/β", v: "~3 Gy", mono: true },
+      { k: "Proton RBE", v: "1.1", mono: true },
+      { k: "LET (6MV)", v: "0.3 keV/μm", mono: true },
+      { k: "Direct Action", v: "High LET particles", mono: false },
+      { k: "Indirect Action", v: "Photons (via OH•)", mono: false },
+    ]
+  },
+  {
+    title: "Physics Constants",
+    emoji: "📏",
+    accent: "#10b981",
+    bg: "rgba(16,185,129,0.08)",
+    border: "rgba(16,185,129,0.4)",
+    rows: [
+      { k: "e⁻ Rest Mass", v: "0.511 MeV", mono: true },
+      { k: "p⁺ Rest Mass", v: "938.3 MeV", mono: true },
+      { k: "n⁰ Rest Mass", v: "939.6 MeV", mono: true },
+      { k: "Speed of Light", v: "3 × 10⁸ m/s", mono: true },
+      { k: "Planck's Const", v: "6.626 × 10⁻³⁴ J·s", mono: true },
+      { k: "Avogadro's No", v: "6.022 × 10²³ mol⁻¹", mono: true },
+      { k: "Electron Volt", v: "1.602 × 10⁻¹⁹ J", mono: true },
     ]
   }
 ];

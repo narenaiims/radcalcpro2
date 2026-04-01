@@ -976,6 +976,22 @@ const SIDEBAR_DATA: KeyFactSection[] = [
       { k: 'Dermatitis', v: 'Week 2-3', mono: true },
       { k: 'Pneumonitis', v: '1-6 months', mono: true },
       { k: 'Proctitis', v: 'Week 3-4', mono: true },
+      { k: 'LENT-SOMA', v: 'Late effect scoring', mono: false },
+      { k: 'Consequential', v: 'Persistent acute tox', mono: false },
+    ]
+  },
+  {
+    title: 'Management Principles',
+    emoji: '💊',
+    accent: '#10b981',
+    bg: 'rgba(16,185,129,0.08)',
+    border: 'rgba(16,185,129,0.4)',
+    rows: [
+      { k: 'Dermatitis', v: 'Topical steroids, emollients', mono: false },
+      { k: 'Mucositis', v: 'Oral hygiene, analgesia', mono: false },
+      { k: 'Diarrhea', v: 'Loperamide, hydration', mono: false },
+      { k: 'Cystitis', v: 'Hydration, rule out UTI', mono: false },
+      { k: 'Proctitis', v: 'Sucralfate enemas', mono: false },
     ]
   }
 ];

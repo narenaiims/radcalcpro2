@@ -358,18 +358,30 @@ const DoseExposuresPage: React.FC = () => {
       { label: 'Fetal (Pregnancy)', value: '1 mSv' },
       { label: 'Eye Lens (Annual)', value: '20 mSv' },
       { label: 'Skin/Extremity', value: '500 mSv' },
+      { label: 'Emergency (Life)', value: '250 mSv' },
+      { label: 'Emergency (Property)', value: '100 mSv' },
     ],
     weighting: [
       { label: 'Photons/Electrons (wR)', value: '1' },
       { label: 'Protons (wR)', value: '2' },
       { label: 'Alpha Particles (wR)', value: '20' },
+      { label: 'Neutrons (wR)', value: '2 - 20' },
       { label: 'Breast (wT)', value: '0.12' },
       { label: 'Gonads (wT)', value: '0.08' },
+      { label: 'Bone Marrow (wT)', value: '0.12' },
+      { label: 'Lung (wT)', value: '0.12' },
+      { label: 'Colon (wT)', value: '0.12' },
+      { label: 'Stomach (wT)', value: '0.12' },
     ],
     thresholds: [
       { label: 'Fetal IQ (Threshold)', value: '100 mGy' },
       { label: 'Transient Erythema', value: '2 Gy' },
       { label: 'Permanent Epilation', value: '7 Gy' },
+      { label: 'Main Erythema', value: '6 Gy' },
+      { label: 'Dry Desquamation', value: '10 Gy' },
+      { label: 'Moist Desquamation', value: '15 Gy' },
+      { label: 'Dermal Necrosis', value: '18 Gy' },
+      { label: 'Cataract (Acute)', value: '0.5 Gy' },
     ]
   };
 

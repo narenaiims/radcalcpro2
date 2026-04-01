@@ -783,24 +783,36 @@ const QUICK_REF_DATA = {
     { label: '1 Gy', value: '100 cGy = 100 rad' },
     { label: '1 Sv', value: '100 rem = 1000 mSv' },
     { label: '1 Ci', value: '3.7 × 10¹⁰ Bq (37 GBq)' },
-    { label: '1 Bq', value: '1 decay/sec' }
+    { label: '1 Bq', value: '1 decay/sec' },
+    { label: '1 R (Roentgen)', value: '2.58 × 10⁻⁴ C/kg' },
+    { label: '1 eV', value: '1.602 × 10⁻¹⁹ J' },
   ],
   alphaBeta: [
     { label: 'Tumors (Early)', value: '10 Gy' },
     { label: 'Late Tissue', value: '3 Gy' },
     { label: 'Prostate', value: '1.5 Gy' },
-    { label: 'Breast', value: '4 Gy' }
+    { label: 'Breast', value: '4 Gy' },
+    { label: 'Spinal Cord', value: '2 Gy' },
+    { label: 'Lens', value: '1.2 Gy' },
   ],
   dmax: [
     { label: 'Co-60', value: '0.5 cm' },
     { label: '6 MV', value: '1.5 cm' },
     { label: '10 MV', value: '2.5 cm' },
+    { label: '15 MV', value: '3.0 cm' },
     { label: '18 MV', value: '3.5 cm' }
   ],
   wr: [
     { label: 'Photons/Electrons', value: '1' },
     { label: 'Protons', value: '1.1' },
-    { label: 'Alpha Particles', value: '20' }
+    { label: 'Alpha Particles', v: '20' },
+    { label: 'Neutrons (all)', v: '5–20' },
+  ],
+  constants: [
+    { label: 'Rest Mass e⁻', value: '0.511 MeV' },
+    { label: 'Rest Mass p⁺', value: '938.3 MeV' },
+    { label: 'Rest Mass n⁰', value: '939.6 MeV' },
+    { label: 'Speed of Light', value: '3 × 10⁸ m/s' },
   ]
 };
 

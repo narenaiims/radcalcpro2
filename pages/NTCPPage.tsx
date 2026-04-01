@@ -57,7 +57,36 @@ const NTCPPage: React.FC = () => {
       rows: [
         { k: 'LKB Model', v: 'Lyman-Kutcher-Burman model uses gEUD' },
         { k: 'gEUD', v: 'Generalized Equivalent Uniform Dose' },
-        { k: 'Volume Effect (n)', v: 'n=1 (parallel), n≈0 (serial)' }
+        { k: 'Volume Effect (n)', v: 'n=1 (parallel), n≈0 (serial)' },
+        { k: 'Slope (m)', v: 'Steepness of the dose-response curve' },
+        { k: 'TD50', v: 'Dose for 50% complication probability' },
+      ]
+    },
+    {
+      title: 'QUANTEC Data',
+      emoji: '📚',
+      accent: '#10b981',
+      bg: 'rgba(16, 185, 129, 0.08)',
+      border: 'rgba(16, 185, 129, 0.4)',
+      rows: [
+        { k: 'Parotid', v: 'Mean < 26 Gy (Xerostomia)', mono: true },
+        { k: 'Lung', v: 'V20 < 30-35% (Pneumonitis)', mono: true },
+        { k: 'Rectum', v: 'V70 < 25% (Proctitis)', mono: true },
+        { k: 'Bladder', v: 'V65 < 50% (Cystitis)', mono: true },
+        { k: 'Spinal Cord', v: 'Max < 45-50 Gy (Myelopathy)', mono: true },
+      ]
+    },
+    {
+      title: 'Clinical Factors',
+      emoji: '🩺',
+      accent: '#f43f5e',
+      bg: 'rgba(244, 63, 94, 0.08)',
+      border: 'rgba(244, 63, 94, 0.4)',
+      rows: [
+        { k: 'Chemotherapy', v: 'Enhances radiation toxicity', mono: false },
+        { k: 'Diabetes', v: 'Increases risk of late effects', mono: false },
+        { k: 'Smoking', v: 'Increases lung/mucosal toxicity', mono: false },
+        { k: 'Age', v: 'Elderly may have lower tolerance', mono: false },
       ]
     }
   ];

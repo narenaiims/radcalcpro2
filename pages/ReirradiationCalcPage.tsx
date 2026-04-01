@@ -583,9 +583,6 @@ ${'─'.repeat(50)}
           <button onClick={reset} className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition">
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
-          <button onClick={() => setIsSidebarOpen(true)} className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition">
-            <Info className="w-3.5 h-3.5" />
-          </button>
         </div>
       </div>
 

@@ -811,6 +811,8 @@ const SIDEBAR_DATA: KeyFactSection[] = [
       { k: 'Heart', v: '2.5 Gy' },
       { k: 'Prostate tumour', v: '1.5 Gy' },
       { k: 'Breast tumour', v: '4.0 Gy' },
+      { k: 'Renal', v: '3.0 Gy' },
+      { k: 'Liver', v: '3.0 Gy' },
     ]
   },
   {
@@ -824,6 +826,9 @@ const SIDEBAR_DATA: KeyFactSection[] = [
       { k: 'Conformity Index', v: 'V100% / V_PTV (Target < 1.2)' },
       { k: 'R50%', v: 'V50% / V_PTV (Size dependent)' },
       { k: 'Dmax (Point)', v: 'Usually D0.03cc or D0.1cc' },
+      { k: 'D2cm', v: 'Max dose 2cm from PTV' },
+      { k: 'Dmean', v: 'Mean target dose' },
+      { k: 'HI', v: 'Homogeneity Index' },
     ]
   },
   {
@@ -835,6 +840,22 @@ const SIDEBAR_DATA: KeyFactSection[] = [
     rows: [
       { k: 'BED', v: 'D × (1 + d / α/β)', mono: true },
       { k: 'EQD2', v: 'D × (d + α/β) / (2 + α/β)', mono: true },
+      { k: 'LQ Model Limit', v: 'Caution if d > 10 Gy' },
+      { k: 'Repair T1/2', v: '1.5 - 4.0 hours' },
+    ]
+  },
+  {
+    title: "Key Protocols",
+    emoji: "📋",
+    accent: "#a78bfa",
+    bg: "rgba(167, 139, 250, 0.1)",
+    border: "rgba(167, 139, 250, 0.3)",
+    rows: [
+      { k: 'RTOG 0236', v: 'Peripheral Lung (3x18 Gy)' },
+      { k: 'RTOG 0813', v: 'Central Lung (5x10 Gy)' },
+      { k: 'RTOG 0631', v: 'Spine (1x16-18 Gy)' },
+      { k: 'PACE-B', v: 'Prostate (5x7.25 Gy)' },
+      { k: 'SABR-COMET', v: 'Oligometastatic disease' },
     ]
   }
 ];

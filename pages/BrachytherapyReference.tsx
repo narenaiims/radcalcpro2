@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, ChevronRight, BookOpen, Activity, Image as ImageIcon, FileText } from "lucide-react";
+import { Search, ChevronRight, BookOpen, Activity, Image as ImageIcon, FileText, XCircle } from "lucide-react";
 
 // Data Imports
 import { prostateData } from "../src/data/brachytherapy/prostate";
@@ -10,6 +10,8 @@ import { cervixData } from "../src/data/brachytherapy/cervix";
 import { breastData } from "../src/data/brachytherapy/breast";
 import { esophagusData } from "../src/data/brachytherapy/esophagus";
 import { bronchusData } from "../src/data/brachytherapy/bronchus";
+import { analData } from "../src/data/brachytherapy/anal";
+import { rectumData } from "../src/data/brachytherapy/rectum";
 
 // Component Imports
 import SectionCard from "../src/components/brachytherapy/SectionCard";
@@ -60,6 +62,8 @@ const SITES: Record<string, any> = {
   breast:   { label: "Breast",   icon: "🌸", primary: C.indigo,  bg: C.indigoBg,  border: C.indigoBd },
   esophagus:{ label: "Esophagus",icon: "🥖", primary: C.orange,  bg: C.orangeBg,  border: C.orangeBd },
   bronchus: { label: "Bronchus", icon: "🫁", primary: "#86EFAC", bg: "rgba(134,239,172,0.09)", border: "rgba(134,239,172,0.28)" },
+  anal:     { label: "Anal",     icon: "⭕", primary: "#F472B6", bg: "rgba(244,114,182,0.09)", border: "rgba(244,114,182,0.28)" },
+  rectum:   { label: "Rectum",   icon: "🔭", primary: "#60A5FA", bg: "rgba(96,165,250,0.09)", border: "rgba(96,165,250,0.28)" },
 };
 
 const KB: Record<string, any[]> = {
@@ -70,6 +74,8 @@ const KB: Record<string, any[]> = {
   breast:   breastData,
   esophagus:esophagusData,
   bronchus: bronchusData,
+  anal:     analData,
+  rectum:   rectumData,
 };
 
 export default function BrachytherapyReference() {
@@ -292,7 +298,7 @@ export default function BrachytherapyReference() {
                   <div style={{ fontSize:"10px", color:C.dim }}>{d}</div>
                 </div>
               ))}
-              {(activeSite==="esophagus" || activeSite==="bronchus") && [
+              {(activeSite==="esophagus" || activeSite==="bronchus" || activeSite==="anal" || activeSite==="rectum") && [
                 [site.primary, "Active Source",  "Ir-192 stepping source"],
                 [site.primary+"99","Dwell Steps", "Typically 5mm spacing"],
                 ["#86EFAC", "1 cm Rx Point",    "Standard prescription distance"],
@@ -336,15 +342,6 @@ export default function BrachytherapyReference() {
                       Quick Reference
                     </h3>
                   </div>
-                  <button 
-                    onClick={() => setIsSidebarOpen(false)}
-                    style={{
-                      background: "none", border: "none", color: C.dim, cursor: "pointer",
-                      padding: "4px", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center"
-                    }}
-                  >
-                    <ChevronRight size={20} />
-                  </button>
                 </div>
 
                 <div style={{ padding: "16px", flex: 1 }}>
@@ -355,6 +352,21 @@ export default function BrachytherapyReference() {
                   }}>⚡ {site.label.toUpperCase()}</div>
                   <QuickRefPanel siteData={data} color={site.primary} card2Color={C.card2} dimColor={C.dim} />
                 </div>
+
+                <motion.button 
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  onClick={() => setIsSidebarOpen(false)}
+                  style={{
+                    position: "absolute", right: "24px", bottom: "24px", zIndex: 120,
+                    backgroundColor: site.primary, color: "#FFF", width: "48px", height: "48px",
+                    borderRadius: "50%", border: "none", boxShadow: `0 8px 24px ${site.border}`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    cursor: "pointer"
+                  }}
+                >
+                  <XCircle size={20} color="#FFF" />
+                </motion.button>
               </motion.div>
             </>
           )}

@@ -145,20 +145,20 @@ const RadIcon = () => (
 );
 
 const MorphMenuIcon: React.FC<{ open: boolean }> = ({ open }) => (
-  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+  <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <motion.path
-      animate={open ? { d: "M 18 6 L 6 18" } : { d: "M 4 7 L 20 7" }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      animate={open ? { d: "M 18 6 L 6 18", stroke: "#f43f5e" } : { d: "M 4 7 L 20 7", stroke: "currentColor" }}
+      transition={{ type: "spring", stiffness: 400, damping: 30 }}
       strokeLinecap="round"
     />
     <motion.path
-      animate={open ? { d: "M 6 6 L 18 18" } : { d: "M 4 12 L 20 12" }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      animate={open ? { d: "M 6 6 L 18 18", stroke: "#f43f5e" } : { d: "M 4 12 L 20 12", stroke: "currentColor" }}
+      transition={{ type: "spring", stiffness: 400, damping: 30 }}
       strokeLinecap="round"
     />
     <motion.path
-      animate={open ? { opacity: 0, x: 10 } : { opacity: 1, x: 0, d: "M 4 17 L 20 17" }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      animate={open ? { opacity: 0, x: 10 } : { opacity: 1, x: 0, d: "M 4 17 L 20 17", stroke: "currentColor" }}
+      transition={{ type: "spring", stiffness: 400, damping: 30 }}
       strokeLinecap="round"
     />
   </svg>
@@ -269,14 +269,32 @@ const Header: React.FC = () => {
         </div>
 
         {/* Right Section */}
-        <div className="flex items-center gap-1 sm:gap-2">
-          <button 
+        <div className="flex items-center gap-2 sm:gap-4">
+          {!isHome && (
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <Link 
+                to="/" 
+                className="p-2.5 hover:bg-white/10 rounded-xl transition-all group relative block"
+                aria-label="Home"
+              >
+                <div className="absolute inset-0 bg-blue-500/20 blur-lg opacity-0 group-hover:opacity-100 transition-opacity rounded-full" />
+                <Home className="w-6 h-6 text-white/80 group-hover:text-white relative z-10" />
+              </Link>
+            </motion.div>
+          )}
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={() => setDrawerOpen(!drawerOpen)}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors relative z-[100]"
+            className="p-2.5 hover:bg-white/10 rounded-xl transition-all relative z-[100] group"
             aria-label="Menu"
           >
+            <div className="absolute inset-0 bg-white/5 blur-md opacity-0 group-hover:opacity-100 transition-opacity rounded-full" />
             <MorphMenuIcon open={drawerOpen} />
-          </button>
+          </motion.button>
         </div>
       </header>
 

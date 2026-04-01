@@ -9,6 +9,7 @@
  * Sites: Lung, Spine/SBRT, Liver, Prostate, Adrenal/Oligomets, SRS (Brain)
  */
 import React, { useState, useMemo } from 'react';
+import { NumberInput } from '../src/components/NumberInput';
 import { motion, AnimatePresence } from 'motion/react';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import {
@@ -888,11 +889,25 @@ const SBRTConstraintsPage: React.FC = () => {
   const [quizMode, setQuizMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
+  // Live BED/EQD2 calculator state
+  const [calcDose, setCalcDose] = useState<string>('');
+  const [calcFx, setCalcFx] = useState<string>('');
+  const [calcAB, setCalcAB] = useState<string>('10');
+
   // Quiz state
   const [qIdx, setQIdx] = useState(0);
   const [qAnswered, setQAnswered] = useState<number | null>(null);
   const [qScore, setQScore] = useState(0);
   const [qDone, setQDone] = useState(false);
+
+  // Live calc derived values
+  const calcDoseNum = parseFloat(calcDose) || 0;
+  const calcFxNum = parseFloat(calcFx) || 1;
+  const calcABNum = parseFloat(calcAB) || 10;
+  const calcDpf = calcFxNum > 0 ? calcDoseNum / calcFxNum : 0;
+  const calcBED10 = calcDoseNum > 0 ? BED(calcDoseNum, calcDpf, 10) : null;
+  const calcBED2 = calcDoseNum > 0 ? BED(calcDoseNum, calcDpf, calcABNum) : null;
+  const calcEQD2 = calcDoseNum > 0 ? EQD2(calcDoseNum, calcDpf, calcABNum) : null;
 
   const site = SBRT_SITES.find(s => s.id === activeSiteId)!;
 
@@ -1181,10 +1196,12 @@ const SBRTConstraintsPage: React.FC = () => {
                 </section>
               </div>
 
-              {/* ── Right Column: Constraints Table ─────────────────────── */}
+              {/* ── Right Column: BED Calculator + Constraints Table ──── */}
               <div className="lg:col-span-8 space-y-6">
+
+                {/* ── Constraints Table ────────────────────────────────── */}
                 <section className="card-premium overflow-hidden">
-                  <div className="px-6 py-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                  <div className="px-6 py-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between flex-wrap gap-3">
                     <div className="flex items-center gap-2">
                       <Shield className="w-4 h-4 text-teal" />
                       <h2 className="label-micro">OAR Constraints — {activeFx} Fractions</h2>
@@ -1192,11 +1209,15 @@ const SBRTConstraintsPage: React.FC = () => {
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-1.5">
                         <div className="w-2 h-2 rounded-full bg-red-500" />
-                        <span className="text-[9px] text-slate-500 uppercase">Absolute</span>
+                        <span className="text-[9px] text-slate-500 uppercase font-bold">Absolute</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full bg-amber-500" />
+                        <span className="text-[9px] text-slate-500 uppercase font-bold">Hard</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <div className="w-2 h-2 rounded-full bg-slate-500" />
-                        <span className="text-[9px] text-slate-500 uppercase">Hard</span>
+                        <span className="text-[9px] text-slate-500 uppercase">Soft</span>
                       </div>
                     </div>
                   </div>
@@ -1205,10 +1226,11 @@ const SBRTConstraintsPage: React.FC = () => {
                     <table className="w-full text-left">
                       <thead>
                         <tr className="border-b border-white/5 bg-white/[0.01]">
-                          <th className="px-6 py-4 label-micro">Organ / Endpoint</th>
-                          <th className="px-6 py-4 label-micro">Metric</th>
-                          <th className="px-6 py-4 label-micro text-right">Limit</th>
-                          <th className="px-6 py-4 label-micro text-right">BED / EQD2</th>
+                          <th className="px-4 py-4 label-micro">Organ / Endpoint</th>
+                          <th className="px-4 py-4 label-micro">Metric</th>
+                          <th className="px-4 py-4 label-micro text-right">Limit</th>
+                          <th className="px-4 py-4 label-micro text-right">BED₁₀ / EQD2</th>
+                          <th className="px-4 py-4 label-micro text-center">Priority</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5">
@@ -1217,41 +1239,142 @@ const SBRTConstraintsPage: React.FC = () => {
                           const dpf = limit / activeFx;
                           const bedVal = BED(limit, dpf, c.ab);
                           const eqd2Val = EQD2(limit, dpf, c.ab);
+                          const priorityDot = c.priority === 'Absolute'
+                            ? 'bg-red-500'
+                            : c.priority === 'Hard'
+                            ? 'bg-amber-500'
+                            : 'bg-slate-500';
+                          const priorityBadge = c.priority === 'Absolute'
+                            ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                            : c.priority === 'Hard'
+                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                            : 'bg-white/5 text-slate-500 border-white/10';
 
                           return (
-                            <tr key={i} className="hover:bg-white/[0.01] transition-colors group">
-                              <td className="px-6 py-4">
+                            <tr key={i} className={`hover:bg-white/[0.02] transition-colors ${c.priority === 'Absolute' ? 'bg-red-500/[0.03]' : ''}`}>
+                              <td className="px-4 py-4">
                                 <div className="flex items-center gap-2">
-                                  <div className={`w-1.5 h-1.5 rounded-full ${c.priority === 'Absolute' ? 'bg-red-500' : 'bg-slate-500'}`} />
+                                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${priorityDot}`} />
                                   <p className="text-sm font-bold text-white">{c.organ}</p>
                                 </div>
-                                <p className="text-[10px] text-slate-500 uppercase mt-0.5">{c.endpoint}</p>
+                                <p className="text-[10px] text-slate-500 mt-0.5 pl-4">{c.endpoint}</p>
                               </td>
-                              <td className="px-6 py-4">
-                                <p className="text-xs text-slate-400">{c.metric}</p>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <span className="text-[9px] px-1.5 py-0.5 bg-white/5 rounded text-slate-500 uppercase">
+                              <td className="px-4 py-4">
+                                <p className="text-xs text-slate-300 font-mono">{c.metric}</p>
+                                <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                  <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase border ${c.type === 'Serial' ? 'bg-red-500/10 text-red-400 border-red-500/20' : c.type === 'Parallel' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-purple-500/10 text-purple-400 border-purple-500/20'}`}>
                                     {c.type}
                                   </span>
                                   <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase border ${EVIDENCE_STYLE[c.evidence]}`}>
-                                    Ev: {c.evidence}
+                                    {c.evidence}
                                   </span>
+                                  {c.chemoMod && (
+                                    <span className="text-[9px] px-1.5 py-0.5 rounded uppercase border bg-orange-500/10 text-orange-400 border-orange-500/20">
+                                      ± chemo
+                                    </span>
+                                  )}
                                 </div>
+                                {c.notes && (
+                                  <p className="text-[9px] text-slate-500 italic mt-1 max-w-[200px]">{c.notes}</p>
+                                )}
                               </td>
-                              <td className="px-6 py-4 text-right">
+                              <td className="px-4 py-4 text-right">
                                 <p className="text-lg font-black text-white font-mono">{limit} <span className="text-[10px] font-normal text-slate-500">{c.unit}</span></p>
+                                <p className="text-[9px] text-slate-500">α/β = {c.ab} Gy</p>
                               </td>
-                              <td className="px-6 py-4 text-right">
+                              <td className="px-4 py-4 text-right">
                                 <div className="space-y-0.5">
-                                  <p className="text-[10px] text-slate-500">BED: <span className="text-white font-mono">{bedVal.toFixed(1)}</span></p>
-                                  <p className="text-[10px] text-slate-500">EQD2: <span className="text-teal font-mono">{eqd2Val.toFixed(1)}</span></p>
+                                  <p className="text-[10px] text-slate-400">BED: <span className="text-sky-300 font-mono font-bold">{bedVal.toFixed(1)}</span></p>
+                                  <p className="text-[10px] text-slate-400">EQD2: <span className="text-teal font-mono font-bold">{eqd2Val.toFixed(1)}</span></p>
                                 </div>
+                              </td>
+                              <td className="px-4 py-4 text-center">
+                                <span className={`text-[9px] px-2 py-1 rounded-lg uppercase border font-bold ${priorityBadge}`}>
+                                  {c.priority}
+                                </span>
                               </td>
                             </tr>
                           );
                         })}
                       </tbody>
                     </table>
+                  </div>
+                </section>
+
+                {/* ── Live BED/EQD2 Calculator Panel ───────────────────── */}
+                <section className="card-premium overflow-hidden border border-teal/20">
+                  <div className="px-6 py-4 border-b border-white/5 bg-teal/5 flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-teal" />
+                    <h2 className="label-micro text-teal">Live BED / EQD2 Calculator</h2>
+                    <span className="ml-auto text-[9px] text-slate-500 italic">Enter your prescription dose</span>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex flex-wrap gap-4 mb-6">
+                      <div className="flex-1 min-w-[120px] space-y-1">
+                        <p className="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Total Dose (Gy)</p>
+                        <NumberInput
+                          step="0.5" min="0" max="100"
+                          value={calcDose}
+                          onChange={e => setCalcDose(e.target.value)}
+                          className="w-full bg-slate-950 border border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-white focus:outline-none focus:border-teal"
+                          buttonClassName="bg-slate-900 hover:bg-slate-800 text-teal border-white/10"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-[120px] space-y-1">
+                        <p className="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Fractions (#)</p>
+                        <NumberInput
+                          step="1" min="1" max="20"
+                          value={calcFx}
+                          onChange={e => setCalcFx(e.target.value)}
+                          className="w-full bg-slate-950 border border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-white focus:outline-none focus:border-teal"
+                          buttonClassName="bg-slate-900 hover:bg-slate-800 text-teal border-white/10"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-[120px] space-y-1">
+                        <p className="text-[9px] text-slate-400 uppercase tracking-widest font-bold">α/β (Gy)</p>
+                        <NumberInput
+                          step="0.5" min="0.5" max="15"
+                          value={calcAB}
+                          onChange={e => setCalcAB(e.target.value)}
+                          className="w-full bg-slate-950 border border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-white focus:outline-none focus:border-teal"
+                          buttonClassName="bg-slate-900 hover:bg-slate-800 text-slate-300 border-white/10"
+                        />
+                      </div>
+                    </div>
+                    {calcDoseNum > 0 ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div className="bg-slate-950 rounded-lg p-3 text-center border border-white/5">
+                          <p className="text-[8px] text-slate-500 uppercase">Dose/fx</p>
+                          <p className="text-lg font-black text-white font-mono">{calcDpf.toFixed(2)}</p>
+                          <p className="text-[8px] text-slate-500">Gy/fx</p>
+                        </div>
+                        <div className="bg-slate-950 rounded-lg p-3 text-center border border-sky-500/20">
+                          <p className="text-[8px] text-sky-400 uppercase">BED₁₀</p>
+                          <p className="text-lg font-black text-sky-300 font-mono">{calcBED10?.toFixed(1)}</p>
+                          <p className="text-[8px] text-slate-500">Gy (tumour)</p>
+                        </div>
+                        <div className="bg-slate-950 rounded-lg p-3 text-center border border-amber-500/20">
+                          <p className="text-[8px] text-amber-400 uppercase">BED (α/β={calcABNum})</p>
+                          <p className="text-lg font-black text-amber-300 font-mono">{calcBED2?.toFixed(1)}</p>
+                          <p className="text-[8px] text-slate-500">Gy (late OAR)</p>
+                        </div>
+                        <div className="bg-slate-950 rounded-lg p-3 text-center border border-teal/20">
+                          <p className="text-[8px] text-teal uppercase">EQD2</p>
+                          <p className="text-lg font-black text-teal font-mono">{calcEQD2?.toFixed(1)}</p>
+                          <p className="text-[8px] text-slate-500">Gy</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-4">
+                        <p className="text-[11px] text-slate-500 italic">Enter dose and fractions above to calculate BED and EQD2</p>
+                      </div>
+                    )}
+                    {calcDpf > 8 && (
+                      <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                        <AlertTriangle className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                        <p className="text-[9px] text-amber-300">High dose/fx ({calcDpf.toFixed(1)} Gy/fx): LQ model may overestimate OAR tolerance. Use with caution above 6 Gy/fx.</p>
+                      </div>
+                    )}
                   </div>
                 </section>
 

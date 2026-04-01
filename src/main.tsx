@@ -4,14 +4,12 @@ import App from '../App';
 import { RadiobiologyProvider } from './context/RadiobiologyContext';
 import './index.css';
 
-// Register Service Worker for PWA
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' })
-      .then(reg => {
-        console.log('SW registered:', reg);
-      })
-      .catch(err => console.log('SW registration failed:', err));
+// Unregister existing service workers to resolve MIME type issues
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    for (const registration of registrations) {
+      registration.unregister();
+    }
   });
 }
 

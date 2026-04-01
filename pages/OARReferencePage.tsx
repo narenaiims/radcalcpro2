@@ -837,64 +837,130 @@ const OARReferencePage: React.FC = () => {
                   </div>
                 </div>
 
-                <section className="card-premium space-y-4 hidden lg:block">
-                  <div className="flex items-center justify-between">
-                    <h3 className="label-micro opacity-40">Active Regime</h3>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-teal font-bold font-mono">{dFx.toFixed(1)} Gy × {Math.round(nFx)} fx</span>
+                {/* ── REGIME ENTRY PANEL (Desktop) — always visible ── */}
+                <section className="card-premium space-y-4 hidden lg:block border border-teal/20">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-3.5 h-3.5 text-teal" />
+                    <h3 className="label-micro text-teal">Your Treatment Regime</h3>
+                  </div>
+
+                  {/* Dose & Fraction Inputs */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <p className="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Total Dose (Gy)</p>
+                      <NumberInput
+                        step="1"
+                        min="1"
+                        max="120"
+                        value={isCustom ? totalDose : String(preset?.totalDose ?? 70)}
+                        onChange={e => { setPresetKey('Custom'); setTotalDose(e.target.value); }}
+                        className="w-full bg-slate-900 border border-teal/30 rounded-xl px-3 py-2 text-base font-mono text-white focus:outline-none focus:border-teal"
+                        buttonClassName="bg-slate-800 hover:bg-slate-700 text-teal border-teal/30"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Fractions (#)</p>
+                      <NumberInput
+                        step="1"
+                        min="1"
+                        max="45"
+                        value={isCustom ? fractions : String(preset?.nFx ?? 35)}
+                        onChange={e => { setPresetKey('Custom'); setFractions(e.target.value); }}
+                        className="w-full bg-slate-900 border border-teal/30 rounded-xl px-3 py-2 text-base font-mono text-white focus:outline-none focus:border-teal"
+                        buttonClassName="bg-slate-800 hover:bg-slate-700 text-teal border-teal/30"
+                      />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {Object.keys(FRACTIONATION_PRESETS).map(key => (
-                      <button
-                        key={key}
-                        onClick={() => setPresetKey(key)}
-                        className={`px-2 py-1.5 rounded-lg text-[9px] font-bold transition-all ${
-                          presetKey === key
-                            ? 'bg-teal text-white'
-                            : 'bg-white/5 text-slate-400 hover:bg-white/10'
-                        }`}
-                      >
-                        {key}
-                      </button>
-                    ))}
+
+                  {/* Live calculated display */}
+                  <div className="flex items-center justify-between bg-slate-900/80 rounded-xl px-4 py-3 border border-white/5">
+                    <div className="text-center">
+                      <p className="text-[8px] text-slate-500 uppercase">Dose/fx</p>
+                      <p className="text-xl font-black text-teal font-mono">{dFx.toFixed(2)}</p>
+                      <p className="text-[8px] text-slate-500">Gy/fx</p>
+                    </div>
+                    <div className="w-px h-8 bg-white/10" />
+                    <div className="text-center">
+                      <p className="text-[8px] text-slate-500 uppercase">Fractions</p>
+                      <p className="text-xl font-black text-white font-mono">{Math.round(nFx)}</p>
+                      <p className="text-[8px] text-slate-500">fx</p>
+                    </div>
+                    <div className="w-px h-8 bg-white/10" />
+                    <div className="text-center">
+                      <p className="text-[8px] text-slate-500 uppercase">Type</p>
+                      <p className="text-[10px] font-bold text-white">
+                        {dFx <= 2.1 ? 'Conv' : dFx <= 4 ? 'Hypo' : dFx <= 8 ? 'V-Hypo' : 'SBRT'}
+                      </p>
+                      <p className="text-[8px] text-teal font-mono">
+                        {dFx <= 2.1 ? '≤2 Gy/fx' : dFx <= 4 ? '2–4 Gy/fx' : dFx <= 8 ? '4–8 Gy/fx' : '>8 Gy/fx'}
+                      </p>
+                    </div>
                   </div>
-                  
-                  {isCustom && (
-                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/5">
-                      <div className="space-y-1">
-                        <p className="text-[8px] text-slate-500 uppercase">Total (Gy)</p>
-                        <NumberInput
-                          
-                          value={totalDose}
-                          onChange={e => setTotalDose(e.target.value)}
-                          className="w-full bg-slate-800 border border-white/10 rounded px-2 py-1 text-base text-white focus:outline-none focus:border-teal"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-[8px] text-slate-500 uppercase">Fractions</p>
-                        <NumberInput
-                          
-                          value={fractions}
-                          onChange={e => setFractions(e.target.value)}
-                          className="w-full bg-slate-800 border border-white/10 rounded px-2 py-1 text-base text-white focus:outline-none focus:border-teal"
-                        />
-                      </div>
+
+                  {!isRef2Gy && (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-teal/10 rounded-lg border border-teal/20">
+                      <RefreshCw className="w-3 h-3 text-teal" />
+                      <p className="text-[9px] text-teal font-bold">Constraints scaled to {dFx.toFixed(2)} Gy/fx</p>
                     </div>
                   )}
+
+                  {/* Quick-fill presets */}
+                  <div className="space-y-2 pt-2 border-t border-white/5">
+                    <p className="text-[8px] text-slate-500 uppercase tracking-widest">Quick Presets</p>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {Object.keys(FRACTIONATION_PRESETS).map(key => (
+                        <button
+                          key={key}
+                          onClick={() => setPresetKey(key)}
+                          className={`px-2 py-1.5 rounded-lg text-[9px] font-bold transition-all text-left ${
+                            presetKey === key
+                              ? 'bg-teal text-white'
+                              : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                          }`}
+                        >
+                          {key}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </section>
               </div>
 
               {/* ── Right Column: OAR Details & Constraints ────────────────── */}
               <div className="lg:col-span-9 space-y-4 sm:space-y-6">
-                {/* Mobile Fractionation - only visible on mobile */}
+                {/* Mobile Regime Entry - only visible on mobile */}
                 <div className="lg:hidden mt-6">
-                  <section className="card-premium space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="label-micro opacity-40">Active Regime</h3>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-teal font-bold font-mono">{dFx.toFixed(1)} Gy × {Math.round(nFx)} fx</span>
+                  <section className="card-premium space-y-4 border border-teal/20">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-3.5 h-3.5 text-teal" />
+                      <h3 className="label-micro text-teal">Your Treatment Regime</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <p className="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Total Dose (Gy)</p>
+                        <NumberInput
+                          step="1" min="1" max="120"
+                          value={isCustom ? totalDose : String(preset?.totalDose ?? 70)}
+                          onChange={e => { setPresetKey('Custom'); setTotalDose(e.target.value); }}
+                          className="w-full bg-slate-900 border border-teal/30 rounded-xl px-3 py-2 text-base font-mono text-white focus:outline-none focus:border-teal"
+                          buttonClassName="bg-slate-800 hover:bg-slate-700 text-teal border-teal/30"
+                        />
                       </div>
+                      <div className="space-y-1">
+                        <p className="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Fractions (#)</p>
+                        <NumberInput
+                          step="1" min="1" max="45"
+                          value={isCustom ? fractions : String(preset?.nFx ?? 35)}
+                          onChange={e => { setPresetKey('Custom'); setFractions(e.target.value); }}
+                          className="w-full bg-slate-900 border border-teal/30 rounded-xl px-3 py-2 text-base font-mono text-white focus:outline-none focus:border-teal"
+                          buttonClassName="bg-slate-800 hover:bg-slate-700 text-teal border-teal/30"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between bg-slate-900/80 rounded-xl px-4 py-2 border border-white/5">
+                      <p className="text-[9px] text-slate-500">Dose/fx:</p>
+                      <p className="text-base font-black text-teal font-mono">{dFx.toFixed(2)} Gy/fx</p>
+                      {!isRef2Gy && <span className="text-[9px] px-2 py-0.5 bg-teal/10 text-teal rounded-full border border-teal/20">Scaled</span>}
                     </div>
                     <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                       {Object.keys(FRACTIONATION_PRESETS).map(key => (
@@ -911,28 +977,6 @@ const OARReferencePage: React.FC = () => {
                         </button>
                       ))}
                     </div>
-                    {isCustom && (
-                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/5">
-                        <div className="space-y-1">
-                          <p className="text-[8px] text-slate-500 uppercase">Total (Gy)</p>
-                          <NumberInput
-                            
-                            value={totalDose}
-                            onChange={e => setTotalDose(e.target.value)}
-                            className="w-full bg-slate-800 border border-white/10 rounded px-2 py-1 text-base text-white focus:outline-none focus:border-teal"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-[8px] text-slate-500 uppercase">Fractions</p>
-                          <NumberInput
-                            
-                            value={fractions}
-                            onChange={e => setFractions(e.target.value)}
-                            className="w-full bg-slate-800 border border-white/10 rounded px-2 py-1 text-base text-white focus:outline-none focus:border-teal"
-                          />
-                        </div>
-                      </div>
-                    )}
                   </section>
                 </div>
 

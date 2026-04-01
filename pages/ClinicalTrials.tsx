@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 // @ts-ignore
 import * as reactWindow from "react-window";
-// @ts-ignore
 import { AutoSizer } from "react-virtualized-auto-sizer";
 import { motion, AnimatePresence } from "motion/react";
 import { BookOpen, ChevronRight, BarChart3, Info, Calculator, ArrowRightLeft } from "lucide-react";
@@ -353,7 +352,7 @@ const REFERENCE_ARMS = [
 
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 
-const SITES = ["All", ...Array.from(new Set(TRIALS.map(t => t.site)))];
+const SITES = Array.from(new Set(TRIALS.map(t => t.site)));
 
 const SITE_META: Record<string, { color: string; bg: string }> = {
   "All":          { color: "#94A3B8", bg: "rgba(148,163,184,0.1)" },
@@ -680,12 +679,19 @@ const SIDEBAR_DATA: KeyFactSection[] = [
 
 export default function ClinicalTrials() {
   const [view, setView] = useState<"database" | "comparison">("database");
-  const [activeSite, setActiveSite] = useState("All");
+  const [activeSite, setActiveSite] = useState(SITES[0] || "");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("year");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const listRef = useRef<any>(null);
+
+  // Comparison Tool State — must be declared here with all other hooks (Rules of Hooks)
+  const [selectedRefId, setSelectedRefId] = useState(REFERENCE_ARMS[0].id);
+  const [customDose, setCustomDose] = useState(50);
+  const [customFracs, setCustomFracs] = useState(25);
+  const [customABTumour, setCustomABTumour] = useState(10.0);
+  const [customABLate, setCustomABLate] = useState(3.0);
 
   const toggleExpand = (id: string) => {
     setExpandedIds(prev => {
@@ -698,7 +704,7 @@ export default function ClinicalTrials() {
 
   const filtered = useMemo(() => {
     let t = TRIALS;
-    if (activeSite !== "All") t = t.filter(x => x.site === activeSite);
+    t = t.filter(x => x.site === activeSite);
     if (search.trim()) {
       const s = search.toLowerCase();
       t = t.filter(x =>
@@ -725,22 +731,14 @@ export default function ClinicalTrials() {
   const getItemSize = (index: number) => {
     const trial = filtered[index];
     if (expandedIds.has(trial.id)) {
-      // Estimate expanded height based on content
       const baseHeight = 180;
       const armHeight = trial.arms.length * 25;
       const resultHeight = trial.result.length * 0.5;
       const impactHeight = trial.impact.length * 0.5;
       return baseHeight + armHeight + resultHeight + impactHeight + 100;
     }
-    return 160; // Collapsed height
+    return 160;
   };
-
-  // Comparison Tool State
-  const [selectedRefId, setSelectedRefId] = useState(REFERENCE_ARMS[0].id);
-  const [customDose, setCustomDose] = useState(50);
-  const [customFracs, setCustomFracs] = useState(25);
-  const [customABTumour, setCustomABTumour] = useState(10.0);
-  const [customABLate, setCustomABLate] = useState(3.0);
 
   const selectedRef = useMemo(() => 
     REFERENCE_ARMS.find(a => a.id === selectedRefId) || REFERENCE_ARMS[0],
@@ -924,7 +922,7 @@ export default function ClinicalTrials() {
             No trials found for "{search}"
           </div>
         ) : (
-          <div style={{ height: "calc(100vh - 350px)", width: "100%" }}>
+          <div style={{ height: "500px", width: "100%" }}>
             <AutoSizerAny>
               {({ height, width }: any) => (
                 <VariableSizeListAny
@@ -936,7 +934,7 @@ export default function ClinicalTrials() {
                   itemData={filtered}
                   className="chip-scroll"
                 >
-                  {Row}
+                  {({ index, style }: any) => <Row index={index} style={style} />}
                 </VariableSizeListAny>
               )}
             </AutoSizerAny>

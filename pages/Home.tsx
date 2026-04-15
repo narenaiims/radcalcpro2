@@ -193,7 +193,7 @@ const Home: React.FC = () => {
               radcalcpro2
             </h1>
             <p className="text-[11px] text-blue-200/80 mt-0.5 font-medium">
-              Dr. Narendra Rathore · Clinical Radiobiology Toolkit
+              Dr. Narendra Rathore · Senior Oncologist in Udaipur
             </p>
           </div>
           {/* Version badge */}

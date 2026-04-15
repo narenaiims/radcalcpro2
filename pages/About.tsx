@@ -191,12 +191,12 @@ const About: React.FC = () => {
         </p>
         <div className="pt-4 flex flex-wrap gap-3">
           <a 
-            href="https://www.linkedin.com/in/dr-narendra-rathore-4543983" 
+            href="https://x.com/drn_dr" 
             target="_blank" 
             rel="noopener noreferrer"
             className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-bold text-zinc-600 hover:bg-zinc-50 active:scale-95 active:bg-zinc-100 transition-all outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
-            LinkedIn Profile
+            Twitter Profile
           </a>
           <a 
             href="mailto:drnarendra_rathore@icloud.com"

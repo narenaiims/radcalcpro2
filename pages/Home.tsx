@@ -182,32 +182,57 @@ const Home: React.FC = () => {
   return (
     <div className="space-y-4 fade-in pb-2">
 
-      {/* ── Masthead ──────────────────────────────────────────────────── */}
-      <div className="bg-[#1e3a5f] rounded-lg px-4 py-3 text-white">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-blue-200/70 mb-0.5 font-display">
-              RNT Medical College · Udaipur
-            </p>
-            <h1 className="text-2xl font-extrabold tracking-tight leading-tight font-display">
-              radcalcpro2
-            </h1>
-            <p className="text-[11px] text-blue-200/80 mt-0.5 font-medium">
-              Dr. Narendra Rathore · Senior Oncologist in Udaipur
-            </p>
+      {/* ── Masthead (Command Center) ─────────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-2xl bg-slate-950 border border-white/10 shadow-2xl group">
+        {/* Animated Background Layers */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-slate-950 to-indigo-950" />
+        <div className="absolute inset-0 opacity-20 mesh-grid" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(56,189,248,0.1)_0%,transparent_50%)]" />
+        
+        <div className="relative px-6 py-8 sm:px-8 sm:py-10 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 transition-transform duration-500">
+                <div className="w-5 h-5 rounded-full border-2 border-blue-500 border-t-transparent animate-[spin_3s_linear_infinite]" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 mb-0.5 font-mono">
+                  RadCalcPro System OS v2.4
+                </p>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-white font-display">
+                    RadCalcPro<span className="text-blue-500">2</span>
+                  </h1>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-bold text-white/90">Dr. Narendra Rathore</p>
+              <p className="text-xs text-slate-400 font-medium flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Senior Oncologist · RNT Medical College, Udaipur
+              </p>
+            </div>
           </div>
-          {/* Version badge */}
-          <span className="flex-shrink-0 text-[9px] font-bold bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded uppercase tracking-wider mt-1">
-            v2.0
-          </span>
+
+          <div className="flex flex-wrap gap-2">
+            <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 backdrop-blur-sm text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <div className="w-1 h-1 rounded-full bg-blue-400" />
+              Standard A.I. Enhanced
+            </span>
+            <span className="px-3 py-1.5 rounded-lg bg-blue-500 text-[10px] font-black text-white hover:bg-blue-400 transition-colors uppercase tracking-widest cursor-default">
+              Enterprise
+            </span>
+          </div>
         </div>
 
-        {/* Stat strip */}
-        <div className="mt-3 grid grid-cols-5 gap-1 text-center border-t border-blue-800/60 pt-3">
+        {/* Console Data Strip */}
+        <div className="relative px-6 py-4 bg-white/[0.02] border-t border-white/10 grid grid-cols-2 sm:grid-cols-5 gap-4">
           {stats.map(s => (
-            <div key={s.label}>
-              <p className="text-base font-black num text-white">{s.val}</p>
-              <p className="text-[9px] text-blue-200/60 uppercase tracking-wider">{s.label}</p>
+            <div key={s.label} className="space-y-0.5">
+              <p className="text-xl font-black text-white num leading-none">{s.val}</p>
+              <p className="text-[9px] text-slate-500 uppercase tracking-[0.15em] font-bold font-mono">{s.label}</p>
             </div>
           ))}
         </div>
@@ -267,45 +292,53 @@ const Home: React.FC = () => {
       )}
 
       {/* ── Tool groups ───────────────────────────────────────────────── */}
-      {grouped.map(({ group, routes }) => {
-        const meta = GROUP_META[group];
-        return (
-          <section key={group}>
-            {/* Group header */}
-            <div className="flex items-center gap-2 px-1 mb-1">
-              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${meta.dot}`} />
-              <p className={`text-[10px] font-black uppercase tracking-widest ${meta.color}`}>
-                {group}
-              </p>
-              <span className="text-[10px] text-slate-400 font-normal">— {meta.desc}</span>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {grouped.map(({ group, routes }) => {
+          const meta = GROUP_META[group];
+          return (
+            <section key={group} className="space-y-3">
+              {/* Group header */}
+              <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-3">
+                  <div className={`w-1.5 h-4 rounded-full ${meta.dot}`} />
+                  <h3 className={`text-xs font-black uppercase tracking-[0.2em] ${meta.color}`}>
+                    {group}
+                  </h3>
+                </div>
+                <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                  {routes.length} Tools
+                </span>
+              </div>
 
-            {/* Route list */}
-            <div className="bg-white rounded-lg border border-zinc-100 divide-y divide-zinc-50 overflow-hidden">
-              {routes.map(r => (
-                <Link
-                  key={r.path}
-                  to={r.path}
-                  className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 hover:-translate-y-0.5 hover:shadow-sm active:scale-[0.98] transition-all duration-200"
-                >
-                  {/* Active dot */}
-                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${meta.dot} opacity-60`} />
-
-                  {/* Labels */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-slate-800 leading-tight">{r.label}</p>
-                    <p className="text-[11px] text-slate-400 font-mono truncate mt-0.5">
-                      {ROUTE_HINTS[r.path] || ''}
-                    </p>
-                  </div>
-
-                  <ChevronRight />
-                </Link>
-              ))}
-            </div>
-          </section>
-        );
-      })}
+              {/* Route list */}
+              <div className="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                {routes.map(r => (
+                  <Link
+                    key={r.path}
+                    to={r.path}
+                    className="flex items-center gap-4 px-4 py-3.5 group hover:bg-slate-50 transition-all duration-300"
+                  >
+                    <div className={`w-2 h-2 rounded-full ${meta.dot} opacity-20 group-hover:opacity-100 group-hover:scale-125 transition-all duration-300`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-bold text-slate-800 leading-tight group-hover:text-blue-600 transition-colors">
+                          {r.label}
+                        </p>
+                      </div>
+                      <p className="text-[11px] text-slate-400 font-mono truncate mt-1">
+                        {ROUTE_HINTS[r.path] || ''}
+                      </p>
+                    </div>
+                    <div className="opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+                      <ChevronRight />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          );
+        })}
+      </div>
 
       {/* ── Clinical notice ───────────────────────────────────────────── */}
       <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800 leading-relaxed">

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
 import { RadiobiologyData } from '@/src/data/radiobiologyData';
 import TumourSelector from '@/components/TumourSelector';
-import { BookOpen, ChevronRight, GraduationCap, Printer, Zap, Share2 } from 'lucide-react';
+import { BookOpen, ChevronRight, GraduationCap, Printer, Zap, Share2, Activity, TrendingUp } from 'lucide-react';
 import { AnimatedNumber } from "@/src/components/AnimatedNumber";
 import { ExportButton, ClinicalReport } from '@/src/components/ClinicalPDFExport';
 import { PDFReport } from '@/src/components/PDFReport';
@@ -139,198 +139,272 @@ const BEDtoEQD2Page: React.FC = () => {
 
       
 
-      {/* ── Header ───────────────────────────────────────────────────── */}
-      <div>
-        <h1 className="text-base font-extrabold text-slate-900 tracking-tight">BED ↔ EQD2 Converter</h1>
-        <p className="text-sm text-slate-500">Direct biological normalisation · LQ model</p>
+      {/* Header (Command Center Style) */}
+      <div className="mb-10 relative">
+        <div className="inline-flex items-center gap-2 mb-3">
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 font-mono">Bio-Metric Converter</span>
+        </div>
+        <h1 className="text-4xl font-black text-slate-900 tracking-tighter flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center shadow-lg">
+            <TrendingUp className="w-7 h-7 text-emerald-400" />
+          </div>
+          BED ↔ EQD2 Engine
+        </h1>
+        <div className="mt-4 flex flex-wrap gap-4 text-xs font-medium text-slate-500">
+          <div className="flex items-center gap-2 border-r border-slate-200 pr-4">
+            <Zap className="w-3.5 h-3.5 text-blue-500" />
+            <span>LQ-Model Normalisation</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <GraduationCap className="w-3.5 h-3.5 text-indigo-500" />
+            <span>Protocol Synchronizer</span>
+          </div>
+        </div>
       </div>
 
-      {/* ── Mode toggle ──────────────────────────────────────────────── */}
-      <div className="flex rounded-lg border border-slate-200 overflow-hidden bg-white">
+      {/* ── Mode toggle (Console Switch) ──────────────────────────────── */}
+      <div className="p-1.5 bg-slate-950 rounded-2xl border border-white/5 shadow-2xl flex gap-1.5 mb-8">
         {(['BED_TO_EQD2','EQD2_TO_BED'] as const).map(m => (
           <button key={m} onClick={() => setMode(m)}
-            className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-wider transition
+            className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all rounded-xl relative overflow-hidden group
               ${mode === m
-                ? 'bg-[#1e3a5f] text-white'
-                : 'text-slate-500 hover:bg-slate-50'}`}
+                ? 'text-white'
+                : 'text-slate-500 hover:text-slate-300'}`}
           >
-            {m === 'BED_TO_EQD2' ? 'BED → EQD2' : 'EQD2 → BED'}
+            {mode === m && (
+              <motion.div 
+                layoutId="active-mode-bg"
+                className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 shadow-[0_0_20px_rgba(37,99,235,0.4)]"
+              />
+            )}
+            <span className="relative z-10">{m === 'BED_TO_EQD2' ? 'BED → EQD2' : 'EQD2 → BED'}</span>
           </button>
         ))}
       </div>
 
-      {/* ── Formula strip ────────────────────────────────────────────── */}
-      <div className="bg-slate-900 rounded-lg px-3 py-2 font-mono text-[11px] text-slate-300">
-        {isBtoE
-          ? <><span className="text-emerald-300">EQD2</span> = BED / (1 + 2 / α/β)</>
-          : <><span className="text-blue-300">BED</span> = EQD2 × (1 + 2 / α/β)</>
-        }
-        <span className="text-slate-500 ml-3 text-[10px]">
-          · factor = {nAb > 0 ? (1 + 2 / nAb).toFixed(3) : '—'} at α/β={nAb}
-        </span>
-      </div>
-
-      {/* ── Inputs ───────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Parameters</p>
-        </div>
-        <div className="p-5 space-y-5">
-          <div className="grid grid-cols-1 gap-5">
-            <div className="space-y-1.5">
-              <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500">
-                {isBtoE ? 'BED input (Gy)' : 'EQD2 input (Gy)'}
-              </label>
-              <NumberInput  
-                step="0.5" 
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                className="w-full p-3 rounded-xl border border-slate-200 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
-              />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        {/* Inputs (The Controller) */}
+        <div className="lg:col-span-5 space-y-8">
+          <div className="bg-slate-900 rounded-3xl border border-white/10 overflow-hidden shadow-2xl relative">
+            <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent pointer-events-none" />
+            <div className="px-6 py-5 bg-white/[0.03] border-b border-white/5 flex items-center justify-between">
+               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 font-mono">Source Telemetry</p>
+               <div className="w-8 h-1 bg-blue-500/20 rounded-full" />
             </div>
-          </div>
-          
-          {/* Tumour Selector */}
-          <div className="space-y-3">
-            <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500">
-              Tumour Site & α/β
-            </label>
-            <TumourSelector
-              selectedEntry={selectedTumour}
-              onSelect={(entry) => {
-                setSelectedTumour(entry);
-                setAb(entry.ab.toString());
-              }}
-              onClear={() => setSelectedTumour(null)}
-            />
             
-            {/* Fallback if no tumour selected */}
-            {!selectedTumour && (
-              <div className="pt-2">
-                <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1.5">
-                  Or manually set α/β Ratio (Gy)
+            <div className="p-8 space-y-8">
+              <div className="group">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3 ml-1 group-focus-within:text-blue-400 transition-colors">
+                  {isBtoE ? 'BED Value (Gy)' : 'EQD2 Value (Gy)'}
                 </label>
-                <NumberInput  
-                  step="0.5" 
-                  value={ab}
-                  onChange={e => {
-                    setAb(e.target.value);
-                    setSelectedTumour(null);
-                  }} 
-                  className="w-full p-3 rounded-xl border border-slate-200 text-lg font-mono font-medium focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
-                />
+                <div className="relative">
+                  <NumberInput  
+                    step="0.5" 
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    className="w-full bg-white/[0.02] border border-white/10 p-5 rounded-2xl text-3xl font-mono font-black text-white focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all" 
+                  />
+                  <div className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-700 uppercase tracking-widest">Input</div>
+                </div>
               </div>
-            )}
+
+              <div className="pt-8 border-t border-white/5 space-y-6">
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 ml-1">Tumour / Tissue Biology</label>
+                  <TumourSelector
+                    selectedEntry={selectedTumour}
+                    onSelect={(entry) => {
+                      setSelectedTumour(entry);
+                      setAb(entry.ab.toString());
+                    }}
+                    onClear={() => setSelectedTumour(null)}
+                  />
+                </div>
+                
+                {!selectedTumour && (
+                  <div className="animate-in fade-in zoom-in-95 duration-300">
+                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 ml-1">Manual α/β Constant (Gy)</label>
+                    <NumberInput  
+                      step="0.5" 
+                      value={ab}
+                      onChange={e => {
+                        setAb(e.target.value);
+                        setSelectedTumour(null);
+                      }} 
+                      className="w-full bg-white/[0.02] border border-white/5 px-5 py-4 rounded-2xl text-xl font-mono font-black text-blue-400 focus:border-blue-500/50 outline-none transition-all" 
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
+
+          <div className="p-6 bg-blue-500/5 rounded-3xl border border-blue-500/10 flex items-start gap-4">
+            <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center shrink-0">
+              <BookOpen className="w-5 h-5 text-blue-400" />
+            </div>
+            <div>
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-1">Radiobiology Law</h4>
+              <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
+                {isBtoE 
+                  ? "EQD2 normalises multi-dose-rate BED to a standard 2.0 Gy per fraction clinical baseline."
+                  : "BED quantifies log-kill and repair capacity, regardless of the fractionation schedule used."}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Results (The Output) */}
+        <div className="lg:col-span-7 space-y-8">
+          {valid ? (
+            <motion.div 
+               initial={{ opacity: 0, scale: 0.95 }}
+               animate={{ opacity: 1, scale: 1 }}
+               className="space-y-8"
+            >
+              {/* Result Visualizer */}
+              <div className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-[2.5rem] blur opacity-10 group-hover:opacity-20 transition duration-1000" />
+                
+                <div className="relative bg-slate-950 rounded-[2.2rem] p-10 text-white shadow-2xl border border-white/10 overflow-hidden">
+                  <div className="absolute inset-0 opacity-[0.03] mesh-grid pointer-events-none" />
+                  
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-12">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-1 h-3 bg-emerald-500 rounded-full" />
+                          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400 font-mono">Conversion Complete</p>
+                        </div>
+                        <h2 className="text-3xl font-black tracking-tighter italic">Iso-Effective Yield</h2>
+                      </div>
+                      <div className="w-16 h-16 bg-white/[0.03] rounded-3xl border border-white/10 flex items-center justify-center backdrop-blur-md">
+                        <Zap className="w-8 h-8 text-emerald-400 fill-emerald-400/20" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Resulting {isBtoE ? 'EQD2' : 'BED'} (Gy)</p>
+                      <div className="flex items-baseline gap-4">
+                        <motion.span 
+                          key={result}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="text-8xl font-black text-white tracking-tighter leading-none font-display"
+                        >
+                          {result.toFixed(2)}
+                        </motion.span>
+                        <span className="text-3xl font-black text-slate-700 font-display">Gy</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-12 pt-8 border-t border-white/5 flex flex-wrap items-center justify-between gap-6">
+                      <div className="flex items-center gap-4">
+                        <div className="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">α/β Index: {nAb} Gy</span>
+                        </div>
+                        <div className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Factor: {(1 + 2/nAb).toFixed(3)}</span>
+                        </div>
+                      </div>
+                      <div className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">
+                         {isBtoE ? 'Divisional Normal' : 'Multiplicative Accum'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Bar */}
+              <div className="p-6 bg-white rounded-3xl border border-slate-200 shadow-sm flex items-center justify-between group relative overflow-hidden">
+                <div className="absolute inset-0 bg-blue-50 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative z-10 flex items-center gap-4">
+                   <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg">
+                    <Share2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black uppercase tracking-widest text-slate-900">Telemetry Export</h4>
+                    <p className="text-[10px] text-slate-500 font-medium italic">High-precision PDF clinical report</p>
+                  </div>
+                </div>
+                <div className="relative z-10">
+                   <ExportButton report={{
+                    title: "BED-EQD2 Conversion Report",
+                    toolName: "BED-EQD2",
+                    patientRef: "BED-EQD2-CONV",
+                    interpretation: `${isBtoE ? 'BED to EQD2' : 'EQD2 to BED'} Conversion. Radiobiological calculations are estimates based on the LQ model. Clinical judgment is required.`,
+                    parameters: [
+                      { label: "Input Dose", value: `${nInput} Gy` },
+                      { label: "α/β Ratio", value: `${nAb} Gy` },
+                      { label: "Mode", value: isBtoE ? "BED to EQD2" : "EQD2 to BED" }
+                    ],
+                    results: [
+                      { label: isBtoE ? "Resulting EQD2" : "Resulting BED", value: `${result.toFixed(2)} Gy`, highlight: true },
+                      { label: "Conversion Factor", value: (1 + 2/nAb).toFixed(3) }
+                    ]
+                  }} />
+                </div>
+              </div>
+
+              {/* Comparison Matrix */}
+              <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
+                <div className="px-8 py-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                   <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-900" />
+                    <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] font-mono">Sensitivity Telemetry</h4>
+                  </div>
+                  <Activity className="w-4 h-4 text-slate-300" />
+                </div>
+                <div className="p-2 overflow-x-auto">
+                   <table className="w-full">
+                    <thead>
+                      <tr className="text-[10px] text-slate-400 font-black uppercase tracking-[0.15em]">
+                        <th className="px-6 py-4 text-left">α/β Index</th>
+                        <th className="px-6 py-4 text-left">Biology</th>
+                        <th className="px-6 py-4 text-right">Factor</th>
+                        <th className="px-6 py-4 text-right">Yield (Gy)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {crossAbRows.map(r => (
+                        <tr key={r.ab} className={`group transition-all duration-300 ${r.isCur ? 'bg-blue-600/5' : 'hover:bg-slate-50'}`}>
+                          <td className="px-6 py-5">
+                            <span className={`font-mono text-sm font-black ${r.isCur ? 'text-blue-600' : 'text-slate-700'}`}>
+                              {r.ab.toFixed(1)} <span className="text-[10px] opacity-60">Gy</span>
+                            </span>
+                          </td>
+                          <td className="px-6 py-5">
+                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                              {r.ab === 1.5 ? 'Prostate' : r.ab === 3 ? 'LAT OAR' : r.ab === 10 ? 'TU / ERN' : 'INTERMED'}
+                             </span>
+                          </td>
+                          <td className="px-6 py-5 text-right font-mono text-slate-400 text-xs">{(1 + 2/r.ab).toFixed(3)}</td>
+                          <td className="px-6 py-5 text-right font-mono font-black text-slate-950">{r.result.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <div className="h-full min-h-[400px] flex flex-col items-center justify-center p-12 text-center bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200">
+              <motion.div 
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mb-8 border border-slate-100"
+              >
+                <Activity className="w-10 h-10 text-slate-300" />
+              </motion.div>
+              <h3 className="text-sm font-black text-slate-300 uppercase tracking-[0.3em]">Awaiting Input</h3>
+              <p className="text-xs text-slate-400 mt-3 max-w-xs font-medium leading-relaxed">
+                Connect the source biological dose and α/β ratio to start the normalisation engine.
+              </p>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* ── Result ───────────────────────────────────────────────────── */}
-      {valid && (
-        <div className="space-y-6">
-          <div className="bg-[#1e3a5f] rounded-2xl text-white p-6 shadow-xl border border-blue-800/50 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16" />
-            
-            <div className="flex justify-between items-center mb-6">
-              <p className="text-[10px] font-black uppercase tracking-widest text-blue-300/70">
-                {isBtoE ? 'EQD2' : 'BED'}<sub>{nAb}</sub> Result
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <p className="text-5xl font-black num mb-2">
-                <AnimatedNumber value={result} decimals={2} />
-              </p>
-              <p className="text-sm font-bold text-blue-300/50 uppercase tracking-widest">Gray (Gy)</p>
-            </div>
-
-            <div className="mt-8 pt-6 border-t border-blue-800/50 text-[11px] font-mono text-blue-300/40 text-center leading-relaxed">
-              {isBtoE
-                ? `${nInput.toFixed(1)} / (1 + 2/${nAb}) = ${nInput.toFixed(1)} / ${(1 + 2/nAb).toFixed(3)} = ${result.toFixed(2)} Gy`
-                : `${nInput.toFixed(1)} × (1 + 2/${nAb}) = ${nInput.toFixed(1)} × ${(1 + 2/nAb).toFixed(3)} = ${result.toFixed(2)} Gy`
-              }
-            </div>
-          </div>
-
-          {/* Premium Export Card */}
-          <div className="p-6 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl shadow-lg border border-blue-400/30 text-white relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl -mr-8 -mt-8 group-hover:scale-110 transition-transform duration-500" />
-            <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <Zap className="w-5 h-5 text-yellow-300 fill-yellow-300" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold">Premium Export</h3>
-                  <p className="text-[10px] text-blue-100">High-quality clinical reports & instant sharing</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <ExportButton report={{
-                  title: "BED-EQD2 Conversion Report",
-                  toolName: "BED-EQD2",
-                  patientRef: "BED-EQD2-CONV",
-                  interpretation: `${isBtoE ? 'BED to EQD2' : 'EQD2 to BED'} Conversion. Radiobiological calculations are estimates based on the LQ model. Clinical judgment is required.`,
-                  parameters: [
-                    { label: "Input Dose", value: `${nInput} Gy` },
-                    { label: "α/β Ratio", value: `${nAb} Gy` },
-                    { label: "Mode", value: isBtoE ? "BED to EQD2" : "EQD2 to BED" }
-                  ],
-                  results: [
-                    { label: isBtoE ? "Resulting EQD2" : "Resulting BED", value: `${result.toFixed(2)} Gy`, highlight: true },
-                    { label: "Conversion Factor", value: (1 + 2/nAb).toFixed(3) }
-                  ]
-                }} />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Cross α/β comparison ─────────────────────────────────────── */}
-      {valid && (
-        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-          <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-              {isBtoE ? 'EQD2' : 'BED'} across α/β ratios — input {nInput} Gy
-            </p>
-          </div>
-          <div className="scroll-x">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-[10px] text-slate-400 uppercase border-b border-slate-100">
-                  <th className="px-3 py-2 text-left">α/β (Gy)</th>
-                  <th className="px-3 py-2 text-left">Tissue type</th>
-                  <th className="px-3 py-2 text-right">Factor (1+2/α/β)</th>
-                  <th className="px-3 py-2 text-right">{isBtoE ? 'EQD2' : 'BED'} (Gy)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {crossAbRows.map(r => (
-                  <tr key={r.ab}
-                    className={r.isCur
-                      ? 'bg-blue-50 font-bold text-blue-800'
-                      : 'text-slate-700 hover:bg-slate-50'}>
-                    <td className="px-3 py-2 num">{r.ab}{r.isCur && ' ←'}</td>
-                    <td className="px-3 py-2 text-[11px] text-slate-500">
-                      {r.ab === 1.5 ? 'Prostate' :
-                       r.ab === 2   ? 'CNS/brain' :
-                       r.ab === 3   ? 'Late (cord/bowel)' :
-                       r.ab === 4   ? 'Breast' :
-                       r.ab === 5   ? 'Cervix (late)' :
-                       r.ab === 8   ? 'Skin (acute)' :
-                       r.ab === 10  ? 'Tumour/early' :
-                       r.ab === 15  ? 'High α/β tumour' : 'Very high'}
-                    </td>
-                    <td className="px-3 py-2 text-right num">{(1 + 2/r.ab).toFixed(3)}</td>
-                    <td className="px-3 py-2 text-right num font-semibold">{r.result.toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
 
       {/* ── Clinical reference table ──────────────────────────────────── */}
       <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">

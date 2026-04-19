@@ -8,7 +8,8 @@ import {
   CheckCircle2, 
   Target,
   ShieldAlert,
-  GraduationCap
+  GraduationCap,
+  Activity
 } from 'lucide-react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import KeyFactsSidebar, { KeyFactSection } from '../components/KeyFactsSidebar';
@@ -127,9 +128,6 @@ const CervixDosimeterPage: React.FC = () => {
     const remainingHrCtvEQD2 = Math.max(0, targetHrCtvEQD2 - currentHrCtvEQD2);
     const remainingBladderEQD2 = Math.max(0, limitBladderEQD2 - currentBladderEQD2);
 
-    // Solve for d_brachy: EQD2 = d * (d + ab) / (2 + ab)
-    // d^2 + ab*d - EQD2*(2+ab) = 0
-    // d = (-ab + sqrt(ab^2 + 4*EQD2*(2+ab))) / 2
     const solveDose = (eqd2: number, ab: number) => {
       if (eqd2 <= 0) return 0;
       return (-ab + Math.sqrt(Math.pow(ab, 2) + 4 * eqd2 * (2 + ab))) / 2;
@@ -154,10 +152,10 @@ const CervixDosimeterPage: React.FC = () => {
   const barData = useMemo(() => {
     return results.map(res => {
       const structure = STRUCTURES.find(s => s.name === res.name)!;
-      const ebrtEQD2 = ebrtFx * calcEQD2(ebrtDosePerFx, structure.ab);
+      const ebrtEQD2Value = ebrtFx * calcEQD2(ebrtDosePerFx, structure.ab);
       const dataPoint: any = { 
         name: res.name.replace(' D2cc', '').replace(' D90', ''),
-        EBRT: Number(ebrtEQD2.toFixed(1)),
+        EBRT: Number(ebrtEQD2Value.toFixed(1)),
       };
       fractions.forEach((fx, i) => {
         const key = STRUCTURE_KEY_MAP[structure.name];
@@ -224,344 +222,520 @@ const CervixDosimeterPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#080c14] text-slate-200 pb-20">
+    <div className="min-h-screen bg-[#020617] text-slate-200 pb-20 selection:bg-blue-500/30">
       <KeyFactsSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} onOpen={() => setIsSidebarOpen(true)} data={SIDEBAR_DATA} />
       
-      <div className="max-w-6xl mx-auto px-4 pt-4 sm:pt-8">
-        <header className="mb-6 sm:mb-12 border-b border-white/5 pb-4 sm:pb-8">
-          <div className="flex items-center gap-2 mb-2">
-            <Target className="w-5 h-5 text-sky-400" />
-            <p className="label-micro text-sky-400">GEC-ESTRO EMBRACE II</p>
-          </div>
-          <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Cervix Brachytherapy Accumulator</h1>
-          <p className="text-slate-500 font-serif italic">Combined EBRT + Brachytherapy EQD2 accumulation</p>
-        </header>
+      {/* ── Atmospheric Background ─────────────────────────────────────── */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[140px]" />
+        <div className="absolute inset-0 mesh-grid opacity-[0.03] pointer-events-none" />
+      </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 xl:gap-8">
-          <div className="xl:col-span-8 space-y-4 sm:space-y-8">
-            {/* EBRT Station */}
-            <div className="station">
-              <div className="station-head">
-                <div className="stn-num">01</div>
-                <div className="stn-name">EBRT Component</div>
-              </div>
-              <div className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-                <div className="space-y-2">
-                  <label className="label-micro opacity-60">Total Dose (Gy)</label>
-                  <NumberInput 
-                    value={ebrtDose} 
-                    onChange={e => setEbrtDose(Number(e.target.value))} 
-                    className="input-premium w-full" 
-                  />
+      <div className="max-w-7xl mx-auto px-4 pt-8 sm:pt-12 relative z-10">
+        {/* ── Command Center Header ───────────────────────────────────── */}
+        <header className="mb-16 relative">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 font-mono">
+                    GEC-ESTRO EMBRACE II System
+                  </span>
                 </div>
-                <div className="space-y-2">
-                  <label className="label-micro opacity-60">Fractions</label>
-                  <NumberInput 
-                    value={ebrtFx} 
-                    onChange={e => setEbrtFx(Number(e.target.value))} 
-                    className="input-premium w-full" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="label-micro opacity-60">Dose/Fx (Gy)</label>
-                  <NumberInput 
-                    value={ebrtDosePerFx} 
-                    onChange={e => setEbrtDosePerFx(Number(e.target.value))} 
-                    className="input-premium w-full" 
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Brachytherapy Station */}
-            <div className="station">
-              <div className="station-head">
-                <div className="stn-num">02</div>
-                <div className="stn-name">Brachytherapy Fractions</div>
-                <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
-                  <span className="text-[10px] uppercase font-bold text-slate-500">Planned:</span>
-                  <select 
-                    value={fractions.length}
-                    onChange={(e) => {
-                      const newCount = Number(e.target.value);
-                      if (newCount > fractions.length) {
-                        const newFractions = [...fractions];
-                        for (let i = fractions.length; i < newCount; i++) {
-                          newFractions.push({ id: Date.now().toString() + i, hrCtvD90: 0, bladderD2cc: 0, rectumD2cc: 0, sigmoidD2cc: 0, vaginaD2cc: 0 });
-                        }
-                        setFractions(newFractions);
-                      } else if (newCount < fractions.length) {
-                        setFractions(fractions.slice(0, newCount));
-                      }
-                    }}
-                    className="bg-transparent text-sm font-mono font-bold text-white focus:outline-none"
-                  >
-                    {[1, 2, 3, 4, 5, 6].map(n => (
-                      <option key={n} value={n} className="bg-slate-900">{n}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Desktop Table View */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-white/5">
-                      <th className="p-4 label-micro opacity-40">Fx</th>
-                      <th className="p-4 label-micro opacity-40">HR-CTV D90</th>
-                      <th className="p-4 label-micro opacity-40">Bladder D2cc</th>
-                      <th className="p-4 label-micro opacity-40">Rectum D2cc</th>
-                      <th className="p-4 label-micro opacity-40">Sigmoid D2cc</th>
-                      <th className="p-4 label-micro opacity-40">Vagina D2cc</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {fractions.map((fx, i) => (
-                      <tr key={fx.id} className="hover:bg-white/[0.02] transition-colors">
-                        <td className="p-4 font-mono text-sm text-slate-500">{i + 1}</td>
-                        {['hrCtvD90', 'bladderD2cc', 'rectumD2cc', 'sigmoidD2cc', 'vaginaD2cc'].map(field => (
-                          <td key={field} className="p-2">
-                            <NumberInput 
-                              value={fx[field as keyof BrachyFraction] || ''} 
-                              onChange={e => updateFraction(fx.id, field as keyof BrachyFraction, e.target.value === '' ? 0 : Number(e.target.value))} 
-                              className="input-premium w-full !px-4 !min-h-[36px]" 
-                              step="0.1"
-                              min="0"
-                            />
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Mobile Card View */}
-              <div className="md:hidden p-4 space-y-6">
-                {fractions.map((fx, i) => (
-                  <div key={fx.id} className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-4">
-                    <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                      <span className="text-xs font-black text-sky-400 uppercase tracking-widest">Fraction {i + 1}</span>
-                      <div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-[10px] font-mono text-slate-500">{i + 1}</div>
-                    </div>
-                    <div className="grid grid-cols-1 gap-4">
-                      {[
-                        { label: 'HR-CTV D90', field: 'hrCtvD90' },
-                        { label: 'Bladder D2cc', field: 'bladderD2cc' },
-                        { label: 'Rectum D2cc', field: 'rectumD2cc' },
-                        { label: 'Sigmoid D2cc', field: 'sigmoidD2cc' },
-                        { label: 'Vagina D2cc', field: 'vaginaD2cc' }
-                      ].map(item => (
-                        <div key={item.field} className="space-y-1.5">
-                          <label className="label-micro opacity-40">{item.label}</label>
-                          <NumberInput 
-                            value={fx[item.field as keyof BrachyFraction] || ''} 
-                            onChange={e => updateFraction(fx.id, item.field as keyof BrachyFraction, e.target.value === '' ? 0 : Number(e.target.value))} 
-                            className="input-premium w-full" 
-                            step="0.1"
-                            min="0"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* ICRU Station */}
-            <div className="station">
-              <div className="station-head">
-                <div className="stn-num">03</div>
-                <div className="stn-name">ICRU 89 & Legacy Parameters</div>
-              </div>
-              <div className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-                <div className="space-y-2">
-                  <label className="label-micro opacity-60">IR-CTV D98 (Gy)</label>
-                  <NumberInput 
-                    value={irCtvD98} 
-                    onChange={e => setIrCtvD98(Number(e.target.value))} 
-                    className="input-premium w-full" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="label-micro opacity-60">Point A (Gy)</label>
-                  <NumberInput 
-                    value={pointADose} 
-                    onChange={e => setPointADose(Number(e.target.value))} 
-                    className="input-premium w-full" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="label-micro opacity-60">TRAK (cGy·m²)</label>
-                  <NumberInput 
-                    value={trak} 
-                    onChange={e => setTrak(Number(e.target.value))} 
-                    className="input-premium w-full" 
-                  />
-                </div>
-              </div>
-              <div className="px-6 pb-6">
-                <div className={`p-4 rounded-xl border flex items-center gap-3 ${irCtvD98 >= 60 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'}`}>
-                  {irCtvD98 >= 60 ? <CheckCircle2 className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
-                  <span className="text-sm font-bold uppercase tracking-wider">
-                    {irCtvD98 >= 60 ? 'IR-CTV D98 compliant (≥ 60 Gy)' : 'IR-CTV D98 NOT compliant (< 60 Gy)'}
+                <div className="px-3 py-1 bg-slate-800 border border-white/5 rounded-full">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 font-mono">
+                    V2.4.0-STABLE
                   </span>
                 </div>
               </div>
+              <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter italic uppercase leading-none">
+                Cervix Brachy <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">
+                  Accumulator
+                </span>
+              </h1>
+              <p className="max-w-xl text-slate-400 text-sm font-medium leading-relaxed italic border-l-2 border-slate-800 pl-4">
+                Advanced cross-modality radiobiological integration protocol. 
+                Synchronizing EBRT datasets with longitudinal brachytherapy telemetry.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-4 items-center">
+              <div className="px-8 py-4 bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-[2rem] shadow-2xl">
+                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Session Telemetry</p>
+                 <div className="flex items-baseline gap-2">
+                   <span className="text-3xl font-black text-white font-mono">
+                    {(ebrtDose + fractions.reduce((acc, f) => acc + (f.hrCtvD90 || 0), 0)).toFixed(1)}
+                   </span>
+                   <span className="text-xs font-black text-slate-700 font-mono">Gy Total</span>
+                 </div>
+              </div>
             </div>
           </div>
 
-          <div className="xl:col-span-4 space-y-8">
-            {/* Results Station */}
-            <div className="station !bg-slate-900">
-              <div className="station-head border-b border-white/5">
-                <div className="stn-num !bg-sky-500">∑</div>
-                <div className="stn-name text-white">Combined EQD2</div>
+          <div className="absolute -bottom-8 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        </header>
+
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-12">
+          {/* ── Input Module ────────────────────────────── */}
+          <div className="xl:col-span-12 space-y-12 mb-12">
+            
+            {/* 01: EBRT Station */}
+            <section className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 rounded-[3rem] blur opacity-0 group-hover:opacity-100 transition duration-1000" />
+              <div className="relative bg-slate-900/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                <div className="absolute inset-0 opacity-[0.02] mesh-grid pointer-events-none" />
+                
+                <div className="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-blue-600 shadow-xl shadow-blue-500/20 flex items-center justify-center text-white">
+                      <Target className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white">01: EBRT COMPONENT</h3>
+                      <p className="text-[10px] text-slate-500 font-medium tracking-tight">External beam baseline validation</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-8 lg:p-10 grid grid-cols-1 md:grid-cols-3 gap-10">
+                  <div className="space-y-4">
+                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Physical Dose (Gy)</label>
+                    <NumberInput 
+                      value={ebrtDose} 
+                      onChange={e => setEbrtDose(Number(e.target.value))} 
+                      className="w-full bg-slate-950/50 border border-white/10 p-6 rounded-2xl text-3xl font-black font-mono text-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-slate-800" 
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Fractionation Count</label>
+                    <NumberInput 
+                      value={ebrtFx} 
+                      onChange={e => setEbrtFx(Number(e.target.value))} 
+                      className="w-full bg-slate-950/50 border border-white/10 p-6 rounded-2xl text-3xl font-black font-mono text-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-slate-800" 
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Dose per Fraction (Gy)</label>
+                    <NumberInput 
+                      value={ebrtDosePerFx} 
+                      onChange={e => setEbrtDosePerFx(Number(e.target.value))} 
+                      className="w-full bg-slate-950/50 border border-white/10 p-6 rounded-2xl text-3xl font-black font-mono text-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-slate-800" 
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="p-6 space-y-4">
-                {results.map(res => (
-                  <div key={res.name} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <div className="space-y-0.5">
-                        <p className="label-micro opacity-40">{res.name}</p>
-                        <p className="text-xs text-slate-500 italic">Target: {res.goal} Gy</p>
+            </section>
+
+            {/* 02: Brachytherapy Fractions */}
+            <section className="relative group">
+               <div className="absolute -inset-1 bg-gradient-to-r from-emerald-600/10 to-teal-600/10 rounded-[3rem] blur opacity-0 group-hover:opacity-100 transition duration-1000" />
+               <div className="relative bg-slate-900/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                 <div className="absolute inset-0 opacity-[0.02] mesh-grid pointer-events-none" />
+                 
+                 <div className="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex flex-col sm:flex-row items-center justify-between gap-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-600 shadow-xl shadow-emerald-500/20 flex items-center justify-center text-white">
+                      <GraduationCap className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white">02: BT FRACTION INPUTS</h3>
+                      <p className="text-[10px] text-slate-500 font-medium tracking-tight">Individual insert dosimetry records</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 bg-slate-950/50 p-2 rounded-2xl border border-white/5">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Session Count</p>
+                    <div className="flex gap-1 h-10 p-1 bg-black/40 rounded-xl border border-white/5">
+                      {[1, 2, 3, 4, 5, 6].map(n => (
+                        <button
+                          key={n}
+                          onClick={() => {
+                            const newCount = n;
+                            if (newCount > fractions.length) {
+                              const newFractions = [...fractions];
+                              for (let i = fractions.length; i < newCount; i++) {
+                                newFractions.push({ id: Date.now().toString() + i, hrCtvD90: 0, bladderD2cc: 0, rectumD2cc: 0, sigmoidD2cc: 0, vaginaD2cc: 0 });
+                              }
+                              setFractions(newFractions);
+                            } else if (newCount < fractions.length) {
+                              setFractions(fractions.slice(0, newCount));
+                            }
+                          }}
+                          className={`w-10 rounded-lg text-xs font-black font-mono transition-all ${
+                            fractions.length === n 
+                              ? 'bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]' 
+                              : 'text-slate-600 hover:text-slate-300'
+                          }`}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-2 sm:p-6 overflow-x-auto">
+                  <table className="w-full text-left border-separate border-spacing-2">
+                    <thead>
+                      <tr>
+                        <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-600">FX</th>
+                        {STRUCTURES.map(s => (
+                           <th key={s.name} className="px-4 py-3">
+                             <div className="flex flex-col gap-1">
+                               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{s.name.split(' ')[0]}</span>
+                               <span className="text-[9px] font-black text-slate-600 opacity-60 uppercase tracking-[0.2em]">{s.name.split(' ')[1]}</span>
+                             </div>
+                           </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fractions.map((fx, i) => (
+                        <tr key={fx.id} className="group/row">
+                          <td className="px-4 py-3">
+                            <div className="w-8 h-8 rounded-lg bg-black/40 border border-white/5 flex items-center justify-center text-[10px] font-black font-mono text-emerald-500 group-hover/row:border-emerald-500/30 transition-colors">
+                              {i + 1}
+                            </div>
+                          </td>
+                          {['hrCtvD90', 'bladderD2cc', 'rectumD2cc', 'sigmoidD2cc', 'vaginaD2cc'].map(field => (
+                            <td key={field} className="min-w-[120px]">
+                              <NumberInput 
+                                value={fx[field as keyof BrachyFraction] || ''} 
+                                onChange={e => updateFraction(fx.id, field as keyof BrachyFraction, e.target.value === '' ? 0 : Number(e.target.value))} 
+                                className="w-full bg-slate-950/30 border border-white/5 p-4 rounded-xl text-lg font-black font-mono text-white focus:bg-slate-950/80 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all placeholder:text-slate-800" 
+                                step="0.1"
+                                min="0"
+                              />
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+             {/* 03: ICRU Station */}
+             <section className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-purple-600/10 to-fuchsia-600/10 rounded-[3rem] blur opacity-0 group-hover:opacity-100 transition duration-1000" />
+                <div className="relative bg-slate-900/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                  <div className="absolute inset-0 opacity-[0.02] mesh-grid pointer-events-none" />
+                  
+                  <div className="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-purple-600 shadow-xl shadow-purple-500/20 flex items-center justify-center text-white">
+                        <Activity className="w-6 h-6" />
                       </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className={`text-xl sm:text-2xl font-black font-mono leading-none ${res.total >= res.goal ? 'text-emerald-400' : 'text-amber-400'}`}>
-                            {res.total.toFixed(1)}
-                          </p>
-                          <p className="text-[10px] text-slate-500 uppercase font-bold">Gy EQD2</p>
-                        </div>
-                        <RadialGauge
-                          value={res.total}
-                          max={res.limit}
-                          size={40}
-                          strokeWidth={4}
-                          showPercentage={true}
+                      <div>
+                        <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white">03: ICRU 89 METRICS</h3>
+                        <p className="text-[10px] text-slate-500 font-medium tracking-tight">Legacy and historical benchmarking</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-8 lg:p-10">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-8">
+                       <div className="space-y-4">
+                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">IR-CTV D98 (Gy)</label>
+                        <NumberInput 
+                          value={irCtvD98} 
+                          onChange={e => setIrCtvD98(Number(e.target.value))} 
+                          className="w-full bg-slate-950/50 border border-white/10 p-6 rounded-2xl text-2xl font-black font-mono text-white focus:ring-4 focus:ring-purple-500/10 outline-none transition-all" 
+                        />
+                      </div>
+                      <div className="space-y-4">
+                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Historical Point A (Gy)</label>
+                        <NumberInput 
+                          value={pointADose} 
+                          onChange={e => setPointADose(Number(e.target.value))} 
+                          className="w-full bg-slate-950/50 border border-white/10 p-6 rounded-2xl text-2xl font-black font-mono text-white focus:ring-4 focus:ring-purple-500/10 outline-none transition-all" 
+                        />
+                      </div>
+                      <div className="space-y-4">
+                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">TRAK (cGy·m²)</label>
+                        <NumberInput 
+                          value={trak} 
+                          onChange={e => setTrak(Number(e.target.value))} 
+                          className="w-full bg-slate-950/50 border border-white/10 p-6 rounded-2xl text-2xl font-black font-mono text-white focus:ring-4 focus:ring-purple-500/10 outline-none transition-all" 
                         />
                       </div>
                     </div>
 
-                    {res.hasMappingError && (
-                      <div className="p-2 bg-rose-500/10 border border-rose-500/20 rounded-lg flex items-center gap-2 text-rose-400 text-[10px] font-bold uppercase tracking-wider">
-                        <AlertTriangle className="w-3 h-3" />
-                        Data mapping error
+                    <div className={`p-6 rounded-[2rem] border flex items-center gap-5 transition-all duration-500 ${
+                      irCtvD98 >= 60 
+                        ? 'bg-emerald-500/5 border-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.05)]' 
+                        : 'bg-rose-500/5 border-rose-500/20 shadow-[0_0_30px_rgba(244,63,94,0.05)]'
+                    }`}>
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-lg ${
+                         irCtvD98 >= 60 ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'
+                      }`}>
+                        {irCtvD98 >= 60 ? <CheckCircle2 className="w-8 h-8" /> : <AlertTriangle className="w-8 h-8" />}
+                      </div>
+                      <div>
+                        <p className={`text-[10px] font-black uppercase tracking-[0.2em] mb-1 ${irCtvD98 >= 60 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          IR-CTV D98 ACCUMULATION STATUS
+                        </p>
+                        <p className="text-xl font-black text-white tracking-tight italic">
+                          {irCtvD98 >= 60 
+                            ? 'PROTOCOL COMPLIANT (Target ≥ 60 Gy)' 
+                            : 'SUB-OPTIMAL YIELD (Below Recommendation)'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+             </section>
+          </div>
+
+          {/* ── Results Panel ───────────────────── */}
+          <div className="xl:col-span-12 space-y-12">
+            
+            {/* Combined EQD2 Telemetry */}
+            <section className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 rounded-[3rem] blur opacity-0 group-hover:opacity-100 transition duration-1000" />
+              <div className="relative bg-slate-950 rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl">
+                <div className="absolute inset-0 opacity-[0.03] mesh-grid pointer-events-none" />
+                
+                <div className="p-8 lg:p-12">
+                   <div className="flex items-center justify-between mb-12">
+                     <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                           <div className="w-1.5 h-4 bg-blue-600 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.5)]" />
+                           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400 font-mono">DOSE ACCUMULATION TELEMETRY</p>
+                        </div>
+                        <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase">COMBINED EQD2 YIELD</h2>
+                     </div>
+                     <Activity className="w-8 h-8 text-slate-800" />
+                   </div>
+
+                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
+                      {results.map(res => (
+                        <motion.div 
+                          key={res.name}
+                          whileHover={{ scale: 1.02, y: -5 }}
+                          className="relative p-6 bg-white/[0.02] border border-white/5 rounded-[2rem] overflow-hidden group/card"
+                        >
+                           <div className={`absolute top-0 right-0 w-24 h-24 blur-[60px] opacity-0 group-hover/card:opacity-20 transition-opacity duration-1000 ${res.total >= res.goal ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                           
+                           <div className="relative z-10 flex flex-col h-full justify-between gap-6">
+                              <div className="space-y-1">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">{res.name}</p>
+                                <p className="text-[10px] font-black italic text-slate-700">TARGET {res.goal} GY</p>
+                              </div>
+
+                              <div className="flex items-center justify-between">
+                                 <div>
+                                    <p className={`text-4xl font-black font-mono tracking-tighter leading-none ${res.total >= res.goal ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                      {res.total.toFixed(1)}
+                                    </p>
+                                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mt-1">EQD2 TOTAL</p>
+                                 </div>
+                                 <RadialGauge
+                                    value={res.total}
+                                    max={res.limit}
+                                    size={48}
+                                    strokeWidth={5}
+                                    showPercentage={true}
+                                  />
+                              </div>
+
+                              <div className="pt-4 border-t border-white/5 flex gap-4">
+                                <div>
+                                   <p className="text-[9px] font-black text-slate-500 uppercase">EBRT</p>
+                                   <p className="text-xs font-black text-slate-300 font-mono">{res.ebrtEQD2.toFixed(1)}</p>
+                                </div>
+                                <div>
+                                   <p className="text-[9px] font-black text-slate-500 uppercase">BT</p>
+                                   <p className="text-xs font-black text-slate-300 font-mono">{res.brachyEQD2.toFixed(1)}</p>
+                                </div>
+                              </div>
+                           </div>
+                        </motion.div>
+                      ))}
+                   </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Visualizations Module */}
+            <section className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600/10 to-blue-600/10 rounded-[3rem] blur opacity-0 group-hover:opacity-100 transition duration-1000" />
+              <div className="relative bg-slate-900/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                <div className="absolute inset-0 opacity-[0.02] mesh-grid pointer-events-none" />
+                
+                <div className="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-600 shadow-xl shadow-indigo-500/20 flex items-center justify-center text-white">
+                      <Activity className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white">04: VISUAL ANALYTICS</h3>
+                      <p className="text-[10px] text-slate-500 font-medium tracking-tight">Geometric and volumetric distribution</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-8 lg:p-12 space-y-16">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+                    {/* Radar Chart */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-1 h-1 rounded-full bg-indigo-500" />
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Target Balance Profile (EQD2)</p>
+                      </div>
+                      <div className="h-80 w-full relative">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                            <PolarGrid stroke="rgba(255,255,255,0.05)" />
+                            <PolarAngleAxis dataKey="subject" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 700 }} />
+                            <PolarRadiusAxis angle={30} domain={[0, 'dataMax']} tick={false} axisLine={false} />
+                            <Radar name="Current Yield" dataKey="EQD2" stroke="#6366f1" fill="#6366f1" fillOpacity={0.15} />
+                            <Radar name="Target Goal" dataKey="Goal" stroke="#10b981" fill="none" strokeDasharray="4 4" />
+                            <Tooltip contentStyle={{ backgroundColor: '#020617', borderColor: 'rgba(255,255,255,0.1)', color: '#f8fafc', fontSize: '11px', borderRadius: '12px', padding: '12px' }} />
+                            <Legend wrapperStyle={{ fontSize: '10px', paddingTop: '20px', letterSpacing: '0.1em', fontWeight: 900, textTransform: 'uppercase', opacity: 0.6 }} />
+                          </RadarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* Stacked Bar Chart */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-1 h-1 rounded-full bg-blue-500" />
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fractional Contribution Matrix</p>
+                      </div>
+                      <div className="h-80 w-full relative">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                            <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                            <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                            <Tooltip cursor={{ fill: 'rgba(255,255,255,0.02)' }} contentStyle={{ backgroundColor: '#020617', borderColor: 'rgba(255,255,255,0.1)', color: '#f8fafc', fontSize: '11px', borderRadius: '12px' }} />
+                            <Legend wrapperStyle={{ fontSize: '10px', paddingTop: '20px', letterSpacing: '0.1em', fontWeight: 900, textTransform: 'uppercase', opacity: 0.6 }} />
+                            <Bar dataKey="EBRT" stackId="a" fill="#334155" radius={[0, 0, 0, 0]} />
+                            {fractions.map((_, i) => (
+                              <Bar 
+                                key={`Fx${i+1}`} 
+                                dataKey={`Fx${i+1}`} 
+                                stackId="a" 
+                                fill={i % 2 === 0 ? '#10b981' : '#059669'} 
+                                fillOpacity={0.4 + (i * 0.1)}
+                                radius={i === fractions.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+                              />
+                            ))}
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Adaptive Projection Station */}
+            <section className="relative group">
+               <div className="absolute -inset-1 bg-gradient-to-r from-sky-600/10 to-indigo-600/10 rounded-[3rem] blur opacity-0 group-hover:opacity-100 transition duration-1000" />
+               <div className="relative bg-slate-900/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                 <div className="absolute inset-0 opacity-[0.02] mesh-grid pointer-events-none" />
+                 
+                 <div className="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-sky-600 shadow-xl shadow-sky-500/20 flex items-center justify-center text-white">
+                        <CheckCircle2 className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white">05: ADAPTIVE PROJECTION</h3>
+                        <p className="text-[10px] text-slate-500 font-medium tracking-tight">Real-time compensation adjustments</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-8 lg:p-12">
+                    {adaptiveResults.remainingFractions > 0 ? (
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                        <div className="p-8 bg-slate-950/50 border border-white/10 rounded-[2rem] flex flex-col justify-center gap-2">
+                           <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Remaining Fractions</p>
+                           <div className="flex items-baseline gap-2">
+                             <span className="text-6xl font-black text-white font-mono">{adaptiveResults.remainingFractions}</span>
+                             <span className="text-sm font-black text-slate-700 uppercase tracking-widest italic">Pending</span>
+                           </div>
+                        </div>
+                        
+                        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
+                           <div className="p-8 bg-blue-500/5 border border-blue-500/20 rounded-[2rem] space-y-4">
+                              <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Required HR-CTV D90 / Fx</p>
+                              <div className="flex items-baseline gap-2">
+                                <span className="text-5xl font-black font-mono text-white">{adaptiveResults.maxD90.toFixed(1)}</span>
+                                <span className="text-xs font-black text-blue-500/50 uppercase tracking-widest">Gy</span>
+                              </div>
+                              <p className="text-[10px] text-slate-500 font-medium italic">Adjusted target for protocol compliance</p>
+                           </div>
+                           
+                           <div className="p-8 bg-rose-500/5 border border-rose-500/20 rounded-[2rem] space-y-4">
+                              <p className="text-[10px] font-black uppercase tracking-widest text-rose-400">Max Bladder D2cc / Fx</p>
+                              <div className="flex items-baseline gap-2">
+                                <span className="text-5xl font-black font-mono text-white">{adaptiveResults.maxBladder.toFixed(1)}</span>
+                                <span className="text-xs font-black text-rose-500/50 uppercase tracking-widest">Gy</span>
+                              </div>
+                              <p className="text-[10px] text-slate-500 font-medium italic">Calculated limit for OAR preservation</p>
+                           </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="py-12 flex flex-col items-center justify-center text-center space-y-6">
+                        <div className="w-24 h-24 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 group-hover:scale-110 transition-transform">
+                          <CheckCircle2 className="w-12 h-12 text-emerald-500" />
+                        </div>
+                        <div className="space-y-2">
+                           <p className="text-2xl font-black text-white tracking-widest uppercase italic">All Iterations Synchronized</p>
+                           <p className="text-sm text-slate-500 max-w-md mx-auto italic">Final dose accumulation data is ready for archival and clinical verification. Protocol complete.</p>
+                        </div>
                       </div>
                     )}
                   </div>
-                ))}
-              </div>
-            </div>
+               </div>
+            </section>
 
-            {/* Visualizations Station */}
-            <div className="station !bg-slate-900 border-white/10">
-              <div className="station-head border-b border-white/5">
-                <div className="stn-num !bg-indigo-500">V</div>
-                <div className="stn-name text-white">Visualizations</div>
-              </div>
-              <div className="p-4 sm:p-6 space-y-8">
-                {/* Radar Chart */}
-                <div className="space-y-2">
-                  <p className="label-micro opacity-40 text-center">OAR & Target Balance (EQD2)</p>
-                  <div className="h-64 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-                        <PolarGrid stroke="rgba(255,255,255,0.1)" />
-                        <PolarAngleAxis dataKey="subject" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} />
-                        <PolarRadiusAxis angle={30} domain={[0, 'dataMax']} tick={false} axisLine={false} />
-                        <Radar name="Current Plan" dataKey="EQD2" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.4} />
-                        <Radar name="Goal" dataKey="Goal" stroke="#10b981" fill="none" strokeDasharray="3 3" />
-                        <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', fontSize: '12px' }} />
-                        <Legend wrapperStyle={{ fontSize: '10px', opacity: 0.7 }} />
-                      </RadarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                {/* Stacked Bar Chart */}
-                <div className="space-y-2">
-                  <p className="label-micro opacity-40 text-center">Fraction Contribution (EQD2)</p>
-                  <div className="h-64 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                        <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                        <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', fontSize: '12px' }} />
-                        <Legend wrapperStyle={{ fontSize: '10px', opacity: 0.7 }} />
-                        <Bar dataKey="EBRT" stackId="a" fill="#64748b" />
-                        {fractions.map((_, i) => (
-                          <Bar key={`Fx${i+1}`} dataKey={`Fx${i+1}`} stackId="a" fill={`hsl(200, 100%, ${40 + i * 10}%)`} />
-                        ))}
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Adaptive Planning Station */}
-            <div className="station !bg-sky-500/5 border-sky-500/20">
-              <div className="station-head border-b border-sky-500/10">
-                <div className="stn-num !bg-sky-400">A</div>
-                <div className="stn-name !text-sky-400">Adaptive Planning</div>
-              </div>
-              <div className="p-6 space-y-6">
-                {adaptiveResults.remainingFractions > 0 ? (
-                  <>
-                    <div className="flex justify-between items-center">
-                      <p className="label-micro opacity-60">Remaining Fractions</p>
-                      <p className="text-2xl font-black font-mono text-white">{adaptiveResults.remainingFractions}</p>
+            {/* Clinical Logic Protocol */}
+            <section className="relative group">
+               <div className="absolute -inset-1 bg-gradient-to-r from-slate-600/10 to-slate-400/10 rounded-[3rem] blur opacity-0 group-hover:opacity-100 transition duration-1000" />
+               <div className="relative bg-slate-900/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                  <div className="px-8 py-6 border-b border-white/5 bg-white/[0.02]">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-800 shadow-xl flex items-center justify-center text-white">
+                        <Info className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white">Clinical Logic Protocol</h3>
                     </div>
-                    
-                    <div className="space-y-4">
-                      <div className="p-4 bg-white/5 rounded-xl border border-white/10 space-y-1">
-                        <p className="label-micro opacity-40">Required HR-CTV D90 / Fx</p>
-                        <p className="text-3xl font-black font-mono text-sky-400">{adaptiveResults.maxD90.toFixed(1)}</p>
-                        <p className="text-[10px] text-slate-500 uppercase">Gy per remaining fraction</p>
+                  </div>
+                  
+                  <div className="p-8 lg:p-12">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-[11px] leading-relaxed tracking-wide uppercase font-black">
+                      <div className="space-y-4 p-6 bg-slate-950/30 rounded-[2rem] border border-white/5">
+                        <ShieldAlert className="w-6 h-6 text-amber-500" />
+                        <h4 className="text-slate-200">EQD2 Accumulation</h4>
+                        <p className="text-slate-500 normal-case font-medium italic">EBRT and Brachytherapy doses are converted using the LQ model (α/β=10 Gy tumor, 3 Gy OARs).</p>
                       </div>
                       
-                      <div className="p-4 bg-white/5 rounded-xl border border-white/10 space-y-1">
-                        <p className="label-micro opacity-40">Max Bladder D2cc / Fx</p>
-                        <p className="text-3xl font-black font-mono text-rose-400">{adaptiveResults.maxBladder.toFixed(1)}</p>
-                        <p className="text-[10px] text-slate-500 uppercase">Gy per remaining fraction</p>
+                      <div className="space-y-4 p-6 bg-slate-950/30 rounded-[2rem] border border-white/5">
+                        <Target className="w-6 h-6 text-sky-500" />
+                        <h4 className="text-slate-200">Planning Thresholds</h4>
+                        <p className="text-slate-500 normal-case font-medium italic">Primary HR-CTV target ≥85 Gy. Critical OAR limits: Bladder &lt;80 Gy, Rectum &lt;65 Gy.</p>
+                      </div>
+                      
+                      <div className="space-y-4 p-6 bg-slate-950/30 rounded-[2rem] border border-white/5">
+                        <GraduationCap className="w-6 h-6 text-purple-500" />
+                        <h4 className="text-slate-200">Adaptive Planning</h4>
+                        <p className="text-slate-500 normal-case font-medium italic">Real-time derivation of required intensity for remaining fractions to achieve protocol success.</p>
                       </div>
                     </div>
-                  </>
-                ) : (
-                  <div className="text-center py-4">
-                    <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-4 opacity-20" />
-                    <p className="text-sm font-bold text-white uppercase tracking-widest">All Fractions Complete</p>
-                    <p className="text-xs text-slate-500 mt-1">Final evaluation ready</p>
                   </div>
-                )}
-              </div>
-            </div>
-
-            {/* Clinical Principles */}
-            <div className="station">
-              <div className="station-head border-b border-white/5">
-                <div className="stn-num !bg-slate-700">?</div>
-                <div className="stn-name">Clinical Principles</div>
-              </div>
-              <div className="p-6 space-y-4 text-xs text-slate-400 leading-relaxed">
-                <div className="flex gap-3">
-                  <ShieldAlert className="w-4 h-4 text-amber-500 shrink-0" />
-                  <p><strong className="text-slate-200">EQD2 Accumulation:</strong> EBRT and Brachytherapy doses are converted to EQD2 using the LQ model. α/β = 10 Gy for tumour and 3 Gy for OARs (except Vagina, α/β = 3 Gy per EMBRACE II).</p>
-                </div>
-                <div className="flex gap-3">
-                  <Info className="w-4 h-4 text-sky-500 shrink-0" />
-                  <p><strong className="text-slate-200">Planning Goals:</strong> Target HR-CTV D90 ≥ 85 Gy. Bladder D2cc &lt; 80 Gy, Rectum/Sigmoid D2cc &lt; 65 Gy (hard limit 75 Gy).</p>
-                </div>
-                <div className="flex gap-3">
-                  <GraduationCap className="w-4 h-4 text-purple-500 shrink-0" />
-                  <p><strong className="text-slate-200">Adaptive Planning:</strong> The tool calculates the required dose for remaining fractions based on the current accumulation to reach EMBRACE II targets.</p>
-                </div>
-              </div>
-            </div>
+               </div>
+            </section>
           </div>
         </div>
       </div>
